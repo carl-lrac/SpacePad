@@ -1717,6 +1717,7 @@
     <button class="view-tab locked-view-tab" data-view="chat" style="display:none;"><svg class="icon"><use href="#icon-message-circle"></use></svg><span class="view-tab-label">Chat</span></button>
     <button class="view-tab locked-view-tab" data-view="github" style="display:none;"><svg class="icon icon-fill"><use href="#icon-github"></use></svg><span class="view-tab-label">GitHub</span></button>
     <button class="view-tab" data-view="convert"><svg class="icon"><use href="#icon-link"></use></svg><span class="view-tab-label">Convert</span></button>
+    <button class="view-tab" data-view="tools"><svg class="icon"><use href="#icon-tool"></use></svg><span class="view-tab-label">Tools</span></button>
     <button class="view-tab" data-view="python"><svg class="icon"><use href="#icon-terminal"></use></svg><span class="view-tab-label">Python</span></button>
     <button class="view-tab" data-view="stargazing"><svg class="icon icon-fill"><use href="#icon-moon"></use></svg><span class="view-tab-label">Stargazing</span></button>
     <button class="view-tab" data-view="game"><svg class="icon icon-fill"><use href="#icon-rocket"></use></svg><span class="view-tab-label">Space Dino</span></button>
@@ -2263,6 +2264,383 @@
         <button type="button" id="dino-mute-btn" class="ghost-btn">Mute</button>
       </div>
       <p class="dino-hint">Press Space or tap the sky to launch</p>
+    </div>
+  </div>
+
+  <!-- ===================== TOOLS VIEW ===================== -->
+  <div id="view-tools" class="app-view">
+    <div class="side-rail">
+      <h2>About</h2>
+      <div class="side-note" style="margin-top:0; padding-top:0; border-top:none;">
+        A grab-bag of small dev utilities — link converters, generators, and text tools that don't need a whole tab of their own.
+      </div>
+      <h2>Notes</h2>
+      <div class="side-note" style="margin-top:0; padding-top:0; border-top:none;">
+        Everything here runs locally in your browser, fully offline — nothing is uploaded, except the GitHub→jsDelivr tool's optional "Fetch &amp; Run", which needs a real network request to actually fetch the file.
+      </div>
+    </div>
+    <div class="conv-main">
+
+      <div style="flex-shrink:0; padding-bottom:12px; margin-bottom:4px;">
+        <input type="text" id="toolsSearch" placeholder="Search tools… (e.g. color, cron, snippet, base, gradient)" style="width:100%; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:9px; font-size:13px;">
+        <div id="toolsSearchEmpty" style="display:none; text-align:center; color:var(--text-dim); font-size:12.5px; padding:20px 0;">No tools match that search.</div>
+      </div>
+
+      <!-- ---- Tool 1: GitHub → jsDelivr CDN link converter ---- -->
+      <section class="conv-card" id="toolGhCdnCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-git-fork"></use></svg> GitHub → jsDelivr CDN link</h3>
+          <p>Paste a GitHub file or repo URL (a <code>blob</code> link, a <code>raw.githubusercontent.com</code> link, or just <code>user/repo</code>) and get back a fast, cached jsDelivr CDN link for it.</p>
+        </div>
+        <label class="field-label">GitHub URL</label>
+        <div class="key-row">
+          <input type="text" id="toolGhInput" placeholder="https://github.com/user/repo/blob/main/path/to/file.js" spellcheck="false" autocomplete="off">
+        </div>
+        <label class="field-label">Ref override <span style="text-transform:none; letter-spacing:0; font-weight:400; color:var(--text-dim);">(optional — branch, tag, or commit; leave blank to use what's in the URL)</span></label>
+        <div class="key-row">
+          <input type="text" id="toolGhRefInput" placeholder="e.g. main, v2.1.0, a1b2c3d" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="conv-btn-row">
+          <button type="button" class="primary ghost-btn" id="toolGhConvertBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);"><svg class="icon"><use href="#icon-refresh-cw"></use></svg> Convert</button>
+        </div>
+        <div id="toolGhStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+
+        <div class="conv-output-row" id="toolGhResult" style="display:none;">
+          <label class="field-label">jsDelivr URL</label>
+          <textarea id="toolGhOutput" readonly style="height:56px;"></textarea>
+          <div class="conv-btn-row">
+            <button type="button" class="ghost-btn" id="toolGhCopyBtn">Copy link</button>
+            <button type="button" class="ghost-btn" id="toolGhOpenBtn">Open ↗</button>
+            <button type="button" class="ghost-btn" id="toolGhRunBtn"><svg class="icon icon-fill"><use href="#icon-play"></use></svg> Fetch &amp; Run</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 2: Password / passphrase generator ---- -->
+      <section class="conv-card" id="toolPwCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-eye-off"></use></svg> Password / passphrase generator</h3>
+          <p>Generated with the Web Crypto API's real random-number source — nothing here is stored or sent anywhere.</p>
+        </div>
+        <div class="conv-mode-grid" id="toolPwModeGrid">
+          <button type="button" class="conv-chip active" data-pwmode="password">Random password</button>
+          <button type="button" class="conv-chip" data-pwmode="passphrase">Word passphrase</button>
+        </div>
+
+        <div id="toolPwPasswordOpts">
+          <label class="field-label">Length: <span id="toolPwLenValue">16</span></label>
+          <input type="range" id="toolPwLen" min="4" max="64" value="16" style="width:100%;">
+          <div class="conv-mode-grid" style="margin-top:10px;">
+            <label class="settings-row" style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);"><input type="checkbox" id="toolPwUpper" checked> Uppercase (A-Z)</label>
+            <label class="settings-row" style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);"><input type="checkbox" id="toolPwLower" checked> Lowercase (a-z)</label>
+            <label class="settings-row" style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);"><input type="checkbox" id="toolPwNums" checked> Numbers (0-9)</label>
+            <label class="settings-row" style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);"><input type="checkbox" id="toolPwSymbols" checked> Symbols (!@#$…)</label>
+            <label class="settings-row" style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);"><input type="checkbox" id="toolPwAmbig"> Exclude ambiguous (l1IO0)</label>
+          </div>
+        </div>
+        <div id="toolPwPassphraseOpts" style="display:none;">
+          <label class="field-label">Number of words: <span id="toolPwWordsValue">4</span></label>
+          <input type="range" id="toolPwWords" min="3" max="10" value="4" style="width:100%;">
+          <label class="settings-row" style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); margin-top:10px;"><input type="checkbox" id="toolPwWordsNum" checked> Append a random number</label>
+        </div>
+
+        <div class="conv-btn-row" style="margin-top:12px;">
+          <button type="button" class="primary ghost-btn" id="toolPwGenBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);"><svg class="icon"><use href="#icon-refresh-cw"></use></svg> Generate</button>
+        </div>
+
+        <div class="conv-output-row">
+          <label class="field-label">Result <span id="toolPwStrength"></span></label>
+          <input type="text" id="toolPwOutput" readonly style="width:100%; background:var(--panel-2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:9px 10px; font:13px 'SF Mono', Menlo, Consolas, monospace;">
+          <div class="conv-btn-row">
+            <button type="button" class="ghost-btn" id="toolPwCopyBtn">Copy</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 3: Regex tester ---- -->
+      <section class="conv-card" id="toolRegexCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-search"></use></svg> Regex tester</h3>
+          <p>Live matches, highlighted in the test string below, using JavaScript's own regex engine.</p>
+        </div>
+        <label class="field-label">Pattern</label>
+        <div class="key-row">
+          <span style="color:var(--text-dim); font:13px 'SF Mono', Menlo, Consolas, monospace;">/</span>
+          <input type="text" id="toolRegexPattern" placeholder="[a-z]+@[a-z]+\.[a-z]+" spellcheck="false" autocomplete="off" style="font-family: 'SF Mono', Menlo, Consolas, monospace;">
+          <span style="color:var(--text-dim); font:13px 'SF Mono', Menlo, Consolas, monospace;">/</span>
+          <input type="text" id="toolRegexFlags" placeholder="gi" spellcheck="false" autocomplete="off" style="max-width:70px; font-family: 'SF Mono', Menlo, Consolas, monospace;">
+        </div>
+        <label class="field-label">Test string</label>
+        <textarea id="toolRegexInput" placeholder="Paste text to test the pattern against…" spellcheck="false"></textarea>
+        <div id="toolRegexStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <label class="field-label">Highlighted matches</label>
+        <div id="toolRegexHighlight" style="min-height:60px; max-height:220px; overflow:auto; background:var(--panel-2); border:1px solid var(--border); border-radius:6px; padding:10px; font:12px/1.6 'SF Mono', Menlo, Consolas, monospace; white-space:pre-wrap; word-break:break-word; color:var(--text);"></div>
+      </section>
+
+      <!-- ---- Tool 4: Text diff checker ---- -->
+      <section class="conv-card" id="toolDiffCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-file-text"></use></svg> Text diff checker</h3>
+          <p>Line-by-line comparison — added lines in green, removed lines in red.</p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <label class="field-label">Original</label>
+            <textarea id="toolDiffA" placeholder="Paste the original text…" spellcheck="false" style="height:140px;"></textarea>
+          </div>
+          <div style="flex:1; min-width:220px;">
+            <label class="field-label">Changed</label>
+            <textarea id="toolDiffB" placeholder="Paste the changed text…" spellcheck="false" style="height:140px;"></textarea>
+          </div>
+        </div>
+        <div class="conv-btn-row">
+          <button type="button" class="primary ghost-btn" id="toolDiffBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);">Compare</button>
+        </div>
+        <div id="toolDiffStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div id="toolDiffOutput" style="max-height:320px; overflow:auto; background:var(--panel-2); border:1px solid var(--border); border-radius:6px; font:11.5px/1.6 'SF Mono', Menlo, Consolas, monospace; display:none;"></div>
+      </section>
+
+      <!-- ---- Tool 5: Markdown preview ---- -->
+      <section class="conv-card" id="toolMdCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-book-open"></use></svg> Markdown preview</h3>
+          <p>A quick live preview — headers, bold/italic, links, images, lists, blockquotes, code blocks and inline code.</p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <label class="field-label">Markdown</label>
+            <textarea id="toolMdInput" placeholder="# Heading&#10;&#10;Some **bold** and *italic* text, a [link](https://example.com), and:&#10;&#10;- a list&#10;- of things" spellcheck="false" style="height:220px;"></textarea>
+          </div>
+          <div style="flex:1; min-width:220px;">
+            <label class="field-label">Preview</label>
+            <div id="toolMdPreview" style="height:220px; overflow:auto; background:var(--panel-2); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-size:13px; line-height:1.55; color:var(--text);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 6: Word / character counter ---- -->
+      <section class="conv-card" id="toolCountCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-file-text"></use></svg> Word &amp; character counter</h3>
+          <p>Updates as you type.</p>
+        </div>
+        <textarea id="toolCountInput" placeholder="Paste or type text here…" spellcheck="false" style="height:120px;"></textarea>
+        <div class="conv-mode-grid" id="toolCountStats" style="margin-top:12px; gap:18px;"></div>
+      </section>
+
+      <!-- ---- Tool 7: Number base converter ---- -->
+      <section class="conv-card" id="toolBaseCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-terminal"></use></svg> Number base converter</h3>
+          <p>Convert an integer between binary, octal, decimal, hex, or any base from 2–36.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="flex:1; min-width:160px;">
+            <label class="field-label">Value</label>
+            <input type="text" id="toolBaseInput" placeholder="e.g. 255, ff, 0b1010" spellcheck="false" autocomplete="off" style="width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font:13px 'SF Mono', Menlo, Consolas, monospace;">
+          </div>
+          <div style="min-width:110px;">
+            <label class="field-label">From base</label>
+            <select id="toolBaseFrom">
+              <option value="2">2 — Binary</option>
+              <option value="8">8 — Octal</option>
+              <option value="10" selected>10 — Decimal</option>
+              <option value="16">16 — Hex</option>
+              <option value="36">36</option>
+            </select>
+          </div>
+        </div>
+        <div id="toolBaseStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div class="conv-mode-grid" id="toolBaseResults" style="margin-top:6px; flex-direction:column; align-items:stretch; gap:8px;"></div>
+      </section>
+
+      <!-- ---- Tool 8: Color picker & contrast checker ---- -->
+      <section class="conv-card" id="toolColorCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon icon-fill"><use href="#icon-palette"></use></svg> Color picker &amp; contrast checker</h3>
+          <p>Pick or type two colors to get hex/rgb/hsl for each, plus their WCAG contrast ratio.</p>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:200px;">
+            <label class="field-label">Text color</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="color" id="toolColorFg" value="#e4e7fb" style="width:42px; height:32px; padding:0; border:1px solid var(--border); border-radius:6px; background:none;">
+              <input type="text" id="toolColorFgHex" value="#e4e7fb" spellcheck="false" style="flex:1; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:7px 9px; border-radius:6px; font:12.5px 'SF Mono', Menlo, Consolas, monospace;">
+            </div>
+            <div id="toolColorFgInfo" style="font-size:11px; color:var(--text-dim); margin-top:6px;"></div>
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <label class="field-label">Background color</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="color" id="toolColorBg" value="#0a0c1a" style="width:42px; height:32px; padding:0; border:1px solid var(--border); border-radius:6px; background:none;">
+              <input type="text" id="toolColorBgHex" value="#0a0c1a" spellcheck="false" style="flex:1; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:7px 9px; border-radius:6px; font:12.5px 'SF Mono', Menlo, Consolas, monospace;">
+            </div>
+            <div id="toolColorBgInfo" style="font-size:11px; color:var(--text-dim); margin-top:6px;"></div>
+          </div>
+        </div>
+        <div id="toolColorPreview" style="margin-top:14px; padding:18px; border-radius:8px; text-align:center; font-size:15px; font-weight:600; border:1px solid var(--border);">The quick brown fox</div>
+        <div id="toolColorContrast" style="margin-top:10px; text-align:center; font-size:12.5px; color:var(--text-dim);"></div>
+      </section>
+
+      <!-- ---- Tool 9: CSS gradient generator ---- -->
+      <section class="conv-card" id="toolGradCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon icon-fill"><use href="#icon-palette"></use></svg> CSS gradient generator</h3>
+          <p>Pick two colors and an angle, copy the generated <code>linear-gradient</code>.</p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <input type="color" id="toolGradA" value="#8b7cf6" style="width:42px; height:32px; padding:0; border:1px solid var(--border); border-radius:6px; background:none;">
+          <input type="color" id="toolGradB" value="#4dd0e1" style="width:42px; height:32px; padding:0; border:1px solid var(--border); border-radius:6px; background:none;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">Angle <input type="range" id="toolGradAngle" min="0" max="360" value="135" style="width:140px;"> <span id="toolGradAngleVal">135°</span></label>
+          <select id="toolGradType" style="min-width:130px;">
+            <option value="linear" selected>Linear</option>
+            <option value="radial">Radial</option>
+          </select>
+        </div>
+        <div id="toolGradPreview" style="margin-top:14px; height:80px; border-radius:8px; border:1px solid var(--border);"></div>
+        <div class="conv-output-row">
+          <label class="field-label">CSS</label>
+          <textarea id="toolGradOutput" readonly style="height:44px;"></textarea>
+          <div class="conv-btn-row">
+            <button type="button" class="ghost-btn" id="toolGradCopyBtn">Copy CSS</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 10: Box-shadow generator ---- -->
+      <section class="conv-card" id="toolShadowCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-monitor"></use></svg> Box-shadow generator</h3>
+          <p>Drag the sliders, watch the preview, copy the CSS.</p>
+        </div>
+        <div class="conv-mode-grid" style="gap:14px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">X <input type="range" id="toolShadowX" min="-40" max="40" value="0" style="width:100px;"></label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">Y <input type="range" id="toolShadowY" min="-40" max="40" value="10" style="width:100px;"></label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">Blur <input type="range" id="toolShadowBlur" min="0" max="80" value="24" style="width:100px;"></label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">Spread <input type="range" id="toolShadowSpread" min="-20" max="40" value="0" style="width:100px;"></label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">Color <input type="color" id="toolShadowColor" value="#000000" style="width:36px; height:28px; padding:0; border:1px solid var(--border); border-radius:6px; background:none;"></label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);">Opacity <input type="range" id="toolShadowOpacity" min="0" max="100" value="35" style="width:100px;"></label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim);"><input type="checkbox" id="toolShadowInset"> Inset</label>
+        </div>
+        <div style="margin-top:20px; padding:30px; display:flex; justify-content:center;">
+          <div id="toolShadowPreview" style="width:120px; height:80px; background:var(--panel-2); border-radius:10px;"></div>
+        </div>
+        <div class="conv-output-row">
+          <label class="field-label">CSS</label>
+          <textarea id="toolShadowOutput" readonly style="height:44px;"></textarea>
+          <div class="conv-btn-row">
+            <button type="button" class="ghost-btn" id="toolShadowCopyBtn">Copy CSS</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 11: Flexbox playground ---- -->
+      <section class="conv-card" id="toolFlexCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-maximize"></use></svg> Flexbox playground</h3>
+          <p>Set the container properties, watch the boxes rearrange, copy the CSS.</p>
+        </div>
+        <div class="conv-mode-grid" style="gap:12px;">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim); min-width:140px;">direction
+            <select id="toolFlexDirection"><option value="row" selected>row</option><option value="row-reverse">row-reverse</option><option value="column">column</option><option value="column-reverse">column-reverse</option></select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim); min-width:160px;">justify-content
+            <select id="toolFlexJustify"><option value="flex-start" selected>flex-start</option><option value="center">center</option><option value="flex-end">flex-end</option><option value="space-between">space-between</option><option value="space-around">space-around</option><option value="space-evenly">space-evenly</option></select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim); min-width:140px;">align-items
+            <select id="toolFlexAlign"><option value="stretch" selected>stretch</option><option value="flex-start">flex-start</option><option value="center">center</option><option value="flex-end">flex-end</option></select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim); min-width:110px;">gap
+            <input type="range" id="toolFlexGap" min="0" max="40" value="10">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim); min-width:110px;">wrap
+            <select id="toolFlexWrap"><option value="nowrap" selected>nowrap</option><option value="wrap">wrap</option></select>
+          </label>
+        </div>
+        <div id="toolFlexPreview" style="margin-top:14px; display:flex; min-height:130px; background:var(--panel-2); border:1px solid var(--border); border-radius:8px; padding:8px;"></div>
+        <div class="conv-output-row">
+          <label class="field-label">CSS</label>
+          <textarea id="toolFlexOutput" readonly style="height:80px;"></textarea>
+          <div class="conv-btn-row">
+            <button type="button" class="ghost-btn" id="toolFlexCopyBtn">Copy CSS</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 12: Cron expression explainer ---- -->
+      <section class="conv-card" id="toolCronCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-clock"></use></svg> Cron expression explainer</h3>
+          <p>Paste a 5-field cron expression to see it in plain English, plus its next few run times (based on your browser's clock).</p>
+        </div>
+        <label class="field-label">Cron expression</label>
+        <input type="text" id="toolCronInput" value="0 9 * * 1-5" spellcheck="false" autocomplete="off" style="width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font:13px 'SF Mono', Menlo, Consolas, monospace;">
+        <div id="toolCronStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div id="toolCronOutput" style="font-size:13px; color:var(--text); line-height:1.6;"></div>
+      </section>
+
+      <!-- ---- Tool 13: Unicode / character inspector ---- -->
+      <section class="conv-card" id="toolUnicodeCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-search"></use></svg> Unicode / character inspector</h3>
+          <p>Type or paste text to see each character's code point, UTF-8 bytes, and HTML entity.</p>
+        </div>
+        <input type="text" id="toolUnicodeInput" placeholder="Type a character or a short string…" spellcheck="false" autocomplete="off" style="width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font:15px 'SF Mono', Menlo, Consolas, monospace;">
+        <div id="toolUnicodeOutput" style="margin-top:12px; max-height:240px; overflow:auto;"></div>
+      </section>
+
+      <!-- ---- Tool 14: Lorem Ipsum generator ---- -->
+      <section class="conv-card" id="toolLoremCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-file-text"></use></svg> Lorem Ipsum generator</h3>
+          <p>Placeholder text — pick a unit and a count.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim);">Unit
+            <select id="toolLoremUnit"><option value="paragraphs" selected>Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option></select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-dim);">Count
+            <input type="number" id="toolLoremCount" value="3" min="1" max="50" style="width:70px; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:6px 8px; border-radius:6px;">
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); padding-bottom:6px;"><input type="checkbox" id="toolLoremClassic" checked> Start with "Lorem ipsum dolor sit amet…"</label>
+          <button type="button" class="primary ghost-btn" id="toolLoremGenBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);">Generate</button>
+        </div>
+        <div class="conv-output-row">
+          <textarea id="toolLoremOutput" readonly style="height:140px;"></textarea>
+          <div class="conv-btn-row">
+            <button type="button" class="ghost-btn" id="toolLoremCopyBtn">Copy</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Tool 15: URL parser & builder ---- -->
+      <section class="conv-card" id="toolUrlCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-link"></use></svg> URL parser &amp; builder</h3>
+          <p>Break a URL down into its parts, or build one from parts (including a query-string table).</p>
+        </div>
+        <label class="field-label">URL</label>
+        <input type="text" id="toolUrlInput" placeholder="https://example.com/path?foo=bar&baz=1#section" spellcheck="false" autocomplete="off" style="width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font:12.5px 'SF Mono', Menlo, Consolas, monospace;">
+        <div id="toolUrlStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div id="toolUrlParts" style="font-size:12.5px;"></div>
+        <label class="field-label" style="margin-top:10px;">Query parameters</label>
+        <div id="toolUrlQueryRows"></div>
+        <div class="conv-btn-row">
+          <button type="button" class="ghost-btn" id="toolUrlAddParam">+ Add parameter</button>
+          <button type="button" class="ghost-btn" id="toolUrlRebuild">Rebuild URL from parts</button>
+        </div>
+      </section>
+
+      <!-- ---- Tool 16: Snippet library ---- -->
+      <section class="conv-card" id="toolSnippetCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-save"></use></svg> Snippet library</h3>
+          <p>Common boilerplate — search, preview, and insert straight into the Editor tab's HTML/CSS/JS pane at your cursor.</p>
+        </div>
+        <input type="text" id="toolSnippetSearch" placeholder="Search snippets… (fetch, html5, flex center, promise…)" style="width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font-size:12.5px; margin-bottom:10px;">
+        <div id="toolSnippetList" style="display:flex; flex-direction:column; gap:8px; max-height:320px; overflow:auto;"></div>
+      </section>
+
     </div>
   </div>
 
@@ -3910,6 +4288,7 @@ function switchAppView(name){
   document.getElementById('view-chat').classList.toggle('active', name === 'chat');
   document.getElementById('view-github').classList.toggle('active', name === 'github');
   document.getElementById('view-convert').classList.toggle('active', name === 'convert');
+  document.getElementById('view-tools').classList.toggle('active', name === 'tools');
   document.getElementById('view-python').classList.toggle('active', name === 'python');
   document.getElementById('view-stargazing').classList.toggle('active', name === 'stargazing');
   document.getElementById('view-game').classList.toggle('active', name === 'game');
@@ -3924,6 +4303,7 @@ function switchAppView(name){
   else if (name === 'stargazing') statusEl.textContent = '✦';
   else if (name === 'game') statusEl.textContent = 'space dino';
   else if (name === 'settings') statusEl.textContent = 'settings';
+  else if (name === 'tools') statusEl.textContent = 'tools';
   else statusEl.textContent = 'convert mode';
 }
 document.querySelectorAll('.view-tab').forEach(b => b.addEventListener('click', () => switchAppView(b.dataset.view)));
@@ -3995,6 +4375,7 @@ const CMDK_ACTIONS = [
   { label: 'Go to Chat', iconName: 'message-circle', run: () => switchAppView('chat') },
   { label: 'Go to GitHub', iconName: 'github', iconFill: true, run: () => switchAppView('github') },
   { label: 'Go to Convert', iconName: 'link', run: () => switchAppView('convert') },
+  { label: 'Go to Tools', iconName: 'tool', run: () => switchAppView('tools') },
   { label: 'Go to Python', iconName: 'terminal', run: () => switchAppView('python') },
   { label: 'Go to Settings', iconName: 'settings', run: () => switchAppView('settings') },
   { label: 'Run', iconName: 'play', iconFill: true, run: () => {
@@ -4336,6 +4717,125 @@ function scheduleAutosave(){
   }, 600);
 }
 
+/* =========================================================================
+   SHARED CODE-EDITOR ENHANCEMENTS
+   Wired onto every real code textarea (Editor's HTML/CSS/JS panes, and
+   Python's script + data panes): proper Tab/Shift+Tab indenting (including
+   multi-line selections), auto-closing pairs for ( [ { ' " <, skipping over
+   a closing character that's already sitting right where you'd type one,
+   deleting an empty pair together on Backspace, and auto-indenting on Enter
+   (with a fully expanded block when Enter is pressed inside a fresh pair).
+   Each editor keeps its own indent unit (2 spaces for HTML/CSS/JS, 4 for
+   Python) — this is the one piece shared between them.
+   ========================================================================= */
+const AUTO_PAIRS = { '(': ')', '[': ']', '{': '}', "'": "'", '"': '"', '<': '>' };
+const AUTO_CLOSERS = { ')': '(', ']': '[', '}': '{', "'": "'", '"': '"', '>': '<' };
+function wireEditorEnhancements(ta, indentUnit, onChange){
+  ta.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // leave shortcuts (copy/paste/undo/etc.) alone
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const value = ta.value;
+
+    if (e.key === 'Tab'){
+      e.preventDefault();
+      const selectedText = value.slice(start, end);
+      const spansMultipleLines = selectedText.includes('\n');
+      if (!e.shiftKey && !spansMultipleLines){
+        ta.value = value.slice(0, start) + indentUnit + value.slice(end);
+        ta.selectionStart = ta.selectionEnd = start + indentUnit.length;
+      } else {
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        // don't drag a trailing empty line (cursor sitting at column 0 of
+        // the next line) into the block being indented/outdented
+        let blockEnd = (spansMultipleLines && end > start && value[end - 1] === '\n') ? end - 1 : end;
+        const lines = value.slice(lineStart, blockEnd).split('\n');
+        let delta = 0, firstLineDelta = 0;
+        const newLines = lines.map((line, i) => {
+          if (e.shiftKey){
+            let removed = 0, l = line;
+            if (l.startsWith(indentUnit)) { l = l.slice(indentUnit.length); removed = indentUnit.length; }
+            else if (l.startsWith('\t')) { l = l.slice(1); removed = 1; }
+            else { const m = l.match(/^ +/); if (m) { const cut = Math.min(m[0].length, indentUnit.length); l = l.slice(cut); removed = cut; } }
+            delta -= removed;
+            if (i === 0) firstLineDelta = -removed;
+            return l;
+          }
+          delta += indentUnit.length;
+          if (i === 0) firstLineDelta = indentUnit.length;
+          return indentUnit + line;
+        });
+        ta.value = value.slice(0, lineStart) + newLines.join('\n') + value.slice(blockEnd);
+        ta.selectionStart = Math.max(lineStart, start + firstLineDelta);
+        ta.selectionEnd = end + delta;
+      }
+      onChange();
+      return;
+    }
+
+    if (e.key === 'Backspace' && start === end && start > 0){
+      const before = value[start - 1], after = value[start];
+      if (AUTO_PAIRS[before] === after){
+        e.preventDefault();
+        ta.value = value.slice(0, start - 1) + value.slice(start + 1);
+        ta.selectionStart = ta.selectionEnd = start - 1;
+        onChange();
+        return;
+      }
+    }
+
+    if (e.key === 'Enter' && start === end){
+      const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+      const indent = (value.slice(lineStart, start).match(/^[ \t]*/) || [''])[0];
+      const before = value[start - 1], after = value[start];
+      e.preventDefault();
+      if (AUTO_PAIRS[before] === after && '([{'.includes(before)){
+        const inner = '\n' + indent + indentUnit;
+        const closing = '\n' + indent;
+        ta.value = value.slice(0, start) + inner + closing + value.slice(end);
+        ta.selectionStart = ta.selectionEnd = start + inner.length;
+      } else {
+        const extra = '([{'.includes(before) ? indentUnit : '';
+        const insert = '\n' + indent + extra;
+        ta.value = value.slice(0, start) + insert + value.slice(end);
+        ta.selectionStart = ta.selectionEnd = start + insert.length;
+      }
+      onChange();
+      return;
+    }
+
+    if (start === end && AUTO_CLOSERS[e.key] && value[start] === e.key){
+      e.preventDefault();
+      ta.selectionStart = ta.selectionEnd = start + 1;
+      return;
+    }
+
+    if (AUTO_PAIRS[e.key]){
+      const close = AUTO_PAIRS[e.key];
+      if (start !== end){
+        e.preventDefault();
+        ta.value = value.slice(0, start) + e.key + value.slice(start, end) + close + value.slice(end);
+        ta.selectionStart = start + 1;
+        ta.selectionEnd = end + 1;
+        onChange();
+        return;
+      }
+      if (e.key === "'" || e.key === '"'){
+        // Only auto-close a quote when it doesn't look like it's landing
+        // mid-word — typing an apostrophe inside "don't" shouldn't add a
+        // second one. Brackets and < always auto-close.
+        const beforeCh = value[start - 1] || '';
+        const afterCh = value[start] || '';
+        if (/[A-Za-z0-9_]/.test(beforeCh) || (afterCh && !/[\s)\]},;:]/.test(afterCh))) return;
+      }
+      e.preventDefault();
+      ta.value = value.slice(0, start) + e.key + close + value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + 1;
+      onChange();
+      return;
+    }
+  });
+}
+
 const editors = {
   html: document.getElementById('code-html'),
   css: document.getElementById('code-css'),
@@ -4438,18 +4938,7 @@ Object.keys(editors).forEach(lang => {
   updateGutter(lang);
   editors[lang].addEventListener('input', () => { updateGutter(lang); scheduleRun(); scheduleAutosave(); });
   editors[lang].addEventListener('scroll', () => { gutters[lang].scrollTop = editors[lang].scrollTop; });
-  editors[lang].addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const ta = e.target;
-      const start = ta.selectionStart, end = ta.selectionEnd;
-      ta.value = ta.value.slice(0, start) + '  ' + ta.value.slice(end);
-      ta.selectionStart = ta.selectionEnd = start + 2;
-      updateGutter(lang);
-      scheduleRun();
-      scheduleAutosave();
-    }
-  });
+  wireEditorEnhancements(editors[lang], '  ', () => { updateGutter(lang); scheduleRun(); scheduleAutosave(); });
 });
 
 function logToPanel(type, args){
@@ -4619,14 +5108,21 @@ function runUrlDetectKind(url, text){
   if (/<!doctype html|<html[\s>]/.test(head)) return 'html';
   return 'python'; // only the two kinds this runs, and HTML would have matched above
 }
+// Small helper for the one-line "inline status" text used under several
+// Convert/Tools cards (.cust-saved-status starts at opacity:0 until a
+// '.show' class is added — easy to forget, so this bakes it in).
+function setInlineStatus(el, text, color){
+  el.textContent = text;
+  el.style.color = color || 'var(--text-dim)';
+  el.classList.add('show');
+}
 async function runUrlFetchAndRun(){
   const statusEl = document.getElementById('runUrlStatus');
   const btn = document.getElementById('runUrlBtn');
   const url = runUrlNormalize(document.getElementById('runUrlInput').value);
-  if (!url) { statusEl.textContent = 'Paste a URL first.'; statusEl.style.color = 'var(--error)'; return; }
+  if (!url) { setInlineStatus(statusEl, 'Paste a URL first.', 'var(--error)'); return; }
 
-  statusEl.style.color = 'var(--text-dim)';
-  statusEl.textContent = 'Fetching…';
+  setInlineStatus(statusEl, 'Fetching…');
   btn.disabled = true;
   try {
     const res = await fetch(url);
@@ -4648,24 +5144,850 @@ async function runUrlFetchAndRun(){
       } else {
         openInNewTab(URL.createObjectURL(new Blob([text], { type: 'text/html' })));
       }
-      statusEl.style.color = 'var(--accent)';
-      statusEl.textContent = 'Detected HTML — opened in a new tab.';
+      setInlineStatus(statusEl, 'Detected HTML — opened in a new tab.', 'var(--accent)');
     } else {
       pyEditors.py.value = text;
+      updatePyGutter('py');
       switchAppView('python');
-      statusEl.style.color = 'var(--accent)';
-      statusEl.textContent = 'Detected Python — loaded into the Python tab and running…';
+      setInlineStatus(statusEl, 'Detected Python — loaded into the Python tab and running…', 'var(--accent)');
       await pyRun();
     }
   } catch(err){
-    statusEl.style.color = 'var(--error)';
-    statusEl.textContent = 'Could not run that: ' + (err && err.message ? err.message : err);
+    setInlineStatus(statusEl, 'Could not run that: ' + (err && err.message ? err.message : err), 'var(--error)');
   }
   btn.disabled = false;
 }
 document.getElementById('runUrlBtn').addEventListener('click', runUrlFetchAndRun);
 document.getElementById('runUrlInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') runUrlFetchAndRun(); });
-// Opens this whole app (not just a preview of the built page) in a new tab,
+/* =========================================================================
+   TOOLS TAB
+   A grab-bag of small, self-contained dev utilities. Each tool below is
+   independent — wired to its own card in #view-tools — and none of them
+   touch localStorage or the network except the GitHub→jsDelivr card's
+   optional "Fetch & Run" (which reuses runUrlFetchAndRun above).
+
+   Every tool's setup runs through safeInit() rather than being called
+   directly: if one tool's init throws for any reason (a browser quirk, a
+   missing API), the error is logged and contained to that one card instead
+   of silently aborting every tool defined after it in the file — a bug in
+   tool #3 should never be able to make tools #4-16 fail to appear at all.
+   ========================================================================= */
+function safeInit(fn){
+  try { fn(); }
+  catch(e){ console.error('Tools tab: a tool failed to initialize —', e); }
+}
+
+/* ---- Tool: GitHub → jsDelivr CDN link ---- */
+// Recognizes a github.com blob/raw link, a raw.githubusercontent.com link,
+// a bare repo link, or the "user/repo@ref/path" shorthand jsDelivr itself
+// uses, and rewrites any of them into a cdn.jsdelivr.net/gh/... URL.
+function githubToJsdelivr(raw, refOverride){
+  const u = raw.trim().replace(/^git\+/, '').replace(/\.git$/, '');
+  if (!u) return { error: 'Paste a GitHub URL first.' };
+
+  let m;
+  // github.com/user/repo/blob/ref/path  or  .../raw/ref/path
+  m = u.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\s]+)\/([^\/\s]+)\/(?:blob|raw)\/([^\/\s]+)\/(.+)$/i);
+  if (m) return build(m[1], m[2], m[3], m[4]);
+
+  // raw.githubusercontent.com/user/repo/ref/path
+  m = u.match(/^(?:https?:\/\/)?raw\.githubusercontent\.com\/([^\/\s]+)\/([^\/\s]+)\/([^\/\s]+)\/(.+)$/i);
+  if (m) return build(m[1], m[2], m[3], m[4]);
+
+  // "user/repo@ref/path" shorthand
+  m = u.match(/^([\w.-]+)\/([\w.-]+)@([^\/\s]+)\/(.+)$/);
+  if (m) return build(m[1], m[2], m[3], m[4]);
+
+  // github.com/user/repo  (repo root, no file — jsDelivr serves the latest tag)
+  m = u.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\s]+)\/([^\/\s]+)\/?$/i);
+  if (m) return build(m[1], m[2], null, null);
+
+  // bare "user/repo" shorthand
+  m = u.match(/^([\w.-]+)\/([\w.-]+)$/);
+  if (m) return build(m[1], m[2], null, null);
+
+  return { error: "Couldn't recognize that as a GitHub URL. Try a link like github.com/user/repo/blob/main/file.js, or just user/repo." };
+
+  function build(user, repo, ref, path){
+    const finalRef = (refOverride && refOverride.trim()) || ref;
+    let url = 'https://cdn.jsdelivr.net/gh/' + user + '/' + repo;
+    if (finalRef) url += '@' + finalRef;
+    if (path) url += '/' + path;
+    else url += '/'; // repo root — jsDelivr resolves this to the latest tag's file listing
+    return { url, user, repo, ref: finalRef, path };
+  }
+}
+safeInit(function(){
+  const input = document.getElementById('toolGhInput');
+  const refInput = document.getElementById('toolGhRefInput');
+  const statusEl = document.getElementById('toolGhStatus');
+  const resultRow = document.getElementById('toolGhResult');
+  const output = document.getElementById('toolGhOutput');
+
+  function convert(){
+    const res = githubToJsdelivr(input.value, refInput.value);
+    if (res.error){
+      resultRow.style.display = 'none';
+      setInlineStatus(statusEl, res.error, 'var(--error)');
+      return;
+    }
+    output.value = res.url;
+    resultRow.style.display = '';
+    const refNote = res.ref ? ('@' + res.ref) : ' (no ref — latest tag)';
+    setInlineStatus(statusEl, 'Converted ' + res.user + '/' + res.repo + refNote + '.', 'var(--accent)');
+  }
+  document.getElementById('toolGhConvertBtn').addEventListener('click', convert);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') convert(); });
+  refInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') convert(); });
+
+  document.getElementById('toolGhCopyBtn').addEventListener('click', () => {
+    output.select();
+    navigator.clipboard.writeText(output.value).then(() => setInlineStatus(statusEl, 'Copied to clipboard.', 'var(--accent)'))
+      .catch(() => setInlineStatus(statusEl, 'Could not copy — select and copy manually.', 'var(--error)'));
+  });
+  document.getElementById('toolGhOpenBtn').addEventListener('click', () => {
+    if (output.value) window.open(output.value, '_blank');
+  });
+  document.getElementById('toolGhRunBtn').addEventListener('click', () => {
+    if (!output.value) return;
+    document.getElementById('runUrlInput').value = output.value;
+    switchAppView('convert');
+    runUrlFetchAndRun();
+  });
+});
+
+/* ---- Tool: Password / passphrase generator ---- */
+// A short, offline word list — enough for a memorable multi-word
+// passphrase; not the full EFF diceware list, but drawn from the same idea
+// (favor a longer, easy-to-type phrase over a short, hard-to-type jumble).
+const TOOL_PASSPHRASE_WORDS = ['abandon','ability','able','about','above','absent','absorb','abstract','absurd','abuse','access','accident','account','accuse','achieve','acid','acoustic','acquire','across','action','active','actor','actual','adapt','add','address','adjust','admit','adult','advance','advice','aerobic','affair','afford','afraid','again','age','agent','agree','ahead','aim','air','airport','aisle','alarm','album','alcohol','alert','alien','all','alley','allow','almost','alone','alpha','already','also','alter','always','amateur','amazing','among','amount','amused','analyst','anchor','ancient','anger','angle','angry','animal','ankle','announce','annual','another','answer','antenna','antique','anxiety','any','apart','apology','appear','apple','approve','april','arch','arctic','area','arena','argue','arm','armor','army','around','arrange','arrest','arrive','arrow','art','artist','artwork','ask','aspect','assault','asset','assist','assume','asthma','athlete','atom','attack','attend','attitude','attract','auction','audit','august','aunt','author','auto','autumn','average','avocado','avoid','awake','aware','away','awesome','awful','awkward','axis'];
+safeInit(function(){
+  const modeGrid = document.getElementById('toolPwModeGrid');
+  const passwordOpts = document.getElementById('toolPwPasswordOpts');
+  const passphraseOpts = document.getElementById('toolPwPassphraseOpts');
+  const output = document.getElementById('toolPwOutput');
+  const strengthEl = document.getElementById('toolPwStrength');
+  const lenSlider = document.getElementById('toolPwLen');
+  const lenValue = document.getElementById('toolPwLenValue');
+  const wordsSlider = document.getElementById('toolPwWords');
+  const wordsValue = document.getElementById('toolPwWordsValue');
+  let pwMode = 'password';
+
+  modeGrid.querySelectorAll('[data-pwmode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pwMode = btn.dataset.pwmode;
+      modeGrid.querySelectorAll('.conv-chip').forEach(b => b.classList.toggle('active', b === btn));
+      passwordOpts.style.display = pwMode === 'password' ? '' : 'none';
+      passphraseOpts.style.display = pwMode === 'passphrase' ? '' : 'none';
+    });
+  });
+  lenSlider.addEventListener('input', () => lenValue.textContent = lenSlider.value);
+  wordsSlider.addEventListener('input', () => wordsValue.textContent = wordsSlider.value);
+
+  function randomInt(max){
+    // crypto.getRandomValues avoids Math.random()'s bias/predictability —
+    // this rejection-samples to keep the distribution uniform over [0, max).
+    const range = Math.ceil(0xFFFFFFFF / max) * max;
+    let x;
+    do { x = crypto.getRandomValues(new Uint32Array(1))[0]; } while (x >= range);
+    return x % max;
+  }
+  function randomChoice(arr){ return arr[randomInt(arr.length)]; }
+
+  function genPassword(){
+    const len = parseInt(lenSlider.value, 10);
+    let ambig = document.getElementById('toolPwAmbig').checked ? 'l1IO0' : '';
+    let sets = [];
+    if (document.getElementById('toolPwUpper').checked) sets.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    if (document.getElementById('toolPwLower').checked) sets.push('abcdefghijklmnopqrstuvwxyz');
+    if (document.getElementById('toolPwNums').checked) sets.push('0123456789');
+    if (document.getElementById('toolPwSymbols').checked) sets.push('!@#$%^&*()-_=+[]{}');
+    sets = sets.map(s => [...s].filter(c => !ambig.includes(c)).join('')).filter(s => s.length);
+    if (!sets.length) return { error: 'Pick at least one character set.' };
+    const all = sets.join('');
+    // Guarantee at least one character from each chosen set, then fill the
+    // rest randomly, then shuffle — avoids the common bug where a strict
+    // "one of each" requirement is only satisfiable, never actually enforced.
+    let chars = sets.map(randomChoice);
+    while (chars.length < len) chars.push(randomChoice(all));
+    chars = chars.slice(0, len);
+    for (let i = chars.length - 1; i > 0; i--){ const j = randomInt(i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
+    return { value: chars.join(''), poolSize: all.length, length: len };
+  }
+  function genPassphrase(){
+    const count = parseInt(wordsSlider.value, 10);
+    const words = [];
+    for (let i = 0; i < count; i++) words.push(randomChoice(TOOL_PASSPHRASE_WORDS));
+    let value = words.map(w => w[0].toUpperCase() + w.slice(1)).join('-');
+    if (document.getElementById('toolPwWordsNum').checked) value += '-' + randomInt(100);
+    const poolSize = TOOL_PASSPHRASE_WORDS.length;
+    return { value, poolSize, length: count, isWords: true };
+  }
+  function strengthLabel(bitsOfEntropy){
+    if (bitsOfEntropy < 28) return { label: 'Weak', color: 'var(--error)' };
+    if (bitsOfEntropy < 45) return { label: 'Fair', color: '#ffb86b' };
+    if (bitsOfEntropy < 65) return { label: 'Good', color: 'var(--accent)' };
+    return { label: 'Strong', color: '#8be9a0' };
+  }
+
+  function generate(){
+    const res = pwMode === 'password' ? genPassword() : genPassphrase();
+    if (res.error){ output.value = ''; strengthEl.textContent = ''; return; }
+    output.value = res.value;
+    const bits = res.length * Math.log2(res.poolSize);
+    const s = strengthLabel(bits);
+    strengthEl.textContent = '— ' + s.label + ' (~' + Math.round(bits) + ' bits)';
+    strengthEl.style.color = s.color;
+  }
+  document.getElementById('toolPwGenBtn').addEventListener('click', generate);
+  document.getElementById('toolPwCopyBtn').addEventListener('click', () => {
+    if (!output.value) return;
+    navigator.clipboard.writeText(output.value).catch(() => {});
+  });
+  generate(); // show something on first visit rather than a blank field
+});
+
+/* ---- Tool: Regex tester ---- */
+safeInit(function(){
+  const patternInput = document.getElementById('toolRegexPattern');
+  const flagsInput = document.getElementById('toolRegexFlags');
+  const testInput = document.getElementById('toolRegexInput');
+  const statusEl = document.getElementById('toolRegexStatus');
+  const highlightEl = document.getElementById('toolRegexHighlight');
+
+  function run(){
+    const pattern = patternInput.value;
+    const text = testInput.value;
+    if (!pattern){
+      highlightEl.textContent = escapeHtml(text) ? '' : '';
+      highlightEl.innerHTML = escapeHtml(text);
+      setInlineStatus(statusEl, 'Enter a pattern above.', 'var(--text-dim)');
+      return;
+    }
+    // Flags always include 'g' internally so every match is found — the
+    // flags box still reflects (and controls) i/m/s/u/y as the user set them.
+    let flags = flagsInput.value.replace(/[^gimsuy]/g, '');
+    if (!flags.includes('g')) flags += 'g';
+    let re;
+    try { re = new RegExp(pattern, flags); }
+    catch(err){
+      highlightEl.innerHTML = escapeHtml(text);
+      setInlineStatus(statusEl, 'Invalid pattern: ' + err.message, 'var(--error)');
+      return;
+    }
+    let out = '';
+    let last = 0;
+    let count = 0;
+    let m;
+    let guard = 0;
+    while ((m = re.exec(text)) !== null && guard < 5000){
+      guard++;
+      out += escapeHtml(text.slice(last, m.index));
+      out += '<mark style="background:var(--accent); color:#14132b; border-radius:3px; padding:0 1px;">' + escapeHtml(m[0] || '') + '</mark>';
+      last = m.index + (m[0] ? m[0].length : 1);
+      if (m[0] === '') re.lastIndex++; // avoid an infinite loop on zero-width matches
+      count++;
+    }
+    out += escapeHtml(text.slice(last));
+    highlightEl.innerHTML = out || '<span style="color:var(--text-dim);">(nothing to show yet — type a test string above)</span>';
+    setInlineStatus(statusEl, count + ' match' + (count === 1 ? '' : 'es') + '.', count ? 'var(--accent)' : 'var(--text-dim)');
+  }
+  patternInput.addEventListener('input', run);
+  flagsInput.addEventListener('input', run);
+  testInput.addEventListener('input', run);
+  run();
+});
+
+/* ---- Tool: Text diff checker ---- */
+// Classic LCS-based line diff (same idea as a basic `diff` implementation):
+// build the longest-common-subsequence table over lines, then walk it
+// backwards to mark which lines were kept, added, or removed.
+function computeLineDiff(a, b){
+  const linesA = a.split('\n');
+  const linesB = b.split('\n');
+  const n = linesA.length, m = linesB.length;
+  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--){
+    for (let j = m - 1; j >= 0; j--){
+      dp[i][j] = linesA[i] === linesB[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const ops = [];
+  let i = 0, j = 0;
+  while (i < n && j < m){
+    if (linesA[i] === linesB[j]){ ops.push({ type: 'same', line: linesA[i] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]){ ops.push({ type: 'remove', line: linesA[i] }); i++; }
+    else { ops.push({ type: 'add', line: linesB[j] }); j++; }
+  }
+  while (i < n){ ops.push({ type: 'remove', line: linesA[i] }); i++; }
+  while (j < m){ ops.push({ type: 'add', line: linesB[j] }); j++; }
+  return ops;
+}
+safeInit(function(){
+  const btn = document.getElementById('toolDiffBtn');
+  const statusEl = document.getElementById('toolDiffStatus');
+  const out = document.getElementById('toolDiffOutput');
+  btn.addEventListener('click', () => {
+    const a = document.getElementById('toolDiffA').value;
+    const b = document.getElementById('toolDiffB').value;
+    const ops = computeLineDiff(a, b);
+    let added = 0, removed = 0;
+    const rows = ops.map(op => {
+      if (op.type === 'add') added++;
+      if (op.type === 'remove') removed++;
+      const bg = op.type === 'add' ? 'rgba(139,233,160,0.15)' : op.type === 'remove' ? 'rgba(255,107,138,0.15)' : 'transparent';
+      const color = op.type === 'add' ? '#8be9a0' : op.type === 'remove' ? 'var(--error)' : 'var(--text-dim)';
+      const prefix = op.type === 'add' ? '+ ' : op.type === 'remove' ? '- ' : '  ';
+      return '<div style="background:' + bg + '; color:' + color + '; padding:1px 10px; white-space:pre-wrap; word-break:break-word;">' + escapeHtml(prefix + op.line) + '</div>';
+    });
+    out.innerHTML = rows.join('') || '<div style="padding:10px; color:var(--text-dim);">Both sides are empty.</div>';
+    out.style.display = '';
+    setInlineStatus(statusEl, (ops.length && added === 0 && removed === 0) ? 'Identical.' : ('+' + added + ' / -' + removed + ' line(s).'), 'var(--text-dim)');
+  });
+});
+
+/* ---- Tool: Markdown preview ---- */
+// A small, dependency-free subset renderer — headings, bold/italic, inline
+// code, fenced code blocks, links, images, blockquotes, rules, and
+// ordered/unordered lists. Not a full CommonMark implementation, but covers
+// what a README or a quick note actually uses day to day.
+function renderMarkdownPreview(src){
+  const codeBlocks = [];
+  // Pull fenced code blocks out first so nothing inside them gets touched
+  // by the inline/block rules below, then restore them at the very end —
+  // each becomes its own placeholder line so it never gets wrapped in a <p>.
+  const withPlaceholders = src.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push('<pre style="background:#0d0f1e; border:1px solid var(--border); border-radius:6px; padding:10px; overflow-x:auto; margin:8px 0;"><code>' + escapeHtml(code.replace(/\n$/, '')) + '</code></pre>');
+    return '\n\u0000CODEBLOCK' + idx + '\u0000\n';
+  });
+
+  // Inline formatting is applied per line, AFTER block-level markers (#, >,
+  // -, digit.) are read off the raw line and stripped, and AFTER that
+  // remaining content is escaped — otherwise escaping '>' to '&gt;' first
+  // would hide every blockquote (and similarly for other markers) from the
+  // block-level checks below.
+  function inline(line){
+    let t = escapeHtml(line);
+    t = t.replace(/`([^`\n]+)`/g, '<code style="background:#0d0f1e; padding:1px 5px; border-radius:4px; font-size:12px;">$1</code>');
+    t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, '<img src="$2" alt="$1" style="max-width:100%; border-radius:6px;">');
+    t = t.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--accent);">$1</a>');
+    t = t.replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, (_, a, b) => '<strong>' + (a || b) + '</strong>');
+    t = t.replace(/\*([^*]+)\*|_([^_]+)_/g, (_, a, b) => '<em>' + (a || b) + '</em>');
+    return t;
+  }
+
+  const lines = withPlaceholders.split('\n');
+  const htmlLines = [];
+  let listType = null; // 'ul' | 'ol' | null — tracks an open list across consecutive list lines
+  function closeList(){ if (listType){ htmlLines.push('</' + listType + '>'); listType = null; } }
+  for (const line of lines){
+    let m;
+    if (/^\s*$/.test(line)){ closeList(); continue; }
+    if ((m = line.match(/^\u0000CODEBLOCK(\d+)\u0000$/))){ closeList(); htmlLines.push('\u0000CODEBLOCK' + m[1] + '\u0000'); continue; }
+    if ((m = line.match(/^(#{1,6})\s+(.*)$/))){
+      closeList();
+      const level = m[1].length;
+      htmlLines.push('<h' + level + ' style="margin:12px 0 6px; font-size:' + (22 - level * 2) + 'px;">' + inline(m[2]) + '</h' + level + '>');
+      continue;
+    }
+    if (/^\s*(---|\*\*\*|___)\s*$/.test(line)){
+      closeList();
+      htmlLines.push('<hr style="border:none; border-top:1px solid var(--border); margin:12px 0;">');
+      continue;
+    }
+    if ((m = line.match(/^>\s?(.*)$/))){
+      closeList();
+      htmlLines.push('<blockquote style="border-left:3px solid var(--accent-dim); margin:8px 0; padding:2px 12px; color:var(--text-dim);">' + inline(m[1]) + '</blockquote>');
+      continue;
+    }
+    if ((m = line.match(/^\s*[-*+]\s+(.*)$/))){
+      if (listType !== 'ul'){ closeList(); htmlLines.push('<ul style="margin:6px 0; padding-left:22px;">'); listType = 'ul'; }
+      htmlLines.push('<li>' + inline(m[1]) + '</li>');
+      continue;
+    }
+    if ((m = line.match(/^\s*\d+\.\s+(.*)$/))){
+      if (listType !== 'ol'){ closeList(); htmlLines.push('<ol style="margin:6px 0; padding-left:22px;">'); listType = 'ol'; }
+      htmlLines.push('<li>' + inline(m[1]) + '</li>');
+      continue;
+    }
+    closeList();
+    htmlLines.push('<p style="margin:6px 0;">' + inline(line) + '</p>');
+  }
+  closeList();
+  let html = htmlLines.join('\n');
+  html = html.replace(/\u0000CODEBLOCK(\d+)\u0000/g, (_, idx) => codeBlocks[+idx]);
+  return html;
+}
+safeInit(function(){
+  const input = document.getElementById('toolMdInput');
+  const preview = document.getElementById('toolMdPreview');
+  function render(){ preview.innerHTML = renderMarkdownPreview(input.value); }
+  input.addEventListener('input', render);
+  input.value = '# Markdown preview\n\nType on the left — this updates as you go. Supports **bold**, *italic*, `code`, [links](https://example.com), lists, blockquotes, and fenced code blocks.';
+  render();
+});
+
+/* ---- Tool: Word / character counter ---- */
+safeInit(function(){
+  const input = document.getElementById('toolCountInput');
+  const stats = document.getElementById('toolCountStats');
+  function stat(label, value){ return '<div style="text-align:center;"><div style="font-size:18px; font-weight:700; color:var(--accent-cyan);">' + value + '</div><div style="font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim); margin-top:2px;">' + label + '</div></div>'; }
+  function update(){
+    const text = input.value;
+    const chars = text.length;
+    const charsNoSpaces = text.replace(/\s/g, '').length;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const lines = text ? text.split('\n').length : 0;
+    const sentences = text.trim() ? (text.match(/[^.!?]+[.!?]+/g) || (text.trim() ? [text] : [])).length : 0;
+    const readingMins = Math.max(1, Math.round(words / 200));
+    stats.innerHTML = [
+      stat('Characters', chars),
+      stat('No spaces', charsNoSpaces),
+      stat('Words', words),
+      stat('Lines', lines),
+      stat('Sentences', sentences),
+      stat('Read time', words ? (readingMins + ' min') : '—')
+    ].join('');
+  }
+  input.addEventListener('input', update);
+  update();
+});
+
+/* ---- Tools search bar — filters the cards above by title/description ---- */
+safeInit(function(){
+  const search = document.getElementById('toolsSearch');
+  const empty = document.getElementById('toolsSearchEmpty');
+  const cards = () => [...document.querySelectorAll('#view-tools .conv-card')];
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    let visible = 0;
+    cards().forEach(card => {
+      const head = card.querySelector('.conv-card-head');
+      const text = (head ? head.textContent : card.textContent).toLowerCase();
+      const match = !q || text.includes(q);
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    empty.style.display = visible ? 'none' : '';
+  });
+});
+
+/* ---- Tool: Number base converter ---- */
+safeInit(function(){
+  const input = document.getElementById('toolBaseInput');
+  const fromSel = document.getElementById('toolBaseFrom');
+  const statusEl = document.getElementById('toolBaseStatus');
+  const results = document.getElementById('toolBaseResults');
+  const BASES = [2, 8, 10, 16, 36];
+  function row(label, value){ return '<div style="display:flex; justify-content:space-between; gap:10px; background:var(--panel-2); border:1px solid var(--border); border-radius:6px; padding:7px 10px; font:12.5px \'SF Mono\', Menlo, Consolas, monospace;"><span style="color:var(--text-dim); font-family:inherit;">' + label + '</span><span>' + value + '</span></div>'; }
+  // One uniform digit-by-digit parser for every base (2 through 36) — using
+  // BigInt's own literal parsing (0x/0o/0b prefixes) for this would only
+  // cover three of the five bases, and silently mis-reads a numeric-only
+  // string like "255" as decimal even when the selected base is 36.
+  function parseInBase(str, base){
+    const digits = '0123456789abcdefghijklmnopqrstuvwxyz'.slice(0, base);
+    if (!str.length) return null;
+    let acc = 0n;
+    for (const ch of str.toLowerCase()){
+      const idx = digits.indexOf(ch);
+      if (idx === -1) return null;
+      acc = acc * BigInt(base) + BigInt(idx);
+    }
+    return acc;
+  }
+  function convert(){
+    let raw = input.value.trim();
+    const base = parseInt(fromSel.value, 10);
+    if (!raw){ results.innerHTML = ''; setInlineStatus(statusEl, 'Type a number above.', 'var(--text-dim)'); return; }
+    // Accept common prefixes (0x, 0b, 0o) as a convenience, regardless of the selected "from" base.
+    let negative = raw.startsWith('-');
+    if (negative) raw = raw.slice(1);
+    raw = raw.replace(/^0x/i, '').replace(/^0b/i, '').replace(/^0o/i, '');
+    let n = parseInBase(raw, base);
+    if (n === null){
+      results.innerHTML = '';
+      setInlineStatus(statusEl, 'Not a valid base-' + base + ' number.', 'var(--error)');
+      return;
+    }
+    if (negative) n = -n;
+    setInlineStatus(statusEl, 'Converted.', 'var(--accent)');
+    results.innerHTML = BASES.map(b => row('Base ' + b + (b===2?' (binary)':b===8?' (octal)':b===16?' (hex)':''), (n < 0n ? '-' : '') + (n < 0n ? -n : n).toString(b))).join('');
+  }
+  input.addEventListener('input', convert);
+  fromSel.addEventListener('change', convert);
+  input.value = '255';
+  convert();
+});
+
+/* ---- Tool: Color picker & contrast checker ---- */
+function hexToRgb(hex){
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function rgbToHsl(r, g, b){
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0; const l = (max + min) / 2;
+  if (max !== min){
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+function relativeLuminance({ r, g, b }){
+  const chan = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  return 0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b);
+}
+safeInit(function(){
+  const fgColor = document.getElementById('toolColorFg'), fgHex = document.getElementById('toolColorFgHex'), fgInfo = document.getElementById('toolColorFgInfo');
+  const bgColor = document.getElementById('toolColorBg'), bgHex = document.getElementById('toolColorBgHex'), bgInfo = document.getElementById('toolColorBgInfo');
+  const preview = document.getElementById('toolColorPreview');
+  const contrastEl = document.getElementById('toolColorContrast');
+  function info(hex){
+    const rgb = hexToRgb(hex); const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    return hex.toUpperCase() + ' · rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ') · hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)';
+  }
+  function isValidHex(h){ return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h); }
+  function update(){
+    const fg = isValidHex(fgHex.value) ? fgHex.value : fgColor.value;
+    const bg = isValidHex(bgHex.value) ? bgHex.value : bgColor.value;
+    fgInfo.textContent = info(fg);
+    bgInfo.textContent = info(bg);
+    preview.style.color = fg;
+    preview.style.background = bg;
+    const l1 = relativeLuminance(hexToRgb(fg)), l2 = relativeLuminance(hexToRgb(bg));
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    const aa = ratio >= 4.5, aaa = ratio >= 7, aaLarge = ratio >= 3;
+    contrastEl.innerHTML = 'Contrast ratio <strong style="color:var(--text);">' + ratio.toFixed(2) + ':1</strong> — ' +
+      'AA (normal text) ' + (aa ? '<span style="color:#8be9a0;">Pass</span>' : '<span style="color:var(--error);">Fail</span>') + ' · ' +
+      'AA (large text) ' + (aaLarge ? '<span style="color:#8be9a0;">Pass</span>' : '<span style="color:var(--error);">Fail</span>') + ' · ' +
+      'AAA (normal text) ' + (aaa ? '<span style="color:#8be9a0;">Pass</span>' : '<span style="color:var(--error);">Fail</span>');
+  }
+  fgColor.addEventListener('input', () => { fgHex.value = fgColor.value; update(); });
+  bgColor.addEventListener('input', () => { bgHex.value = bgColor.value; update(); });
+  fgHex.addEventListener('input', () => { if (isValidHex(fgHex.value)) fgColor.value = fgHex.value; update(); });
+  bgHex.addEventListener('input', () => { if (isValidHex(bgHex.value)) bgColor.value = bgHex.value; update(); });
+  update();
+});
+
+/* ---- Tool: CSS gradient generator ---- */
+safeInit(function(){
+  const a = document.getElementById('toolGradA'), b = document.getElementById('toolGradB');
+  const angle = document.getElementById('toolGradAngle'), angleVal = document.getElementById('toolGradAngleVal');
+  const type = document.getElementById('toolGradType');
+  const preview = document.getElementById('toolGradPreview');
+  const output = document.getElementById('toolGradOutput');
+  function update(){
+    angleVal.textContent = angle.value + '°';
+    const css = type.value === 'radial'
+      ? 'radial-gradient(circle, ' + a.value + ', ' + b.value + ')'
+      : 'linear-gradient(' + angle.value + 'deg, ' + a.value + ', ' + b.value + ')';
+    preview.style.background = css;
+    output.value = 'background: ' + css + ';';
+  }
+  [a, b, angle, type].forEach(el => el.addEventListener('input', update));
+  type.addEventListener('change', update);
+  document.getElementById('toolGradCopyBtn').addEventListener('click', () => navigator.clipboard.writeText(output.value).catch(() => {}));
+  update();
+});
+
+/* ---- Tool: Box-shadow generator ---- */
+safeInit(function(){
+  const ids = ['toolShadowX','toolShadowY','toolShadowBlur','toolShadowSpread','toolShadowColor','toolShadowOpacity','toolShadowInset'];
+  const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  const preview = document.getElementById('toolShadowPreview');
+  const output = document.getElementById('toolShadowOutput');
+  function update(){
+    const rgb = hexToRgb(els.toolShadowColor.value);
+    const alpha = (els.toolShadowOpacity.value / 100).toFixed(2);
+    const css = (els.toolShadowInset.checked ? 'inset ' : '') + els.toolShadowX.value + 'px ' + els.toolShadowY.value + 'px ' + els.toolShadowBlur.value + 'px ' + els.toolShadowSpread.value + 'px rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + alpha + ')';
+    preview.style.boxShadow = css;
+    output.value = 'box-shadow: ' + css + ';';
+  }
+  ids.forEach(id => els[id].addEventListener('input', update));
+  document.getElementById('toolShadowCopyBtn').addEventListener('click', () => navigator.clipboard.writeText(output.value).catch(() => {}));
+  update();
+});
+
+/* ---- Tool: Flexbox playground ---- */
+safeInit(function(){
+  const direction = document.getElementById('toolFlexDirection'), justify = document.getElementById('toolFlexJustify');
+  const align = document.getElementById('toolFlexAlign'), gap = document.getElementById('toolFlexGap'), wrap = document.getElementById('toolFlexWrap');
+  const preview = document.getElementById('toolFlexPreview');
+  const output = document.getElementById('toolFlexOutput');
+  const colors = ['#8b7cf6', '#4dd0e1', '#ffb86b', '#8be9a0'];
+  preview.innerHTML = colors.map((c, i) => '<div style="width:56px; height:56px; border-radius:8px; background:' + c + '; display:flex; align-items:center; justify-content:center; color:#14132b; font-weight:700; font-size:13px;">' + (i + 1) + '</div>').join('');
+  function update(){
+    preview.style.display = 'flex';
+    preview.style.flexDirection = direction.value;
+    preview.style.justifyContent = justify.value;
+    preview.style.alignItems = align.value;
+    preview.style.flexWrap = wrap.value;
+    preview.style.gap = gap.value + 'px';
+    output.value = '.container {\n  display: flex;\n  flex-direction: ' + direction.value + ';\n  justify-content: ' + justify.value + ';\n  align-items: ' + align.value + ';\n  flex-wrap: ' + wrap.value + ';\n  gap: ' + gap.value + 'px;\n}';
+  }
+  [direction, justify, align, gap, wrap].forEach(el => el.addEventListener('input', update));
+  [direction, justify, align, wrap].forEach(el => el.addEventListener('change', update));
+  document.getElementById('toolFlexCopyBtn').addEventListener('click', () => navigator.clipboard.writeText(output.value).catch(() => {}));
+  update();
+});
+
+/* ---- Tool: Cron expression explainer ---- */
+function explainCronField(value, kind){
+  const NAMES = {
+    dow: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    mon: ['','January','February','March','April','May','June','July','August','September','October','November','December']
+  };
+  if (value === '*') return 'every ' + kind.unit;
+  if (/^\*\/\d+$/.test(value)) return 'every ' + value.split('/')[1] + ' ' + kind.unit + (value.split('/')[1] === '1' ? '' : 's');
+  const label = (n) => kind.name ? (kind.name[n] || n) : n;
+  if (value.includes(',')) return value.split(',').map(v => label(v)).join(', ');
+  if (value.includes('-')) { const [a, b] = value.split('-'); return label(a) + ' through ' + label(b); }
+  return label(value);
+}
+function explainCron(expr){
+  const parts = expr.trim().split(/\s+/);
+  if (parts.length !== 5) return { error: 'A cron expression needs exactly 5 fields: minute hour day-of-month month day-of-week.' };
+  const [min, hour, dom, mon, dow] = parts;
+  const isNum = (s) => /^\d+$/.test(s);
+  let when;
+  if (min !== '*' && isNum(min) && hour !== '*' && isNum(hour) && dom === '*' && mon === '*' && dow === '*'){
+    when = 'At ' + String(hour).padStart(2, '0') + ':' + String(min).padStart(2, '0') + ', every day.';
+  } else if (min !== '*' && isNum(min) && hour !== '*' && isNum(hour) && dom === '*' && mon === '*' && dow !== '*'){
+    when = 'At ' + String(hour).padStart(2, '0') + ':' + String(min).padStart(2, '0') + ', on ' + explainCronField(dow, { unit: 'day', name: explainCron._dowNames }) + '.';
+  } else {
+    when = 'Minute: ' + explainCronField(min, { unit: 'minute' }) + '. Hour: ' + explainCronField(hour, { unit: 'hour' }) +
+      '. Day of month: ' + explainCronField(dom, { unit: 'day of the month' }) + '. Month: ' + explainCronField(mon, { unit: 'month', name: explainCron._monNames }) +
+      '. Day of week: ' + explainCronField(dow, { unit: 'day of the week', name: explainCron._dowNames }) + '.';
+  }
+  return { when, min, hour, dom, mon, dow };
+}
+explainCron._dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+explainCron._monNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+function cronFieldMatches(fieldValue, current, max){
+  if (fieldValue === '*') return true;
+  return fieldValue.split(',').some(part => {
+    if (/^\*\/\d+$/.test(part)) return current % parseInt(part.split('/')[1], 10) === 0;
+    if (part.includes('-')) { const [a, b] = part.split('-').map(Number); return current >= a && current <= b; }
+    return Number(part) === current;
+  });
+}
+function nextCronRuns(min, hour, dom, mon, dow, count){
+  const out = [];
+  let d = new Date();
+  d.setSeconds(0, 0);
+  d.setMinutes(d.getMinutes() + 1);
+  let guard = 0;
+  while (out.length < count && guard < 200000){
+    guard++;
+    const matchesDom = dom === '*' || cronFieldMatches(dom, d.getDate(), 31);
+    const matchesDow = dow === '*' || cronFieldMatches(dow, d.getDay(), 6);
+    // Standard cron OR's day-of-month and day-of-week when both are restricted; matches either alone otherwise.
+    const domRestricted = dom !== '*', dowRestricted = dow !== '*';
+    const dayOk = (domRestricted && dowRestricted) ? (matchesDom || matchesDow) : (matchesDom && matchesDow);
+    if (dayOk && cronFieldMatches(mon, d.getMonth() + 1, 12) && cronFieldMatches(hour, d.getHours(), 23) && cronFieldMatches(min, d.getMinutes(), 59)){
+      out.push(new Date(d));
+      d.setMinutes(d.getMinutes() + 1);
+    } else {
+      d.setMinutes(d.getMinutes() + 1);
+    }
+  }
+  return out;
+}
+safeInit(function(){
+  const input = document.getElementById('toolCronInput');
+  const statusEl = document.getElementById('toolCronStatus');
+  const output = document.getElementById('toolCronOutput');
+  function run(){
+    const res = explainCron(input.value);
+    if (res.error){ output.innerHTML = ''; setInlineStatus(statusEl, res.error, 'var(--error)'); return; }
+    setInlineStatus(statusEl, 'Parsed.', 'var(--accent)');
+    const runs = nextCronRuns(res.min, res.hour, res.dom, res.mon, res.dow, 5);
+    output.innerHTML = '<p style="margin:0 0 10px;">' + res.when + '</p>' +
+      '<label class="field-label">Next 5 runs (your local time)</label>' +
+      '<div style="font:12px \'SF Mono\', Menlo, Consolas, monospace; color:var(--text-dim);">' +
+      (runs.length ? runs.map(d => d.toLocaleString()).join('<br>') : 'Could not compute upcoming run times for this expression.') + '</div>';
+  }
+  input.addEventListener('input', run);
+  run();
+});
+
+/* ---- Tool: Unicode / character inspector ---- */
+safeInit(function(){
+  const input = document.getElementById('toolUnicodeInput');
+  const output = document.getElementById('toolUnicodeOutput');
+  function utf8Bytes(codePoint){
+    return [...new TextEncoder().encode(String.fromCodePoint(codePoint))].map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+  }
+  function update(){
+    const text = input.value;
+    if (!text){ output.innerHTML = '<div style="color:var(--text-dim); font-size:12px;">Type something above.</div>'; return; }
+    const chars = [...text]; // spread respects surrogate pairs / astral code points
+    output.innerHTML = chars.slice(0, 200).map(ch => {
+      const cp = ch.codePointAt(0);
+      const hex = cp.toString(16).toUpperCase().padStart(4, '0');
+      return '<div style="display:flex; align-items:center; gap:14px; padding:6px 10px; border-bottom:1px solid var(--border); font:12px \'SF Mono\', Menlo, Consolas, monospace;">' +
+        '<span style="font-size:18px; width:28px; text-align:center;">' + escapeHtml(ch) + '</span>' +
+        '<span style="color:var(--text-dim);">U+' + hex + '</span>' +
+        '<span style="color:var(--text-dim);">' + utf8Bytes(cp) + '</span>' +
+        '<span style="color:var(--text-dim);">&amp;#' + cp + ';</span>' +
+        '</div>';
+    }).join('');
+  }
+  input.addEventListener('input', update);
+});
+
+/* ---- Tool: Lorem Ipsum generator ---- */
+const LOREM_WORDS = "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit voluptate velit esse cillum eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum".split(' ');
+function generateLorem(unit, count, classic){
+  function words(n){
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(LOREM_WORDS[Math.floor(Math.random() * LOREM_WORDS.length)]);
+    if (classic && out.length) { LOREM_WORDS.slice(0, Math.min(5, out.length)).forEach((w, i) => out[i] = w); }
+    return out;
+  }
+  function sentence(){
+    const len = 6 + Math.floor(Math.random() * 10);
+    const w = words(len);
+    const s = w.join(' ');
+    return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+  }
+  function paragraph(){
+    const count = 3 + Math.floor(Math.random() * 4);
+    return Array.from({ length: count }, sentence).join(' ');
+  }
+  if (unit === 'words') return words(count).join(' ') + '.';
+  if (unit === 'sentences') return Array.from({ length: count }, sentence).join(' ');
+  return Array.from({ length: count }, paragraph).join('\n\n');
+}
+safeInit(function(){
+  const unit = document.getElementById('toolLoremUnit');
+  const count = document.getElementById('toolLoremCount');
+  const classic = document.getElementById('toolLoremClassic');
+  const output = document.getElementById('toolLoremOutput');
+  function generate(){
+    const n = Math.max(1, Math.min(50, parseInt(count.value, 10) || 1));
+    output.value = generateLorem(unit.value, n, classic.checked);
+  }
+  document.getElementById('toolLoremGenBtn').addEventListener('click', generate);
+  document.getElementById('toolLoremCopyBtn').addEventListener('click', () => navigator.clipboard.writeText(output.value).catch(() => {}));
+  generate();
+});
+
+/* ---- Tool: URL parser & builder ---- */
+safeInit(function(){
+  const input = document.getElementById('toolUrlInput');
+  const statusEl = document.getElementById('toolUrlStatus');
+  const parts = document.getElementById('toolUrlParts');
+  const queryRows = document.getElementById('toolUrlQueryRows');
+
+  function partRow(label, value){
+    return '<div style="display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-dim);">' + label + '</span><span style="font-family:\'SF Mono\', Menlo, Consolas, monospace; word-break:break-all; text-align:right;">' + escapeHtml(value || '(none)') + '</span></div>';
+  }
+  function renderQueryRows(params){
+    queryRows.innerHTML = params.map(([k, v], i) =>
+      '<div class="key-row" style="margin-bottom:6px;"><input type="text" class="tool-url-qkey" data-i="' + i + '" value="' + escapeHtml(k) + '" placeholder="key"><input type="text" class="tool-url-qval" data-i="' + i + '" value="' + escapeHtml(v) + '" placeholder="value"><button type="button" class="tool-url-qdel" data-i="' + i + '" title="Remove">✕</button></div>'
+    ).join('') || '<div style="color:var(--text-dim); font-size:12px;">No query parameters.</div>';
+    queryRows.querySelectorAll('.tool-url-qdel').forEach(btn => btn.addEventListener('click', () => {
+      currentParams.splice(+btn.dataset.i, 1);
+      renderQueryRows(currentParams);
+    }));
+  }
+  let currentParams = [];
+
+  function parse(){
+    let url;
+    try { url = new URL(input.value); }
+    catch(e){
+      try { url = new URL('https://' + input.value); } catch(e2){ parts.innerHTML = ''; queryRows.innerHTML = ''; setInlineStatus(statusEl, 'Not a valid URL.', 'var(--error)'); return; }
+    }
+    setInlineStatus(statusEl, 'Parsed.', 'var(--accent)');
+    parts.innerHTML = [
+      partRow('Protocol', url.protocol),
+      partRow('Host', url.host),
+      partRow('Hostname', url.hostname),
+      partRow('Port', url.port),
+      partRow('Path', url.pathname),
+      partRow('Hash', url.hash)
+    ].join('');
+    currentParams = [...url.searchParams.entries()];
+    renderQueryRows(currentParams);
+  }
+  document.getElementById('toolUrlAddParam').addEventListener('click', () => { currentParams.push(['', '']); renderQueryRows(currentParams); });
+  document.getElementById('toolUrlRebuild').addEventListener('click', () => {
+    queryRows.querySelectorAll('.tool-url-qkey').forEach(el => { currentParams[+el.dataset.i][0] = el.value; });
+    queryRows.querySelectorAll('.tool-url-qval').forEach(el => { currentParams[+el.dataset.i][1] = el.value; });
+    let url;
+    try { url = new URL(input.value); } catch(e){ try { url = new URL('https://' + input.value); } catch(e2){ setInlineStatus(statusEl, 'Not a valid URL to rebuild onto.', 'var(--error)'); return; } }
+    url.search = '';
+    currentParams.forEach(([k, v]) => { if (k) url.searchParams.append(k, v); });
+    input.value = url.toString();
+    setInlineStatus(statusEl, 'Rebuilt.', 'var(--accent)');
+    parse();
+  });
+  input.addEventListener('input', parse);
+  input.value = 'https://example.com/path?foo=bar&baz=1#section';
+  parse();
+});
+
+/* ---- Tool: Snippet library ---- */
+const CODE_SNIPPETS = [
+  { name: 'HTML5 boilerplate', lang: 'html', code: '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n</head>\n<body>\n\n</body>\n</html>' },
+  { name: 'Flexbox centering', lang: 'css', code: '.center {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}' },
+  { name: 'CSS reset (basic)', lang: 'css', code: '* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}' },
+  { name: 'Media query breakpoint', lang: 'css', code: '@media (max-width: 768px) {\n\n}' },
+  { name: 'fetch() with error handling', lang: 'js', code: "fetch(url)\n  .then(res => {\n    if (!res.ok) throw new Error('HTTP ' + res.status);\n    return res.json();\n  })\n  .then(data => console.log(data))\n  .catch(err => console.error(err));" },
+  { name: 'async/await try-catch', lang: 'js', code: 'async function run(){\n  try {\n    const result = await doSomething();\n    console.log(result);\n  } catch (err) {\n    console.error(err);\n  }\n}' },
+  { name: 'Debounce function', lang: 'js', code: 'function debounce(fn, delay){\n  let timer;\n  return (...args) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), delay);\n  };\n}' },
+  { name: 'Array of objects → sorted by key', lang: 'js', code: "items.sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);" },
+  { name: 'localStorage get/set helpers', lang: 'js', code: "function getJSON(key, fallback){\n  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }\n  catch(e){ return fallback; }\n}\nfunction setJSON(key, value){\n  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){}\n}" },
+  { name: 'Promise.all with labels', lang: 'js', code: 'const [users, posts] = await Promise.all([\n  fetch("/api/users").then(r => r.json()),\n  fetch("/api/posts").then(r => r.json())\n]);' },
+  { name: 'Event delegation', lang: 'js', code: "document.addEventListener('click', (e) => {\n  const btn = e.target.closest('.my-button');\n  if (!btn) return;\n  console.log('clicked', btn);\n});" },
+];
+safeInit(function(){
+  const search = document.getElementById('toolSnippetSearch');
+  const list = document.getElementById('toolSnippetList');
+  function render(filter){
+    const q = (filter || '').trim().toLowerCase();
+    const matches = CODE_SNIPPETS.filter(s => !q || s.name.toLowerCase().includes(q) || s.lang.includes(q) || s.code.toLowerCase().includes(q));
+    list.innerHTML = matches.map((s, i) =>
+      '<div style="border:1px solid var(--border); border-radius:8px; padding:10px 12px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><strong style="font-size:12.5px;">' + escapeHtml(s.name) + '</strong>' +
+      '<span class="conv-card-badge" style="font-size:9px;">' + s.lang.toUpperCase() + '</span></div>' +
+      '<pre style="margin:0 0 8px; background:#0d0f1e; border-radius:6px; padding:8px; font:11px \'SF Mono\', Menlo, Consolas, monospace; overflow-x:auto; color:var(--text-dim);">' + escapeHtml(s.code) + '</pre>' +
+      '<div class="conv-btn-row"><button type="button" class="ghost-btn tool-snippet-insert" data-i="' + i + '">Insert into Editor</button><button type="button" class="ghost-btn tool-snippet-copy" data-i="' + i + '">Copy</button></div>' +
+      '</div>'
+    ).join('') || '<div style="color:var(--text-dim); font-size:12px; text-align:center; padding:14px 0;">No snippets match.</div>';
+
+    list.querySelectorAll('.tool-snippet-copy').forEach(btn => btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(matches[+btn.dataset.i].code).catch(() => {});
+    }));
+    list.querySelectorAll('.tool-snippet-insert').forEach(btn => btn.addEventListener('click', () => {
+      const snippet = matches[+btn.dataset.i];
+      const ta = editors[snippet.lang];
+      if (!ta) return;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.slice(0, start) + snippet.code + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + snippet.code.length;
+      updateGutter(snippet.lang);
+      scheduleAutosave();
+      switchAppView('editor');
+      document.querySelectorAll('#view-editor .tab').forEach(t => t.classList.toggle('active', t.dataset.lang === snippet.lang));
+      document.querySelectorAll('#view-editor .code-panel').forEach(p => p.classList.toggle('active', p.dataset.lang === snippet.lang));
+      ta.focus();
+    }));
+  }
+  search.addEventListener('input', () => render(search.value));
+  render('');
+});
+
 // via whichever method is selected — shared by both Editor's and Python's
 // Share menus.
 function launchAppInNewTab(view){
@@ -6945,17 +8267,7 @@ function updatePyGutter(lang){
 Object.keys(pyEditors).forEach(lang => {
   pyEditors[lang].addEventListener('input', () => { updatePyGutter(lang); pyScheduleAutosave(); });
   pyEditors[lang].addEventListener('scroll', () => { pyGutters[lang].scrollTop = pyEditors[lang].scrollTop; });
-  pyEditors[lang].addEventListener('keydown', (e) => {
-    if (e.key === 'Tab'){
-      e.preventDefault();
-      const ta = e.target;
-      const start = ta.selectionStart, end = ta.selectionEnd;
-      ta.value = ta.value.slice(0, start) + '    ' + ta.value.slice(end); // 4 spaces — Python convention
-      ta.selectionStart = ta.selectionEnd = start + 4;
-      updatePyGutter(lang);
-      pyScheduleAutosave();
-    }
-  });
+  wireEditorEnhancements(pyEditors[lang], '    ', () => { updatePyGutter(lang); pyScheduleAutosave(); }); // 4 spaces — Python convention
 });
 document.getElementById('py-data-tab-label').addEventListener('input', pyScheduleAutosave);
 
