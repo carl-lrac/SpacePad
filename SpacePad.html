@@ -2316,6 +2316,29 @@
         </div>
       </section>
 
+      <!-- ---- Tool: Quick launch — paste/drag/browse HTML, open it without ever showing the code ---- -->
+      <section class="conv-card" id="toolLaunchCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon icon-fill"><use href="#icon-play"></use></svg> Quick launch <span class="conv-card-badge">no preview</span></h3>
+          <p>Paste HTML, drop a file, or browse for one — then open it in a new tab as a <code>blob:</code>, <code>data:</code>, or <code>about:blank</code> link. The code itself is never shown on screen (pasted text is masked as you type), only its size.</p>
+        </div>
+        <div class="drop-zone" id="toolLaunchDropZone">
+          <span class="dz-icon"><svg class="icon icon-lg"><use href="#icon-folder"></use></svg></span>
+          <span>Drop an .html file here, or click to browse</span>
+          <input type="file" id="toolLaunchFileInput" accept=".html,.htm,text/html" style="display:none">
+        </div>
+        <div class="conv-or">— or —</div>
+        <label class="field-label">Paste code <span style="text-transform:none; letter-spacing:0; font-weight:400; color:var(--text-dim);">(masked — shown as dots, not the real text)</span></label>
+        <textarea id="toolLaunchInput" placeholder="Paste HTML here…" spellcheck="false" style="height:90px; -webkit-text-security:disc; text-security:disc;"></textarea>
+        <div id="toolLaunchStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div class="conv-btn-row">
+          <button type="button" class="primary ghost-btn" id="toolLaunchBlobBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);">Open — Blob</button>
+          <button type="button" class="ghost-btn" id="toolLaunchDataBtn">Open — data:</button>
+          <button type="button" class="ghost-btn" id="toolLaunchBlankBtn">Open — about:blank</button>
+          <button type="button" class="ghost-btn" id="toolLaunchClearBtn">Clear</button>
+        </div>
+      </section>
+
       <!-- ---- Tool 2: Password / passphrase generator ---- -->
       <section class="conv-card" id="toolPwCard">
         <div class="conv-card-head">
@@ -2807,12 +2830,27 @@
 
 <div class="net-popup-overlay" id="unlock-overlay" style="display:none;">
   <div class="net-popup" style="max-width:340px;">
-    <h3 style="text-align:center; margin-bottom:14px;"><svg class="icon"><use href="#icon-eye-off"></use></svg> Enter code</h3>
-    <p style="text-align:center; color:var(--text-dim); font-size:12.5px; margin-bottom:14px;">Enter the code to unlock Chat and GitHub.</p>
-    <input type="text" id="unlock-code-input" placeholder="Code" autocomplete="off" style="width:100%; box-sizing:border-box; padding:9px 11px; border-radius:8px; border:1px solid var(--border); background:var(--panel-3); color:var(--text); font-size:13px; text-align:center; margin-bottom:14px;">
-    <div class="conv-btn-row">
-      <button type="button" class="net-cancel" id="unlock-cancel-btn" style="flex:1; background:var(--panel-2); color:var(--text); border:1px solid var(--border);">Cancel</button>
-      <button type="button" class="net-confirm" id="unlock-submit-btn" style="flex:1;">Unlock</button>
+    <div id="unlock-code-section">
+      <h3 style="text-align:center; margin-bottom:14px;"><svg class="icon"><use href="#icon-eye-off"></use></svg> Enter code</h3>
+      <p style="text-align:center; color:var(--text-dim); font-size:12.5px; margin-bottom:14px;">Enter the code to unlock Chat and GitHub.</p>
+      <input type="text" id="unlock-code-input" placeholder="Code" autocomplete="off" style="width:100%; box-sizing:border-box; padding:9px 11px; border-radius:8px; border:1px solid var(--border); background:var(--panel-3); color:var(--text); font-size:13px; text-align:center; margin-bottom:10px;">
+      <div id="unlock-lockout-msg" style="display:none; text-align:center; color:var(--error); font-size:11.5px; margin-bottom:10px;"></div>
+      <div class="conv-btn-row">
+        <button type="button" class="net-cancel" id="unlock-cancel-btn" style="flex:1; background:var(--panel-2); color:var(--text); border:1px solid var(--border);">Cancel</button>
+        <button type="button" class="net-confirm" id="unlock-submit-btn" style="flex:1;">Unlock</button>
+      </div>
+    </div>
+    <div id="unlock-game-section" style="display:none;">
+      <h3 style="text-align:center; margin-bottom:6px;">🎮 One last thing</h3>
+      <p style="text-align:center; color:var(--text-dim); font-size:12.5px; margin-bottom:10px;">Code accepted. Dodge the meteor swarm for <span id="unlock-game-goal-s">30</span>s to get in — there's always exactly one gap, but it jumps to a new random spot every wave, so standing still won't save you. Move your mouse, or use ←/→.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span id="unlock-game-status" style="font-size:11px; color:var(--text-dim);">Get ready…</span>
+        <span id="unlock-game-score" style="font-size:11px; color:var(--text-dim);">0.0s / 30s</span>
+      </div>
+      <canvas id="unlock-game-canvas" width="292" height="220" style="width:100%; display:block; border-radius:8px; border:1px solid var(--border); background:#050611; touch-action:none;"></canvas>
+      <div class="conv-btn-row" style="margin-top:12px;">
+        <button type="button" class="net-cancel" id="unlock-game-back-btn" style="flex:1; background:var(--panel-2); color:var(--text); border:1px solid var(--border);">Back</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4197,9 +4235,37 @@ window.addEventListener('keydown', (e) => {
 // Browsers' popup blockers specifically watch for script-initiated window.open()
 // calls; a plain anchor click is treated as an ordinary link navigation and is
 // never blocked, even for blob: URLs or when triggered after an async task.
+// Chrome/Edge (and other modern Chromium-based browsers) refuse to navigate
+// the top-level frame to a data: URL at all — new tab, same tab, link click,
+// or window.open, it doesn't matter, it's silently blocked (console shows
+// "Not allowed to navigate top frame to data URL"). A data: URL used as an
+// <iframe> SOURCE is still perfectly fine though, so a data:text/html URL
+// gets wrapped in a tiny blob: shell that's just a full-viewport iframe
+// pointing at it — the actual top-level navigation lands on the (allowed)
+// blob: shell, and the real content loads inside it. Every caller of
+// openInNewTab gets this for free, including ones written before this fix.
 function openInNewTab(url){
+  let finalUrl = url;
+  if (/^data:text\/html/i.test(url)){
+    // The shell and the data: iframe end up on different opaque origins, so
+    // the shell's script can't read the iframe's document to copy its title
+    // — instead, decode just enough of the payload up front to pull a
+    // <title> out and set it directly on the shell, so the tab still shows
+    // the real page's title instead of a blank one.
+    let title = '';
+    try {
+      const m = url.match(/^data:text\/html(?:;charset=[^;,]+)?;base64,(.*)$/i);
+      if (m){
+        const decoded = decodeURIComponent(escape(atob(m[1])));
+        const tm = decoded.match(/<title[^>]*>([^<]*)<\/title>/i);
+        if (tm) title = tm[1];
+      }
+    } catch(e){ /* best-effort only — worst case the tab just shows a blank title */ }
+    const shell = '<!DOCTYPE html><html><head><meta charset="utf-8">' + (title ? '<title>' + title.replace(/</g, '&lt;') + '</title>' : '') + '</head><body style="margin:0;"><iframe src="' + url.replace(/"/g, '&quot;') + '" style="position:fixed; inset:0; width:100%; height:100%; border:none;"></iframe></body></html>';
+    finalUrl = URL.createObjectURL(new Blob([shell], { type: 'text/html' }));
+  }
   const a = document.createElement('a');
-  a.href = url;
+  a.href = finalUrl;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
   document.body.appendChild(a);
@@ -4448,29 +4514,288 @@ window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeShortcu
    instead of popping up something that looks like a different program. ---- */
 const unlockOverlay = document.getElementById('unlock-overlay');
 const unlockInput = document.getElementById('unlock-code-input');
+const unlockSubmitBtn = document.getElementById('unlock-submit-btn');
+const unlockLockoutMsg = document.getElementById('unlock-lockout-msg');
 let unlockOnSuccess = null;
+
+// ---- Wrong-attempt cooldown — still just a soft gate (see note above the
+// code constant), but three misses now locks the input out for a bit
+// instead of letting someone sit there brute-forcing six digits forever.
+// Persisted so a reload doesn't reset the streak.
+const UNLOCK_LOCKOUT_KEY = 'spacepad_unlock_lockout_v1';
+const UNLOCK_MAX_ATTEMPTS = 3;
+const UNLOCK_BASE_COOLDOWN_S = 10;
+const UNLOCK_MAX_COOLDOWN_S = 300;
+let unlockLockoutTimer = null;
+
+function readUnlockLockout(){
+  try {
+    const raw = localStorage.getItem(UNLOCK_LOCKOUT_KEY);
+    if (!raw) return { streak: 0, level: 0, until: 0 };
+    const parsed = JSON.parse(raw);
+    return { streak: parsed.streak || 0, level: parsed.level || 0, until: parsed.until || 0 };
+  } catch(e){ return { streak: 0, level: 0, until: 0 }; }
+}
+function writeUnlockLockout(state){
+  try { localStorage.setItem(UNLOCK_LOCKOUT_KEY, JSON.stringify(state)); } catch(e){}
+}
+function unlockCooldownSeconds(level){
+  return Math.min(UNLOCK_MAX_COOLDOWN_S, UNLOCK_BASE_COOLDOWN_S * Math.pow(2, level - 1));
+}
+function refreshUnlockLockoutUI(){
+  const state = readUnlockLockout();
+  const remainingMs = state.until - Date.now();
+  if (unlockLockoutTimer){ clearInterval(unlockLockoutTimer); unlockLockoutTimer = null; }
+  if (remainingMs > 0){
+    unlockInput.disabled = true;
+    unlockSubmitBtn.disabled = true;
+    unlockLockoutMsg.style.display = 'block';
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((state.until - Date.now()) / 1000));
+      if (left <= 0){
+        unlockInput.disabled = false;
+        unlockSubmitBtn.disabled = false;
+        unlockLockoutMsg.style.display = 'none';
+        clearInterval(unlockLockoutTimer);
+        unlockLockoutTimer = null;
+        unlockInput.focus();
+        return;
+      }
+      unlockLockoutMsg.textContent = 'Too many wrong codes — try again in ' + left + 's.';
+    };
+    tick();
+    unlockLockoutTimer = setInterval(tick, 1000);
+  } else {
+    unlockInput.disabled = false;
+    unlockSubmitBtn.disabled = false;
+    unlockLockoutMsg.style.display = 'none';
+  }
+}
+const unlockCodeSection = document.getElementById('unlock-code-section');
+const unlockGameSection = document.getElementById('unlock-game-section');
 function openUnlockModal(onSuccess){
   closeAllDropdowns();
   unlockOnSuccess = onSuccess;
   unlockInput.value = '';
   unlockOverlay.style.display = 'flex';
-  setTimeout(() => unlockInput.focus(), 30);
+  unlockCodeSection.style.display = '';
+  unlockGameSection.style.display = 'none';
+  stopUnlockGame();
+  refreshUnlockLockoutUI();
+  if (!unlockInput.disabled) setTimeout(() => unlockInput.focus(), 30);
 }
-function closeUnlockModal(){ unlockOverlay.style.display = 'none'; unlockOnSuccess = null; }
+function closeUnlockModal(){
+  unlockOverlay.style.display = 'none';
+  unlockOnSuccess = null;
+  stopUnlockGame();
+  if (unlockLockoutTimer){ clearInterval(unlockLockoutTimer); unlockLockoutTimer = null; }
+}
 function submitUnlockModal(){
-  if (unlockInput.value.trim() !== HIDDEN_VIEW_CODE){ showToast('Incorrect code.', 'error'); unlockInput.value = ''; unlockInput.focus(); return; }
-  hiddenViewsUnlocked = true;
-  document.querySelectorAll('.locked-view-tab').forEach(b => b.style.display = '');
-  showToast('Unlocked.');
-  const cb = unlockOnSuccess;
-  closeUnlockModal();
-  if (cb) cb();
+  const state = readUnlockLockout();
+  if (state.until - Date.now() > 0) return; // locked out — button/input are disabled anyway
+  if (unlockInput.value.trim() !== HIDDEN_VIEW_CODE){
+    const streak = state.streak + 1;
+    if (streak >= UNLOCK_MAX_ATTEMPTS){
+      const level = state.level + 1;
+      const cooldown = unlockCooldownSeconds(level);
+      writeUnlockLockout({ streak: 0, level: level, until: Date.now() + cooldown * 1000 });
+      showToast('Too many wrong codes — locked for ' + cooldown + 's.', 'error');
+      refreshUnlockLockoutUI();
+    } else {
+      writeUnlockLockout({ streak: streak, level: state.level, until: 0 });
+      showToast('Incorrect code. ' + (UNLOCK_MAX_ATTEMPTS - streak) + ' attempt(s) left.', 'error');
+    }
+    unlockInput.value = '';
+    unlockInput.focus();
+    return;
+  }
+  // Code is right — that only earns a shot at the gate. Actual unlock
+  // requires clearing one hard survival run of the asteroid game.
+  writeUnlockLockout({ streak: 0, level: 0, until: 0 });
+  unlockCodeSection.style.display = 'none';
+  unlockGameSection.style.display = '';
+  startUnlockGame();
 }
 document.getElementById('unlock-submit-btn').addEventListener('click', submitUnlockModal);
 document.getElementById('unlock-cancel-btn').addEventListener('click', closeUnlockModal);
+document.getElementById('unlock-game-back-btn').addEventListener('click', () => {
+  stopUnlockGame();
+  unlockGameSection.style.display = 'none';
+  unlockCodeSection.style.display = '';
+  unlockInput.value = '';
+  refreshUnlockLockoutUI();
+  if (!unlockInput.disabled) unlockInput.focus();
+});
 unlockInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitUnlockModal(); });
 unlockOverlay.addEventListener('click', (e) => { if (e.target === unlockOverlay) closeUnlockModal(); });
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && unlockOverlay.style.display === 'flex') closeUnlockModal(); });
+
+/* ---- The actual gate: one hard level that must be cleared, in full,
+   before hiddenViewsUnlocked flips to true. Typing the right code just
+   gets you a shot at it — see submitUnlockModal above.
+
+   Genuinely random this time (Math.random, reshuffled every attempt) —
+   but every wave still leaves exactly one gap, so there's always a safe
+   spot at any given instant. The trick is pickGapX's minimum-shift rule:
+   the next gap is never allowed to land near the current one, so parking
+   the ship in one place and waiting stops working almost immediately —
+   the safe spot itself is what keeps moving. Timed with wall-clock
+   deltas rather than frame counts so it can't be cheesed by throttling
+   the tab. ---- */
+const UNLOCK_GAME_GOAL_S = 30;
+(function(){
+  const canvas = document.getElementById('unlock-game-canvas');
+  const scoreEl = document.getElementById('unlock-game-score');
+  const statusEl = document.getElementById('unlock-game-status');
+  document.getElementById('unlock-game-goal-s').textContent = UNLOCK_GAME_GOAL_S;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const SHIP_Y = H - 18, SHIP_R = 8;
+  const WAVE_INTERVAL_MS = 780;   // fixed cadence — how far apart waves are
+  const GAP_MARGIN = 24;          // keep the gap away from the hard edges
+  const MIN_GAP_SHIFT = 85;       // the gap must move at least this far each wave — no camping
+
+  let raf = null, ship = { x: W / 2 }, meteors = [], prevGapX = W / 2, elapsedMs = 0, lastT = 0, spawnAccum = 0, gameOver = false, won = false;
+  let keyLeft = false, keyRight = false;
+
+  // A random gap position, rejected and redrawn until it's far enough from
+  // the previous one — this is what makes camping impossible: the one safe
+  // spot never sits still for two waves in a row.
+  function pickGapX(){
+    let x, tries = 0;
+    do {
+      x = GAP_MARGIN + Math.random() * (W - GAP_MARGIN * 2);
+      tries++;
+    } while (Math.abs(x - prevGapX) < MIN_GAP_SHIFT && tries < 25);
+    prevGapX = x;
+    return x;
+  }
+
+  function resetGame(){
+    ship.x = W / 2; meteors = []; prevGapX = W / 2; elapsedMs = 0; spawnAccum = 0; gameOver = false; won = false; lastT = 0;
+    scoreEl.textContent = '0.0s / ' + UNLOCK_GAME_GOAL_S + 's';
+    statusEl.textContent = 'Go!';
+  }
+  function spawnNextWave(){
+    const gapX = pickGapX();
+    const gapW = 34 + Math.random() * 14;                       // 34–48px, random per wave
+    const vy = 95 + Math.random() * 55 + Math.min(70, elapsedMs / 350); // random, and rises over time
+    const count = 5 + Math.floor(Math.random() * 3);             // 5–7 meteors per wave, randomly
+    for (let k = 0; k < count; k++){
+      const r = 7 + Math.random() * 6;
+      let x, tries = 0;
+      do {
+        x = 10 + Math.random() * (W - 20);
+        tries++;
+      } while (Math.abs(x - gapX) < gapW / 2 + r && tries < 25); // never place a meteor inside the gap
+      meteors.push({ x: x, y: -r, r: r, vy: vy });
+    }
+  }
+  function stepGame(t){
+    if (!lastT) lastT = t;
+    const dt = Math.min(50, t - lastT); // clamp so a stalled tab can't skip huge chunks
+    lastT = t;
+    if (!gameOver && !won) elapsedMs += dt;
+
+    if (keyLeft) ship.x -= 4.2;
+    if (keyRight) ship.x += 4.2;
+    ship.x = Math.max(SHIP_R + 2, Math.min(W - SHIP_R - 2, ship.x));
+
+    if (!gameOver && !won){
+      spawnAccum += dt;
+      while (spawnAccum >= WAVE_INTERVAL_MS){
+        spawnAccum -= WAVE_INTERVAL_MS;
+        spawnNextWave();
+      }
+      meteors.forEach(m => m.y += m.vy * (dt / 1000));
+      meteors = meteors.filter(m => m.y < H + m.r + 4);
+      for (const m of meteors){
+        const dx = m.x - ship.x, dy = m.y - SHIP_Y;
+        if (Math.sqrt(dx * dx + dy * dy) < m.r + SHIP_R * 0.8){ gameOver = true; break; }
+      }
+      if (elapsedMs >= UNLOCK_GAME_GOAL_S * 1000){ won = true; elapsedMs = UNLOCK_GAME_GOAL_S * 1000; }
+      scoreEl.textContent = (elapsedMs / 1000).toFixed(1) + 's / ' + UNLOCK_GAME_GOAL_S + 's';
+      statusEl.textContent = won ? 'Survived!' : 'Threading the swarm…';
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#8990c2';
+    for (let i = 0; i < 18; i++){
+      const sx = (i * 53 + 17) % W, sy = (i * 97 + 31) % H;
+      ctx.globalAlpha = 0.25 + (i % 3) * 0.15;
+      ctx.fillRect(sx, sy, 1.5, 1.5);
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#e8d56f';
+    meteors.forEach(m => { ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill(); });
+    ctx.fillStyle = won ? '#8be9a0' : '#8b7cf6';
+    ctx.beginPath();
+    ctx.moveTo(ship.x, SHIP_Y - 10);
+    ctx.lineTo(ship.x - 9, SHIP_Y + 8);
+    ctx.lineTo(ship.x + 9, SHIP_Y + 8);
+    ctx.closePath();
+    ctx.fill();
+
+    if (gameOver){
+      ctx.fillStyle = 'rgba(5,6,17,0.72)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#e9ecff';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💥 Crashed — click to retry', W / 2, H / 2);
+      ctx.font = '11px sans-serif';
+      ctx.fillStyle = '#8990c2';
+      ctx.fillText('Different every run — keep the gap moving with you.', W / 2, H / 2 + 18);
+      statusEl.textContent = 'Crashed — retry';
+      raf = null;
+      return;
+    }
+    if (won){
+      ctx.fillStyle = 'rgba(5,6,17,0.72)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#8be9a0';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎉 Survived — unlocking…', W / 2, H / 2);
+      raf = null;
+      setTimeout(finishUnlockWin, 550);
+      return;
+    }
+    raf = requestAnimationFrame(stepGame);
+  }
+  function finishUnlockWin(){
+    hiddenViewsUnlocked = true;
+    document.querySelectorAll('.locked-view-tab').forEach(b => b.style.display = '');
+    showToast('Unlocked.');
+    const cb = unlockOnSuccess;
+    closeUnlockModal();
+    if (cb) cb();
+  }
+  window.startUnlockGame = function(){
+    resetGame();
+    if (!raf) raf = requestAnimationFrame(stepGame);
+  };
+  window.stopUnlockGame = function(){
+    if (raf){ cancelAnimationFrame(raf); raf = null; }
+    keyLeft = keyRight = false;
+  };
+  canvas.addEventListener('click', () => { if (gameOver) startUnlockGame(); });
+  window.addEventListener('keydown', (e) => {
+    if (unlockGameSection.style.display === 'none') return;
+    if (e.key === 'ArrowLeft') keyLeft = true;
+    if (e.key === 'ArrowRight') keyRight = true;
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft') keyLeft = false;
+    if (e.key === 'ArrowRight') keyRight = false;
+  });
+  function dragTo(clientX){
+    const rect = canvas.getBoundingClientRect();
+    ship.x = ((clientX - rect.left) / rect.width) * W;
+  }
+  canvas.addEventListener('mousemove', (e) => dragTo(e.clientX));
+  canvas.addEventListener('touchmove', (e) => { dragTo(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+})();
 
 /* ---- Ctrl/Cmd+S: download whatever the current tab's primary file is ---- */
 window.addEventListener('keydown', (e) => {
@@ -5254,6 +5579,93 @@ safeInit(function(){
     switchAppView('convert');
     runUrlFetchAndRun();
   });
+});
+
+/* ---- Tool: Quick launch — paste/drag/browse HTML, open without previewing it ---- */
+const TOOL_LAUNCH_DATA_LIMIT = 400000; // data: URIs get impractical well before browsers' hard URL-length caps
+safeInit(function(){
+  const dropZone = document.getElementById('toolLaunchDropZone');
+  const fileInput = document.getElementById('toolLaunchFileInput');
+  const textarea = document.getElementById('toolLaunchInput');
+  const statusEl = document.getElementById('toolLaunchStatus');
+  const blobBtn = document.getElementById('toolLaunchBlobBtn');
+  const dataBtn = document.getElementById('toolLaunchDataBtn');
+  const blankBtn = document.getElementById('toolLaunchBlankBtn');
+  let code = '';
+  let sourceLabel = '';
+
+  function byteLength(str){ return new TextEncoder().encode(str).length; }
+  function formatBytes(n){
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+  function refresh(){
+    const bytes = byteLength(code);
+    const hasCode = bytes > 0;
+    blobBtn.disabled = !hasCode;
+    blankBtn.disabled = !hasCode;
+    const overDataLimit = bytes >= TOOL_LAUNCH_DATA_LIMIT;
+    dataBtn.disabled = !hasCode || overDataLimit;
+    dataBtn.title = overDataLimit ? 'data: links get unreliable above ~400 KB — use Blob or About:blank instead.' : '';
+    if (!hasCode){ setInlineStatus(statusEl, 'Nothing loaded yet.', 'var(--text-dim)'); return; }
+    setInlineStatus(statusEl, (sourceLabel ? sourceLabel + ' — ' : '') + formatBytes(bytes) + (overDataLimit ? ' (too large for data:)' : ' ready') + '.', 'var(--accent)');
+  }
+  function setCode(newCode, label){
+    code = newCode;
+    sourceLabel = label || '';
+    refresh();
+  }
+  function loadFile(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setCode(String(reader.result), file.name); textarea.value = String(reader.result); };
+    reader.onerror = () => setInlineStatus(statusEl, 'Could not read that file.', 'var(--error)');
+    reader.readAsText(file);
+  }
+
+  textarea.addEventListener('input', () => setCode(textarea.value, ''));
+  fileInput.addEventListener('change', (e) => loadFile(e.target.files[0]));
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) loadFile(file);
+  });
+
+  document.getElementById('toolLaunchClearBtn').addEventListener('click', () => {
+    textarea.value = '';
+    fileInput.value = '';
+    setCode('', '');
+  });
+  blobBtn.addEventListener('click', () => {
+    if (!code) return;
+    const url = URL.createObjectURL(new Blob([code], { type: 'text/html' }));
+    const win = window.open(url, '_blank');
+    if (!win) { setInlineStatus(statusEl, 'The browser blocked this popup — allow popups for this page and try again.', 'var(--error)'); return; }
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
+  });
+  dataBtn.addEventListener('click', () => {
+    if (!code || byteLength(code) >= TOOL_LAUNCH_DATA_LIMIT) return;
+    try {
+      const b64 = btoa(unescape(encodeURIComponent(code)));
+      // Chrome/Edge block a script-driven window.open() straight to a data:
+      // URL (a phishing-hardening measure) — a real click on an <a> element
+      // isn't blocked the same way, which is exactly what openInNewTab does.
+      openInNewTab('data:text/html;base64,' + b64);
+    } catch(e){ setInlineStatus(statusEl, 'Could not encode this as a data: link: ' + e.message, 'var(--error)'); }
+  });
+  blankBtn.addEventListener('click', () => {
+    if (!code) return;
+    const win = window.open('about:blank', '_blank');
+    if (!win) { setInlineStatus(statusEl, 'The browser blocked this popup — allow popups for this page and try again.', 'var(--error)'); return; }
+    win.document.open(); win.document.write(code); win.document.close();
+  });
+
+  refresh();
 });
 
 /* ---- Tool: Password / passphrase generator ---- */
