@@ -2025,6 +2025,39 @@
         </div>
       </section>
 
+      <!-- ---- Card: Scratch (.sb3) → HTML, via a locally-supplied TurboWarp
+           Packager. Spacepad never fetches the packager itself from
+           turbowarp.org or anywhere else — you provide the official
+           standalone build once (a single .html file from TurboWarp's own
+           GitHub releases), and this just launches it as a blob: page in
+           your browser. The actual .sb3 → HTML conversion then happens
+           inside that packager's own UI, which is designed to run fully
+           offline. ---- -->
+      <section class="conv-card" id="convScratchCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-play"></use></svg> Scratch (.sb3) → HTML <span class="conv-card-badge">TurboWarp Packager</span></h3>
+          <p>Runs the real, official TurboWarp Packager, fully offline. Spacepad doesn't fetch it from turbowarp.org or anywhere else — you load a local copy once below, and everything after that happens entirely in your browser.</p>
+        </div>
+        <div class="side-note" style="margin-top:0; padding-top:0; border-top:none;">
+          <strong style="color:var(--text)">One-time setup:</strong> grab <code>turbowarp-packager-standalone-*.html</code> from the Assets of TurboWarp's latest GitHub release (TurboWarp/packager → Releases). That single file <em>is</em> the whole packager — nothing else to install, and it never has to touch a server again after you download it.
+        </div>
+        <label class="field-label" style="margin-top:10px;">1. Load your local packager file</label>
+        <div class="drop-zone" id="convScratchDropZone">
+          <span class="dz-icon"><svg class="icon icon-lg"><use href="#icon-folder"></use></svg></span>
+          <span id="convScratchDzLabel">Drop turbowarp-packager-standalone-*.html here, or click to browse</span>
+          <input type="file" id="convScratchFileInput" accept=".html,text/html" style="display:none">
+        </div>
+        <div id="convScratchStatus" class="side-note" style="display:none; margin-top:10px; padding-top:0; border-top:none;"></div>
+        <div class="conv-btn-row" style="margin-top:10px;">
+          <button type="button" class="ghost-btn" id="convScratchOpenBtn" disabled>Open packager in new tab ↗</button>
+          <button type="button" class="ghost-btn" id="convScratchEmbedBtn" disabled>Embed below</button>
+        </div>
+        <div id="convScratchEmbedWrap" style="display:none; margin-top:12px;">
+          <label class="field-label">2. In the packager below: add your .sb3, then Export as → HTML — all local to your browser</label>
+          <iframe id="convScratchFrame" style="width:100%; height:640px; border:1px solid var(--border); border-radius:8px; background:#fff;" title="TurboWarp Packager (local, offline copy)"></iframe>
+        </div>
+      </section>
+
       <!-- ---- Card 2: searchable text/code conversion tools ---- -->
       <section class="conv-card" id="convToolsCard">
         <div class="conv-card-head">
@@ -2285,6 +2318,33 @@
         <input type="text" id="toolsSearch" placeholder="Search tools… (e.g. color, cron, snippet, base, gradient)" style="width:100%; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:9px; font-size:13px;">
         <div id="toolsSearchEmpty" style="display:none; text-align:center; color:var(--text-dim); font-size:12.5px; padding:20px 0;">No tools match that search.</div>
       </div>
+
+      <!-- ---- Tool 0: Website viewer — type a link, see it rendered live in
+           an embedded frame. Purely a thin iframe wrapper: nothing is
+           fetched or parsed by Spacepad itself, the browser just loads the
+           URL like it would in any tab. Sites that send X-Frame-Options/CSP
+           frame-ancestors (most banks, Google, a lot of social apps) will
+           refuse to render inside the frame no matter what — "Open in new
+           tab" is the fallback for those. ---- -->
+      <section class="conv-card" id="toolWebViewCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-globe"></use></svg> Website viewer</h3>
+          <p>Type or paste any link and it loads live below, in an embedded frame. Some sites (banks, Google, most social apps) block being shown inside another page and will stay blank here — use "Open in new tab" for those instead.</p>
+        </div>
+        <label class="field-label">URL</label>
+        <div class="key-row">
+          <input type="text" id="webViewInput" placeholder="example.com or https://example.com" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="conv-btn-row">
+          <button type="button" class="primary ghost-btn" id="webViewGoBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);"><svg class="icon"><use href="#icon-globe"></use></svg> Go</button>
+          <button type="button" class="ghost-btn" id="webViewOpenBtn" disabled>Open in new tab ↗</button>
+          <button type="button" class="ghost-btn" id="webViewReloadBtn" disabled><svg class="icon"><use href="#icon-refresh-cw"></use></svg> Reload</button>
+        </div>
+        <div id="webViewStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div id="webViewFrameWrap" style="display:none; margin-top:10px;">
+          <iframe id="webViewFrame" style="width:100%; height:560px; border:1px solid var(--border); border-radius:8px; background:#fff;" title="Embedded website preview"></iframe>
+        </div>
+      </section>
 
       <!-- ---- Tool 1: GitHub → jsDelivr CDN link converter ---- -->
       <section class="conv-card" id="toolGhCdnCard">
@@ -5502,6 +5562,56 @@ function safeInit(fn){
   catch(e){ console.error('Tools tab: a tool failed to initialize —', e); }
 }
 
+/* ---- Tool: Website viewer — a thin iframe wrapper around whatever URL
+   you type. No fetching, parsing, or proxying on Spacepad's end — the
+   browser loads the page exactly like a normal tab would, just inside this
+   frame. That also means Spacepad can't do anything about sites that
+   refuse to be framed (X-Frame-Options / CSP frame-ancestors) — there's no
+   reliable, cross-origin way to detect that from JS, so this just always
+   offers "Open in new tab" as the fallback rather than pretending to
+   detect failures it can't see. ---- */
+safeInit(function(){
+  const input = document.getElementById('webViewInput');
+  const goBtn = document.getElementById('webViewGoBtn');
+  const openBtn = document.getElementById('webViewOpenBtn');
+  const reloadBtn = document.getElementById('webViewReloadBtn');
+  const statusEl = document.getElementById('webViewStatus');
+  const frameWrap = document.getElementById('webViewFrameWrap');
+  const frame = document.getElementById('webViewFrame');
+  const STORAGE_KEY = 'spacepad_webview_last_url_v1';
+  let currentUrl = null;
+
+  function normalizeUrl(raw){
+    let u = raw.trim();
+    if (!u) return null;
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) u = 'https://' + u;
+    return u;
+  }
+  function load(){
+    const url = normalizeUrl(input.value);
+    if (!url) { setInlineStatus(statusEl, 'Type a URL first.', 'var(--error)'); return; }
+    try { localStorage.setItem(STORAGE_KEY, input.value.trim()); } catch(e){}
+    currentUrl = url;
+    setInlineStatus(statusEl, 'Loading ' + url + ' — if it stays blank, the site is likely blocking embedding.', 'var(--text-dim)');
+    frameWrap.style.display = 'block';
+    frame.src = url;
+    openBtn.disabled = false;
+    reloadBtn.disabled = false;
+  }
+  goBtn.addEventListener('click', load);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') load(); });
+  openBtn.addEventListener('click', () => { if (currentUrl) window.open(currentUrl, '_blank'); });
+  reloadBtn.addEventListener('click', () => { if (currentUrl) frame.src = currentUrl; });
+  frame.addEventListener('load', () => {
+    if (currentUrl) setInlineStatus(statusEl, 'Loaded ' + currentUrl + '.', 'var(--accent)');
+  });
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) input.value = saved;
+  } catch(e){}
+});
+
 /* ---- Tool: GitHub → jsDelivr CDN link ---- */
 // Recognizes a github.com blob/raw link, a raw.githubusercontent.com link,
 // a bare repo link, or the "user/repo@ref/path" shorthand jsDelivr itself
@@ -7777,6 +7887,61 @@ document.getElementById('convBlobTextBtn').addEventListener('click', () => {
   if (!text.trim()) { alert('Paste some text first.'); return; }
   convBlobFromText(text);
 });
+
+/* ---- Scratch (.sb3) → HTML: launches a LOCAL copy of the official
+   TurboWarp Packager that the user supplies (turbowarp-packager-standalone-
+   x.x.x.html from TurboWarp's own GitHub releases). URL.createObjectURL
+   turns the File the user picked straight into a blob: URL — the file's
+   bytes never leave this browser and nothing is ever fetched from
+   turbowarp.org or any other server. From there the packager's own UI
+   (already built to work fully offline) handles the actual .sb3 → HTML
+   conversion; this code's only job is loading it without a network
+   request. ---- */
+(function(){
+  const dropZone = document.getElementById('convScratchDropZone');
+  const dzLabel = document.getElementById('convScratchDzLabel');
+  const fileInput = document.getElementById('convScratchFileInput');
+  const statusEl = document.getElementById('convScratchStatus');
+  const openBtn = document.getElementById('convScratchOpenBtn');
+  const embedBtn = document.getElementById('convScratchEmbedBtn');
+  const embedWrap = document.getElementById('convScratchEmbedWrap');
+  const frame = document.getElementById('convScratchFrame');
+  let packagerBlobUrl = null;
+
+  function setStatus(msg, isError){
+    statusEl.style.display = 'block';
+    statusEl.textContent = msg;
+    statusEl.style.color = isError ? 'var(--error)' : '';
+  }
+  function loadPackagerFile(file){
+    if (!file) return;
+    if (!/\.html?$/i.test(file.name)){
+      setStatus("That doesn't look like an .html file — pick the turbowarp-packager-standalone-*.html you downloaded.", true);
+      return;
+    }
+    if (packagerBlobUrl) URL.revokeObjectURL(packagerBlobUrl);
+    packagerBlobUrl = URL.createObjectURL(file); // local only — no network request
+    dzLabel.textContent = '✓ ' + file.name + ' loaded (' + (file.size / 1048576).toFixed(1) + ' MB) — ready';
+    setStatus('Loaded from your local file — nothing was fetched from the network. Use "Open" or "Embed" below, then drop your .sb3 into the packager itself.');
+    openBtn.disabled = false;
+    embedBtn.disabled = false;
+  }
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadPackagerFile(fileInput.files[0]); });
+  ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); }));
+  ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); }));
+  dropZone.addEventListener('drop', (e) => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadPackagerFile(f);
+  });
+  openBtn.addEventListener('click', () => { if (packagerBlobUrl) window.open(packagerBlobUrl, '_blank'); });
+  embedBtn.addEventListener('click', () => {
+    if (!packagerBlobUrl) return;
+    const showing = embedWrap.style.display !== 'none';
+    if (showing){ embedWrap.style.display = 'none'; frame.src = 'about:blank'; embedBtn.textContent = 'Embed below'; }
+    else { embedWrap.style.display = 'block'; frame.src = packagerBlobUrl; embedBtn.textContent = 'Hide embed'; }
+  });
+})();
 document.getElementById('convCopyData').addEventListener('click', (e) => {
   navigator.clipboard.writeText(document.getElementById('convDataOut').value).catch(() => {});
   const btn = e.target; const old = btn.textContent; btn.textContent = 'Copied!';
