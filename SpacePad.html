@@ -695,6 +695,34 @@
     100% { transform: translate(130vw, 52vh) rotate(22deg); opacity: 0; }
   }
 
+  /* ---- Windowed variants for meteors/comets inside .stargazing-scene ----
+     The plain #starfield versions above fly using vw/vh (whole-browser-
+     viewport units) which is correct for a full-viewport background, but
+     .stargazing-scene is a small, resizable window — if the same vw/vh
+     keyframes were reused there, the streak would try to cross the ENTIRE
+     browser viewport while clipped by the window's overflow:hidden, so it
+     would look like an instant flash (or a wildly wrong-scale crawl)
+     depending on window size. Also note: percentage values on
+     `transform: translate()` resolve against the MOVING ELEMENT's own
+     bounding box, not its containing block, so plain `%` here would be
+     wrong too (meteors are only 6px/13px wide — translate(125%, 62%) would
+     barely move them). The fix: make .stargazing-scene a size query
+     container and use cqw/cqh (container query width/height) units, which
+     behave exactly like vw/vh but are scoped to this container's own
+     resizable box instead of the browser viewport. */
+  @keyframes meteorFlyScene {
+    0% { transform: translate(0, 0) rotate(28deg); opacity: 0; }
+    4% { opacity: 1; }
+    24% { transform: translate(125cqw, 62cqh) rotate(28deg); opacity: 0; }
+    100% { transform: translate(125cqw, 62cqh) rotate(28deg); opacity: 0; }
+  }
+  @keyframes cometFlyScene {
+    0% { transform: translate(0, 0) rotate(22deg); opacity: 0; }
+    2% { opacity: 1; }
+    16% { transform: translate(130cqw, 52cqh) rotate(22deg); opacity: 0; }
+    100% { transform: translate(130cqw, 52cqh) rotate(22deg); opacity: 0; }
+  }
+
   /* ---------- Planets — pure CSS gradient spheres, slowly drifting ---------- */
   /* Wraps each planet/galaxy so cursor parallax (applied to this wrapper
      via JS) never touches the same `transform` property their own float/spin
@@ -1249,7 +1277,19 @@
       radial-gradient(ellipse 50% 60% at 55% 100%, rgba(139,124,246,0.11), transparent 60%),
       var(--bg);
   }
-  .stargazing-scene { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+  .stargazing-scene {
+    position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none;
+    /* Lets the meteorFlyScene/cometFlyScene keyframes use cqw/cqh units
+       scoped to this window's own resizable box — see note above meteorFlyScene. */
+    container-type: size; container-name: stargazing-scene;
+  }
+  /* Meteors/comets duplicated into .stargazing-scene (direct children, same
+     pattern as .aurora-band/.bloom-cloud) fly using the window-relative
+     cqw/cqh keyframes instead of the viewport-relative vw/vh ones — only
+     animation-name is overridden here so each .m2..m6/.c2 variant keeps its
+     own animation-delay/animation-duration from the base rules above. */
+  .stargazing-scene .meteor { animation-name: meteorFlyScene; }
+  .stargazing-scene .comet { animation-name: cometFlyScene; }
   .stargazing-scene .scene-inner {
     position: absolute; top: 50%; left: 50%; width: 2560px; height: 1600px;
     transform: translate(-50%, -50%) scale(0.45); transform-origin: center;
@@ -2670,6 +2710,18 @@
       <div class="bloom-cloud c3"></div>
       <div class="warp-overlay"></div>
       <div class="warp-flash"></div>
+      <!-- Ambient meteors/comets, same pattern as #starfield's own (see
+           .stargazing-scene .meteor/.comet CSS rules + meteorFlyScene/
+           cometFlyScene keyframes for why these need window-relative
+           cqw/cqh units instead of the viewport-relative vw/vh ones. -->
+      <div class="meteor"></div>
+      <div class="meteor m2"></div>
+      <div class="meteor m3"></div>
+      <div class="meteor m4"></div>
+      <div class="meteor m5"></div>
+      <div class="meteor m6"></div>
+      <div class="comet"></div>
+      <div class="comet c2"></div>
     </div>
     <div class="stargazing-corner">
       <div class="dropdown">
@@ -3385,7 +3437,7 @@
        website viewer. Custom Python apps don't use this view at all; they
        route straight into the real #view-python tab (see switchAppView). -->
   <div id="view-custom-app" class="app-view">
-    <iframe id="custom-app-frame" title="Custom app"></iframe>
+    <iframe id="custom-app-frame" title="Custom app" allow="autoplay; fullscreen; pointer-lock; gamepad"></iframe>
   </div>
 
 </main>
@@ -5021,7 +5073,19 @@ function buildDeepLinkHtml(view){
     'function run(){ if (window.switchAppView){ window.switchAppView(\"' + targetView + '\"); ' + hideChrome + ' } else { setTimeout(run, 20); } }' +
     'if (document.readyState === \"loading\"){ document.addEventListener(\"DOMContentLoaded\", run); } else { run(); }' +
     '})();</' + 'script>';
-  return APP_SOURCE_HTML.replace('</body>', script + '</body>');
+  // Deliberately NOT String.prototype.replace('</body>', ...) — this file's
+  // own source contains several starter-template strings (Tailwind/
+  // Bootstrap/React scaffolds, further down in STORE_APPS) that themselves
+  // contain the literal text "</body>" inside a JS string literal. A plain
+  // .replace() matches the FIRST occurrence of that text anywhere in the
+  // whole page source, which is one of those embedded strings deep inside
+  // the script, not the real closing tag — injecting the deep-link script
+  // there corrupts the document (splits the real <script> block in two).
+  // lastIndexOf targets the actual, final </body> at the real end of the
+  // document instead.
+  const idx = APP_SOURCE_HTML.lastIndexOf('</body>');
+  if (idx === -1) return APP_SOURCE_HTML + script;
+  return APP_SOURCE_HTML.slice(0, idx) + script + APP_SOURCE_HTML.slice(idx);
 }
 
 function getAppBlobUrl(view){
@@ -5397,6 +5461,17 @@ function wireWindowChrome(rec){
   el.addEventListener('mousedown', () => { focusWindow(rec.key); setFocusedTaskbar(rec.key); });
   el.querySelector('.win-close').addEventListener('click', (e) => { e.stopPropagation(); closeWindow(rec.key); });
   el.querySelector('.win-max').addEventListener('click', (e) => { e.stopPropagation(); toggleMaximize(rec.key); });
+  const newTabBtn = el.querySelector('.win-newtab');
+  if (newTabBtn){
+    // The 'custom-app' key is a single shared window reused for every
+    // custom/store app — the actual app identity to deep-link to is
+    // whichever one currently occupies it, tracked in currentCustomAppId.
+    function resolveNewTabKey(){
+      return rec.key === 'custom-app' ? ('custom:' + currentCustomAppId) : rec.key;
+    }
+    newTabBtn.addEventListener('click', (e) => { e.stopPropagation(); launchAppInNewTab(resolveNewTabKey(), 'blob'); });
+    newTabBtn.addEventListener('contextmenu', (e) => { e.stopPropagation(); e.preventDefault(); launchAppInNewTab(resolveNewTabKey(), 'blank'); });
+  }
 
   const titlebar = el.querySelector('.win-titlebar');
   titlebar.addEventListener('mousedown', (e) => {
@@ -5460,6 +5535,7 @@ function createAppWindow(key, meta){
   winEl.innerHTML =
     '<div class="win-titlebar">' +
       '<span class="win-icon"></span><span class="win-title"></span>' +
+      '<button type="button" class="win-newtab" title="Open in a new tab (blob). Right-click for about:blank.">' + icon('external-link') + '</button>' +
       '<button type="button" class="win-max" title="Maximize / restore">' + icon('maximize') + '</button>' +
       '<button type="button" class="win-close" title="Close">' + icon('x') + '</button>' +
     '</div>' +
@@ -5583,6 +5659,13 @@ function switchAppView(name){
   if (name === 'desktop'){ showDesktop(); return; }
   openApp(name);
 }
+// Exposed on window because this whole script runs inside an IIFE — the
+// deep-link script buildDeepLinkHtml() injects into a freshly-opened tab
+// (see launchAppInNewTab()) polls for window.switchAppView to know when the
+// page is ready to switch views, so without this the poll never succeeds
+// and an "open in new tab" link always lands on whatever view happened to
+// be active when APP_SOURCE_HTML was first captured, not the chosen one.
+window.switchAppView = switchAppView;
 document.querySelectorAll('.view-tab').forEach(b => b.addEventListener('click', () => switchAppView(b.dataset.view)));
 
 /* =========================================================================
@@ -6091,7 +6174,11 @@ function applyNetStatus(online, opts){
   if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
 
   if (!online){
-    const activeView = document.querySelector('.view-tab.active').dataset.view;
+    // A custom/store app window has no corresponding sidebar tab, so no
+    // .view-tab ever carries .active while one is open — guard against that
+    // instead of assuming a match always exists.
+    const activeTab = document.querySelector('.view-tab.active');
+    const activeView = activeTab ? activeTab.dataset.view : null;
     if (activeView === 'chat' || activeView === 'github') switchAppView('editor');
   }
   if (!opts.silent && netModeInitialized){
@@ -6863,8 +6950,42 @@ safeInit(function(){
   let stickyNotesCreated = 0;
   let activeStickyMenu = null;
   let notesVisible = true;
+  const STICKY_STORAGE_KEY = 'spacepad_sticky_notes_v1';
+  let stickySaveTimer = null;
 
   function setStickyStatus(text, color){ setInlineStatus(statusEl, text, color); }
+
+  function saveStickyNotes(){
+    try {
+      const notes = Array.prototype.map.call(layer.children, (note) => {
+        const colorClass = stickyColors.find((c) => note.classList.contains('sticky-' + c)) || 'yellow';
+        const textEl = note.querySelector('.sticky-text');
+        return {
+          x: parseFloat(note.style.left) || 0,
+          y: parseFloat(note.style.top) || 0,
+          color: colorClass,
+          rotate: note.dataset.baseRotate || '0',
+          text: textEl ? textEl.innerHTML : ''
+        };
+      });
+      localStorage.setItem(STICKY_STORAGE_KEY, JSON.stringify(notes));
+    } catch (e) { /* storage unavailable — ignore */ }
+  }
+
+  function saveStickyNotesDebounced(){
+    clearTimeout(stickySaveTimer);
+    stickySaveTimer = setTimeout(saveStickyNotes, 400);
+  }
+
+  function loadStickyNotes(){
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(STICKY_STORAGE_KEY) || 'null'); } catch (e) { saved = null; }
+    if (!Array.isArray(saved) || !saved.length) return;
+    saved.forEach((n) => {
+      createStickyNote(n.x, n.y, n.color || 'yellow', { rotate: n.rotate, text: n.text, skipSave: true });
+    });
+    setStickyStatus(stickyNotesCreated + ' note' + (stickyNotesCreated === 1 ? '' : 's') + ' restored.', 'var(--accent)');
+  }
 
   function updateToggleBtn(){
     toggleBtn.textContent = notesVisible ? 'Hide all notes' : 'Show all notes';
@@ -6918,11 +7039,12 @@ safeInit(function(){
     document.addEventListener('mouseup', onUp);
   }
 
-  function createStickyNote(x, y, colorName){
+  function createStickyNote(x, y, colorName, restoreOpts){
+    restoreOpts = restoreOpts || {};
     stickyNotesCreated++;
     const note = document.createElement('div');
     note.className = 'sticky-note sticky-' + colorName;
-    const rotate = (Math.random() * 8 - 4).toFixed(2);
+    const rotate = restoreOpts.rotate != null ? restoreOpts.rotate : (Math.random() * 8 - 4).toFixed(2);
     note.dataset.baseRotate = rotate;
     note.style.left = x + 'px';
     note.style.top = y + 'px';
@@ -6932,11 +7054,18 @@ safeInit(function(){
       '<div class="sticky-text" contenteditable="true" data-placeholder="Write something…"></div>';
     layer.appendChild(note);
 
+    const textEl = note.querySelector('.sticky-text');
+    if (restoreOpts.text) textEl.innerHTML = restoreOpts.text;
+    textEl.addEventListener('input', saveStickyNotesDebounced);
+
     const pin = note.querySelector('.sticky-pin');
     pin.addEventListener('mousedown', (ev) => startNoteDrag(ev, note));
     note.addEventListener('contextmenu', (ev) => showStickyMenu(ev, note));
-    note.querySelector('.sticky-text').focus();
-    setStickyStatus(stickyNotesCreated + ' note' + (stickyNotesCreated === 1 ? '' : 's') + ' placed.', 'var(--accent)');
+    if (!restoreOpts.skipSave){
+      textEl.focus();
+      setStickyStatus(stickyNotesCreated + ' note' + (stickyNotesCreated === 1 ? '' : 's') + ' placed.', 'var(--accent)');
+      saveStickyNotes();
+    }
   }
 
   function startNoteDrag(e, note){
@@ -6959,6 +7088,7 @@ safeInit(function(){
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       note.classList.remove('dragging');
+      saveStickyNotes();
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
@@ -6994,6 +7124,7 @@ safeInit(function(){
         stickyColors.forEach((cc) => note.classList.remove('sticky-' + cc));
         note.classList.add('sticky-' + c);
         closeStickyMenu();
+        saveStickyNotes();
       });
       colorRow.appendChild(sw);
     });
@@ -7007,7 +7138,7 @@ safeInit(function(){
     del.type = 'button';
     del.className = 'sticky-menu-delete';
     del.innerHTML = icon('x') + ' Delete note';
-    del.addEventListener('click', () => { note.remove(); closeStickyMenu(); });
+    del.addEventListener('click', () => { note.remove(); closeStickyMenu(); saveStickyNotes(); });
     menu.appendChild(del);
 
     document.body.appendChild(menu);
@@ -7035,13 +7166,15 @@ safeInit(function(){
     layer.innerHTML = '';
     closeStickyMenu();
     setStickyStatus('All notes cleared.', 'var(--accent)');
+    saveStickyNotes();
   });
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeStickyMenu(); });
 
   layer.classList.add('active');
   updateToggleBtn();
-  setStickyStatus('No notes yet.', 'var(--text-dim)');
+  loadStickyNotes();
+  if (!layer.children.length) setStickyStatus('No notes yet.', 'var(--text-dim)');
 });
 
 /* ---- Tool: Quick launch — paste/drag/browse HTML, open without previewing it ---- */
@@ -7883,8 +8016,8 @@ safeInit(function(){
 
 // via whichever method is selected — shared by both Editor's and Python's
 // Share menus.
-function launchAppInNewTab(view){
-  const method = getShareMethod();
+function launchAppInNewTab(view, forcedMethod){
+  const method = forcedMethod || getShareMethod();
   const html = buildDeepLinkHtml(view);
   if (method === 'blank'){
     const win = window.open('about:blank', '_blank');
@@ -12746,7 +12879,66 @@ const GH_GAMES = [
     type: 'gh-online', gh: { repo: 'MiaLearnsToCode/connect-four', ref: 'master', main: 'index.html' } },
   { id: 'store_gh_checkers', name: 'Checkers', icon: 'flask', online: true,
     description: 'A real open-source Checkers with several linked script files (erikdonohoo/checkers). Plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'erikdonohoo/checkers', ref: 'gh-pages', main: 'index.html' } }
+    type: 'gh-online', gh: { repo: 'erikdonohoo/checkers', ref: 'gh-pages', main: 'index.html' } },
+
+  /* ---- Second batch: more real open-source arcade games, same pipeline ----
+     Verified by actually reading each repo's file listing and raw source
+     before adding it here (never guessed) — see the per-entry notes. None
+     of the two "genre reference" games the user asked for ("helix jump or
+     slope or something") use those trademarked names; they're renamed to
+     original titles while crediting the real upstream repo in the
+     description, same convention as the rest of this list. */
+  { id: 'store_gh_skyhopper', name: 'Sky Hopper', icon: 'rocket', online: false,
+    description: 'A real open-source vertical platform-jumper in the Doodle Jump genre, downloaded from GitHub (levxyca/doodle-jump) and cached for offline play.',
+    type: 'gh-download', gh: { repo: 'levxyca/doodle-jump', ref: 'main', main: 'index.html',
+      assets: [ { rel: 'app.js', path: 'app.js' }, { rel: 'style.css', path: 'style.css' } ] } },
+  { id: 'store_gh_asteroidfield', name: 'Asteroid Field', icon: 'star', online: false,
+    description: 'A real open-source Asteroids-style space shooter, downloaded from GitHub (jsocol/asteroids) and cached for offline play.',
+    type: 'gh-download', gh: { repo: 'jsocol/asteroids', ref: 'main', main: 'index.html',
+      assets: [ { rel: 'asteroids.js', path: 'asteroids.js' }, { rel: 'style.css', path: 'style.css' } ] } },
+  { id: 'store_gh_roadcrosser', name: 'Road Crosser', icon: 'tool', online: false,
+    description: 'A real open-source Frogger-style road-crossing game, downloaded from GitHub (morimay421/frogger-lite) and cached for offline play. A single self-contained file, no extra assets to fetch.',
+    type: 'gh-download', gh: { repo: 'morimay421/frogger-lite', ref: 'main', main: 'index.html', assets: [] } },
+  { id: 'store_gh_patternrecall', name: 'Pattern Recall', icon: 'flask', online: false,
+    description: 'A real open-source Simon-says style color-sequence memory game, downloaded from GitHub (saquibmonaf/Simon-Game) and cached for offline play.',
+    type: 'gh-download', gh: { repo: 'saquibmonaf/Simon-Game', ref: 'main', main: 'index.html',
+      assets: [ { rel: 'style.css', path: 'style.css' }, { rel: 'app.js', path: 'app.js' } ] } },
+  { id: 'store_gh_neoncycles', name: 'Neon Cycles', icon: 'monitor', online: false,
+    description: 'A real open-source Tron-style light-cycle arcade game with procedurally synthesized sound (no audio files), downloaded from GitHub (Emirhankrcbn/Light-Cycle) and cached for offline play.',
+    type: 'gh-download', gh: { repo: 'Emirhankrcbn/Light-Cycle', ref: 'main', main: 'index.html',
+      assets: [ { rel: 'style.css', path: 'style.css' }, { rel: 'script.js', path: 'script.js' } ] } },
+  { id: 'store_gh_downhillroller', name: 'Downhill Roller', icon: 'globe', online: false,
+    description: 'A real open-source 3D endless downhill roller built with three.js — the genre of "slope"-style games — downloaded from GitHub (juwalbose/ThreeJSEndlessRunner3D) and cached for offline play. All graphics are procedurally generated code, no art assets.',
+    type: 'gh-download', gh: { repo: 'juwalbose/ThreeJSEndlessRunner3D', ref: 'master', main: 'EndlessRoller.html',
+      assets: [ { rel: 'lib/three.min.js', path: 'lib/three.min.js' }, { rel: 'lib/stats.min.js', path: 'lib/stats.min.js' },
+        { rel: 'src/OrbitControls.js', path: 'src/OrbitControls.js' }, { rel: 'src/endlessroller.js', path: 'src/endlessroller.js' } ] } },
+  { id: 'store_gh_molebash', name: 'Mole Bash', icon: 'bug', online: true,
+    description: 'A real open-source whack-a-mole reflex game with an image asset (kubowania/whac-a-mole). Too simple a repo to need this, but the image makes it unsafe to inline-cache, so it plays live from GitHub via jsDelivr — needs a connection.',
+    type: 'gh-online', gh: { repo: 'kubowania/whac-a-mole', ref: 'master', main: 'index.html' } },
+  { id: 'store_gh_forestdash', name: 'Forest Dash', icon: 'play', online: true,
+    description: 'A real open-source side-scrolling platformer with sprite sheets and several linked script files (Pizzaboi87/jumping-game). Plays live from GitHub via jsDelivr — needs a connection.',
+    type: 'gh-online', gh: { repo: 'Pizzaboi87/jumping-game', ref: 'main', main: 'index.html' } },
+
+  /* ---- Third batch: a genuine single-file/dependency-free "helix jump"
+     (ball-rolling-down-a-spiral-tower) clone could not be found again on
+     GitHub — every repo search turns up either a Unity/C# project (no web
+     build at all) or a 3D-engine demo, not a plain HTML/JS game. Broadened
+     to other fun arcade/reflex/physics-toy single-file browser games
+     instead, same verification rigor (real repo, real file content read
+     via fetch, real jsDelivr URL confirmed) as every other entry here. */
+  { id: 'store_gh_ballblast', name: 'Ball Blast', icon: 'star', online: true,
+    description: 'A real open-source arcade ball-blaster reflex game, canvas-based with sprite and sound assets (AananthV/Ball-Blast). Plays live from GitHub via jsDelivr — needs a connection.',
+    type: 'gh-online', gh: { repo: 'AananthV/Ball-Blast', ref: 'master', main: 'game.html' } },
+  { id: 'store_gh_bouncephysics', name: 'Bounce Physics', icon: 'globe', online: false,
+    description: 'A real open-source bouncing-balls physics toy/simulation, downloaded from GitHub (MTrajK/bouncing-balls) and cached for offline play. Click to launch balls and watch the collision physics.',
+    type: 'gh-download', gh: { repo: 'MTrajK/bouncing-balls', ref: 'master', main: 'src/index.html',
+      assets: [ { rel: 'css/styles.css', path: 'src/css/styles.css' }, { rel: 'js/vector2d.js', path: 'src/js/vector2d.js' },
+        { rel: 'js/balls.js', path: 'src/js/balls.js' }, { rel: 'js/bouncing-balls.js', path: 'src/js/bouncing-balls.js' },
+        { rel: 'js/choice.js', path: 'src/js/choice.js' } ] } },
+  { id: 'store_gh_dodgerun', name: 'Dodge Run', icon: 'rocket', online: false,
+    description: 'A real open-source jump-and-dodge reflex runner, downloaded from GitHub (abdulwahabtfs590-cmyk/JUMP-AND-DODGE) and cached for offline play. A single self-contained HTML/CSS/JS trio, no image or audio assets.',
+    type: 'gh-download', gh: { repo: 'abdulwahabtfs590-cmyk/JUMP-AND-DODGE', ref: 'main', main: 'index.html',
+      assets: [ { rel: 'script.js', path: 'script.js' }, { rel: 'style.css', path: 'style.css' } ] } }
 ];
 STORE_APPS.push(...GH_GAMES);
 
