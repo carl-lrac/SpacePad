@@ -1119,6 +1119,8 @@
   }
   header button:hover { border-color: var(--accent-dim); color: var(--accent); background: #232830; transform: translateY(-1px); }
   header button:active { transform: translateY(0); }
+  header button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  header button:disabled:hover { border-color: var(--border); color: var(--text); background: var(--panel-2); }
   header button.primary {
     background: var(--accent);
     color: #14132b;
@@ -1558,6 +1560,7 @@
   #add-app-overlay .net-popup { max-width: 480px; text-align: left; max-height: 85vh; overflow-y: auto; }
   #add-app-type-row { display: flex; gap: 6px; margin-bottom: 12px; }
   #add-app-type-row button.ghost-btn.active { border-color: var(--accent-dim); color: var(--accent); background: var(--panel-3); }
+  #add-app-gh-mode-row button.ghost-btn.active { border-color: var(--accent-dim); color: var(--accent); background: var(--panel-3); }
   #add-app-icon-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 110px; overflow-y: auto; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
   #add-app-icon-grid button {
     width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-3);
@@ -2166,6 +2169,8 @@
     </div>
   </div>
   <span class="status" id="status">ready</span>
+  <button type="button" id="header-sticky-add-btn" title="Add a sticky note"><svg class="icon"><use href="#icon-file-plus"></use></svg> Sticky note</button>
+  <button type="button" id="header-newtab-btn" title="Open the focused app in a new tab (right-click for the blob: method)"><svg class="icon"><use href="#icon-external-link"></use></svg> Open in new tab</button>
   <div class="dropdown">
     <button class="dropdown-toggle" id="settingsMenuBtn" type="button"><svg class="icon"><use href="#icon-settings"></use></svg> More ▾</button>
     <div class="dropdown-menu dropdown-menu-right" id="settingsMenu">
@@ -3410,6 +3415,23 @@
           <button type="button" class="primary ghost-btn" id="add-app-open-btn" style="background:var(--accent); color:#14132b; border-color:var(--accent);"><svg class="icon"><use href="#icon-plus"></use></svg> Add app…</button>
         </div>
         <div id="customize-app-list" style="margin-top:8px;"></div>
+
+        <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);"><svg class="icon" style="width:13px;height:13px;"><use href="#icon-download"></use></svg> Export your apps</h4>
+        <p style="margin:0 0 8px; font-size:11.5px; color:var(--text-dim);">Save your apps as a JSON file, upload it to a public GitHub repo or Gist, then share its jsDelivr link so others (or your other devices) can import it — e.g. <code>https://cdn.jsdelivr.net/gh/you/repo@main/spacepad-apps.json</code>.</p>
+        <div class="conv-btn-row">
+          <button type="button" class="ghost-btn" id="export-apps-btn">Download JSON</button>
+          <button type="button" class="ghost-btn" id="export-apps-copy-btn">Copy JSON</button>
+        </div>
+
+        <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);"><svg class="icon" style="width:13px;height:13px;"><use href="#icon-link"></use></svg> Import by link</h4>
+        <p style="margin:0 0 8px; font-size:11.5px; color:var(--text-dim);">Paste a jsDelivr (or other) link to a <code>spacepad-apps.json</code> file. Only import from sources you trust — imported apps can run arbitrary code.</p>
+        <div class="key-row" style="margin-bottom:8px;">
+          <input type="text" id="import-apps-url" placeholder="https://cdn.jsdelivr.net/gh/you/repo@main/spacepad-apps.json" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="conv-btn-row">
+          <button type="button" class="ghost-btn" id="import-apps-btn">Import</button>
+        </div>
+        <div id="import-apps-status" style="font-size:11.5px; margin-top:6px; min-height:14px;"></div>
       </div>
     </div>
   </div>
@@ -3419,6 +3441,11 @@
       <div>
         <h2><svg class="icon"><use href="#icon-download"></use></svg> App Store</h2>
         <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. A couple load a small library from a CDN at runtime, so those need a network connection to fully work; everything else works fully offline.</p>
+      </div>
+      <div class="settings-card">
+        <h3><svg class="icon"><use href="#icon-plus"></use></svg> My Apps</h3>
+        <p style="margin:0 0 10px; font-size:11.5px; color:var(--text-dim);">Add your own app (HTML, Python, a URL, or a GitHub repo), plus export/import your app list by link.</p>
+        <button type="button" class="ghost-btn" id="appstore-goto-myapps-btn">Open My Apps…</button>
       </div>
       <div class="settings-card">
         <h3><svg class="icon"><use href="#icon-play"></use></svg> Available</h3>
@@ -3508,6 +3535,7 @@
         <button type="button" class="ghost-btn" data-type="html">HTML app</button>
         <button type="button" class="ghost-btn" data-type="python">Python app</button>
         <button type="button" class="ghost-btn" data-type="page">Page / URL</button>
+        <button type="button" class="ghost-btn" data-type="github">GitHub repo</button>
       </div>
 
       <div id="add-app-content-field">
@@ -3519,6 +3547,26 @@
         <div class="key-row">
           <input type="text" id="add-app-url" placeholder="example.com or https://example.com" spellcheck="false" autocomplete="off">
         </div>
+      </div>
+      <div id="add-app-github-field" style="display:none;">
+        <label class="field-label">Repo (owner/repo)</label>
+        <div class="key-row">
+          <input type="text" id="add-app-gh-repo" placeholder="gabrielecirulli/2048" spellcheck="false" autocomplete="off">
+        </div>
+        <label class="field-label">Branch / tag</label>
+        <div class="key-row">
+          <input type="text" id="add-app-gh-ref" placeholder="main" spellcheck="false" autocomplete="off">
+        </div>
+        <label class="field-label">Main file path</label>
+        <div class="key-row">
+          <input type="text" id="add-app-gh-main" placeholder="index.html" spellcheck="false" autocomplete="off">
+        </div>
+        <label class="field-label">Playback</label>
+        <div id="add-app-gh-mode-row" style="display:flex; gap:6px;">
+          <button type="button" class="ghost-btn" data-gh-mode="online" style="flex:1;">Play online (always fresh)</button>
+          <button type="button" class="ghost-btn" data-gh-mode="cache" style="flex:1;">Download &amp; cache (offline)</button>
+        </div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:6px;">Loaded via jsDelivr's GitHub CDN. "Download &amp; cache" works best for single-file apps/games — it fetches the main file now and stores it for offline play.</div>
       </div>
 
       <div class="conv-btn-row" style="margin-top:14px;">
@@ -5440,6 +5488,7 @@ function focusWindow(key){
     const r = appWindows[k];
     if (r) r.el.style.zIndex = String(10 + i);
   });
+  updateHeaderNewTabBtn();
 }
 
 function closeWindow(key){
@@ -5451,6 +5500,39 @@ function closeWindow(key){
   if (key === 'stargazing') document.getElementById('starfield').classList.remove('scene-stargazing');
   document.getElementById('editor-toolbar').style.display = 'none';
   statusEl.textContent = 'desktop';
+  updateHeaderNewTabBtn();
+}
+
+// Resolves a window-manager key (as tracked in winOrder/appWindows) to the
+// string launchAppInNewTab()/buildDeepLinkHtml() actually understands — the
+// 'custom-app' window is a single shared window reused for every custom/
+// store app, so its real identity has to come from currentCustomAppId.
+// Shared by each window's own titlebar button and the global header button
+// below, so both resolve "which app is this" identically.
+function resolveNewTabKeyForWinKey(key){
+  return key === 'custom-app' ? ('custom:' + currentCustomAppId) : key;
+}
+
+// Topmost OPEN window, per the same winOrder the window manager itself uses
+// to stack/z-index windows (focusWindow() always pushes the focused key to
+// the end) — i.e. "whichever window the person was just looking at".
+function getFocusedWinKey(){
+  for (let i = winOrder.length - 1; i >= 0; i--){
+    const k = winOrder[i];
+    const rec = appWindows[k];
+    if (rec && rec.open) return k;
+  }
+  return null;
+}
+
+// Keeps the global header "open in new tab" button enabled only while some
+// window is actually open/focused — with just the desktop showing there is
+// nothing sensible to deep-link to, so the button is disabled rather than
+// left to silently no-op or throw.
+function updateHeaderNewTabBtn(){
+  const btn = document.getElementById('header-newtab-btn');
+  if (!btn) return;
+  btn.disabled = !getFocusedWinKey();
 }
 
 // Wires dragging (by the title bar), resizing (the 8 edge/corner handles),
@@ -5463,14 +5545,18 @@ function wireWindowChrome(rec){
   el.querySelector('.win-max').addEventListener('click', (e) => { e.stopPropagation(); toggleMaximize(rec.key); });
   const newTabBtn = el.querySelector('.win-newtab');
   if (newTabBtn){
-    // The 'custom-app' key is a single shared window reused for every
-    // custom/store app — the actual app identity to deep-link to is
-    // whichever one currently occupies it, tracked in currentCustomAppId.
-    function resolveNewTabKey(){
-      return rec.key === 'custom-app' ? ('custom:' + currentCustomAppId) : rec.key;
-    }
-    newTabBtn.addEventListener('click', (e) => { e.stopPropagation(); launchAppInNewTab(resolveNewTabKey(), 'blob'); });
-    newTabBtn.addEventListener('contextmenu', (e) => { e.stopPropagation(); e.preventDefault(); launchAppInNewTab(resolveNewTabKey(), 'blank'); });
+    // Default (left-click) uses the about:blank/document.write method, not
+    // blob: — see the long comment above launchAppInNewTab() for why: a
+    // blob: URL only shares the opener's storage when the opener itself has
+    // a normal http(s) origin, and silently loses access to localStorage/
+    // IndexedDB (so custom/store apps and anything else that depends on
+    // persisted data land back on the plain Editor instead) whenever the
+    // app is running somewhere with an opaque origin — opened as a local
+    // file, or embedded in a sandboxed preview. about:blank + document.write
+    // was verified to keep working in both cases, so it's the safer default;
+    // blob: is kept one right-click away for anyone who wants it.
+    newTabBtn.addEventListener('click', (e) => { e.stopPropagation(); launchAppInNewTab(resolveNewTabKeyForWinKey(rec.key), 'blank'); });
+    newTabBtn.addEventListener('contextmenu', (e) => { e.stopPropagation(); e.preventDefault(); launchAppInNewTab(resolveNewTabKeyForWinKey(rec.key), 'blob'); });
   }
 
   const titlebar = el.querySelector('.win-titlebar');
@@ -5535,7 +5621,7 @@ function createAppWindow(key, meta){
   winEl.innerHTML =
     '<div class="win-titlebar">' +
       '<span class="win-icon"></span><span class="win-title"></span>' +
-      '<button type="button" class="win-newtab" title="Open in a new tab (blob). Right-click for about:blank.">' + icon('external-link') + '</button>' +
+      '<button type="button" class="win-newtab" title="Open in a new tab. Right-click for the blob: method.">' + icon('external-link') + '</button>' +
       '<button type="button" class="win-max" title="Maximize / restore">' + icon('maximize') + '</button>' +
       '<button type="button" class="win-close" title="Close">' + icon('x') + '</button>' +
     '</div>' +
@@ -5571,6 +5657,7 @@ function showDesktop(){
   setFocusedTaskbar('desktop');
   document.getElementById('editor-toolbar').style.display = 'none';
   statusEl.textContent = 'desktop';
+  updateHeaderNewTabBtn();
 }
 
 // Opens (or, if already open, focuses) one app's window. This is the
@@ -5609,6 +5696,11 @@ function openApp(name){
       }).catch(() => {
         if (currentCustomAppId === app.id) frame.srcdoc = '<body style="font-family:system-ui;color:#eee;background:#1a1a2e;padding:24px">Could not load the downloaded game data.</body>';
       });
+    } else if (app.type === 'gh-online'){
+      // Live GitHub repo, played straight off jsDelivr every time — no
+      // caching, always the latest content at that ref.
+      frame.removeAttribute('srcdoc');
+      frame.src = (app.gh && app.gh.repo && app.gh.main) ? ghRawUrl(app.gh.repo, app.gh.ref || 'main', app.gh.main) : 'about:blank';
     } else if (app.type === 'page'){
       frame.removeAttribute('srcdoc');
       frame.src = app.url || 'about:blank';
@@ -6992,6 +7084,12 @@ safeInit(function(){
   }
 
   addBtn.addEventListener('mousedown', stickyBtnMouseDown);
+  // Same creation gesture (drag to place, or a plain click to center), just
+  // reachable from the always-visible header instead of being buried inside
+  // the Tools window — see the user-reported discoverability complaint this
+  // button exists to fix.
+  const headerAddBtn = document.getElementById('header-sticky-add-btn');
+  if (headerAddBtn) headerAddBtn.addEventListener('mousedown', stickyBtnMouseDown);
 
   function stickyBtnMouseDown(e){
     e.preventDefault();
@@ -8044,6 +8142,25 @@ function launchAppHere(view){
     window.location.href = blobUrl;
   }
 }
+
+// Global header button — opens whichever window is currently focused (per
+// getFocusedWinKey(), the same winOrder/appWindows bookkeeping every other
+// window-manager action uses), with the same left-click=blob / right-click=
+// about:blank split as each window's own titlebar button, so there's no
+// surprise switching between the two.
+const headerNewTabBtn = document.getElementById('header-newtab-btn');
+headerNewTabBtn.addEventListener('click', () => {
+  const key = getFocusedWinKey();
+  if (!key) return; // nothing open — button is disabled in this state, but guard anyway
+  launchAppInNewTab(resolveNewTabKeyForWinKey(key), 'blank');
+});
+headerNewTabBtn.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const key = getFocusedWinKey();
+  if (!key) return;
+  launchAppInNewTab(resolveNewTabKeyForWinKey(key), 'blob');
+});
+updateHeaderNewTabBtn();
 
 document.getElementById('launch-tab-btn').addEventListener('click', () => launchAppInNewTab('editor'));
 document.getElementById('launch-here-btn').addEventListener('click', () => launchAppHere('editor'));
@@ -12874,12 +12991,6 @@ const GH_GAMES = [
   { id: 'store_gh_2048orig', name: '2048 (Original)', icon: 'play', online: true,
     description: 'The original 2048 by its creator (gabrielecirulli/2048). Too many interlinked files to cache simply, so it plays live from GitHub via jsDelivr — needs a connection.',
     type: 'gh-online', gh: { repo: 'gabrielecirulli/2048', ref: 'master', main: 'index.html' } },
-  { id: 'store_gh_connect4', name: 'Connect Four', icon: 'star', online: true,
-    description: 'A real open-source Connect Four with art/sound assets (MiaLearnsToCode/connect-four). Plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'MiaLearnsToCode/connect-four', ref: 'master', main: 'index.html' } },
-  { id: 'store_gh_checkers', name: 'Checkers', icon: 'flask', online: true,
-    description: 'A real open-source Checkers with several linked script files (erikdonohoo/checkers). Plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'erikdonohoo/checkers', ref: 'gh-pages', main: 'index.html' } },
 
   /* ---- Second batch: more real open-source arcade games, same pipeline ----
      Verified by actually reading each repo's file listing and raw source
@@ -13160,12 +13271,22 @@ function onStoreItemClick(btn){
 const ADD_APP_ICON_CHOICES = ['edit', 'terminal', 'globe', 'star', 'rocket', 'flask', 'tool', 'book-open', 'monitor', 'play', 'folder', 'file-text', 'palette', 'moon', 'bug', 'calendar'];
 let addAppSelectedIcon = ADD_APP_ICON_CHOICES[0];
 let addAppSelectedType = 'html';
+let addAppGhMode = 'online';
+
+// Shared id generator for any freshly-created custom app record, whether it
+// comes from the Add App form or from an imported app that had no id of
+// its own — same scheme the Add App save handler always used.
+function genAppId(){ return 'app_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 function openAddAppModal(){
   document.getElementById('add-app-name').value = '';
   document.getElementById('add-app-content').value = '';
   document.getElementById('add-app-url').value = '';
+  document.getElementById('add-app-gh-repo').value = '';
+  document.getElementById('add-app-gh-ref').value = '';
+  document.getElementById('add-app-gh-main').value = '';
   addAppSelectedIcon = ADD_APP_ICON_CHOICES[0];
+  setAddAppGhMode('online');
   setAddAppType('html');
   renderAddAppIconGrid();
   document.getElementById('add-app-overlay').style.display = 'flex';
@@ -13185,11 +13306,17 @@ function renderAddAppIconGrid(){
     });
   });
 }
+function setAddAppGhMode(mode){
+  addAppGhMode = mode === 'cache' ? 'cache' : 'online';
+  document.querySelectorAll('#add-app-gh-mode-row button').forEach(b => b.classList.toggle('active', b.dataset.ghMode === addAppGhMode));
+}
+document.querySelectorAll('#add-app-gh-mode-row button').forEach(b => b.addEventListener('click', () => setAddAppGhMode(b.dataset.ghMode)));
 function setAddAppType(type){
   addAppSelectedType = type;
   document.querySelectorAll('#add-app-type-row button').forEach(b => b.classList.toggle('active', b.dataset.type === type));
   document.getElementById('add-app-content-field').style.display = (type === 'html' || type === 'python') ? '' : 'none';
   document.getElementById('add-app-url-field').style.display = type === 'page' ? '' : 'none';
+  document.getElementById('add-app-github-field').style.display = type === 'github' ? '' : 'none';
   const label = document.getElementById('add-app-content-label');
   if (type === 'python') label.textContent = 'Python code';
   else label.textContent = 'HTML';
@@ -13201,6 +13328,20 @@ document.querySelectorAll('#add-app-type-row button').forEach(b => b.addEventLis
 document.getElementById('add-app-open-btn').addEventListener('click', openAddAppModal);
 document.getElementById('add-app-cancel-btn').addEventListener('click', closeAddAppModal);
 document.getElementById('add-app-overlay').addEventListener('click', (e) => { if (e.target.id === 'add-app-overlay') closeAddAppModal(); });
+document.getElementById('appstore-goto-myapps-btn').addEventListener('click', () => switchAppView('customize'));
+
+// Finishes adding a freshly-built custom app record to the desktop — the
+// common tail end of every Add App path (plain + GitHub), so the GitHub
+// path (which needs an async download first, for "cache" mode) can share
+// it with the synchronous paths below.
+function finishAddApp(app, name){
+  customApps.push(app);
+  saveCustomApps();
+  closeAddAppModal();
+  renderCustomizeAppList();
+  if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
+  showToast('"' + name + '" added to the desktop.');
+}
 
 document.getElementById('add-app-save-btn').addEventListener('click', () => {
   const name = document.getElementById('add-app-name').value.trim();
@@ -13208,6 +13349,35 @@ document.getElementById('add-app-save-btn').addEventListener('click', () => {
   const type = addAppSelectedType;
   const content = document.getElementById('add-app-content').value;
   const url = document.getElementById('add-app-url').value.trim();
+  if (type === 'github'){
+    const repo = document.getElementById('add-app-gh-repo').value.trim();
+    const ref = document.getElementById('add-app-gh-ref').value.trim() || 'main';
+    const main = document.getElementById('add-app-gh-main').value.trim() || 'index.html';
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)){ showToast('Enter a repo as owner/repo.', 'error'); return; }
+    const gh = { repo: repo, ref: ref, main: main };
+    if (addAppGhMode === 'online'){
+      finishAddApp({ id: genAppId(), name: name, icon: addAppSelectedIcon, type: 'gh-online', gh: gh }, name);
+      return;
+    }
+    // "Download & cache": fetch the main file right now (same real network
+    // call the App Store's own GH-download install uses) and cache it into
+    // IndexedDB before the app ever shows up as installed.
+    const saveBtn = document.getElementById('add-app-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Downloading…';
+    const ghWithAssets = { repo: repo, ref: ref, main: main, assets: [] };
+    const item = { id: genAppId(), gh: ghWithAssets };
+    downloadGhGame(item, () => {}).then(() => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Add app';
+      finishAddApp({ id: item.id, name: name, icon: addAppSelectedIcon, type: 'gh-cached', gh: ghWithAssets }, name);
+    }).catch(() => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Add app';
+      showToast('Could not download "' + main + '" from ' + repo + ' — check the repo/branch/path and your connection.', 'error');
+    });
+    return;
+  }
   if ((type === 'html' || type === 'python') && !content.trim()){ showToast('Paste some ' + (type === 'python' ? 'Python code' : 'HTML') + ' first.', 'error'); return; }
   if (type === 'page' && !url){ showToast('Enter a URL first.', 'error'); return; }
   if (type === 'page' && /^javascript:/i.test(url)){ showToast('javascript: URLs aren\'t allowed here.', 'error'); return; }
@@ -13217,19 +13387,139 @@ document.getElementById('add-app-save-btn').addEventListener('click', () => {
   // (no scheme at all) gets "https://" prepended; anything that already
   // has a scheme (even one without "//", like data:) is left alone.
   const app = {
-    id: 'app_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    id: genAppId(),
     name: name,
     icon: addAppSelectedIcon,
     type: type,
     content: (type === 'html' || type === 'python') ? content : '',
     url: type === 'page' ? (/^[a-z][a-z0-9+.-]*:/i.test(url) ? url : 'https://' + url) : ''
   };
-  customApps.push(app);
-  saveCustomApps();
-  closeAddAppModal();
-  renderCustomizeAppList();
-  if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
-  showToast('"' + name + '" added to the desktop.');
+  finishAddApp(app, name);
+});
+
+/* =========================================================================
+   EXPORT / IMPORT "My Apps" BY LINK — there's no backend here and no API
+   keys/tokens are ever stored, so Spacepad can't publish to GitHub itself.
+   Instead: export turns customApps into a plain JSON array the user can
+   download or copy, upload to a public GitHub repo/Gist themselves, then
+   import re-fetches that same JSON shape from any URL (typically a
+   cdn.jsdelivr.net link) and merges it into customApps. Both directions
+   share one on-the-wire schema, independent of customApps' own internal
+   shapes (e.g. a cached GH game is internally 'gh-cached' with data that
+   lives in IndexedDB, but exports as the lightweight re-installable
+   'gh-download' descriptor, same as a STORE_APPS entry would).
+   ========================================================================= */
+function exportableAppShape(a){
+  if (a.type === 'gh-cached') return { id: a.id, name: a.name, icon: a.icon, type: 'gh-download', gh: a.gh };
+  if (a.type === 'gh-online') return { id: a.id, name: a.name, icon: a.icon, type: 'gh-online', gh: a.gh };
+  if (a.type === 'page') return { id: a.id, name: a.name, icon: a.icon, type: 'page', url: a.url };
+  return { id: a.id, name: a.name, icon: a.icon, type: a.type, content: a.content || '' }; // 'html' / 'python'
+}
+function exportUserApps(){ return customApps.map(exportableAppShape); }
+
+document.getElementById('export-apps-btn').addEventListener('click', () => {
+  if (!customApps.length){ showToast('No apps to export yet — add one first.', 'error'); return; }
+  const json = JSON.stringify(exportUserApps(), null, 2);
+  try {
+    const blob = new Blob([json], { type: 'application/json' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl; a.download = 'spacepad-apps.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    showToast('Downloaded spacepad-apps.json');
+  } catch(e){ showToast('Could not create the download.', 'error'); }
+});
+document.getElementById('export-apps-copy-btn').addEventListener('click', () => {
+  if (!customApps.length){ showToast('No apps to export yet — add one first.', 'error'); return; }
+  copyToClipboard(JSON.stringify(exportUserApps(), null, 2), document.getElementById('export-apps-copy-btn'));
+});
+
+// Maps an imported entry's on-the-wire type back to the internal type it
+// would become once added, purely so dedup-by-name+type can compare like
+// with like (an imported 'gh-download' should count as a duplicate of an
+// already-installed 'gh-cached' app of the same name).
+function importTypeToInternal(type){ return type === 'gh-download' ? 'gh-cached' : type; }
+
+function isDuplicateImportedApp(raw){
+  if (raw.id && customApps.some(a => a.id === raw.id)) return true;
+  return customApps.some(a => a.name === raw.name && a.type === importTypeToInternal(raw.type));
+}
+
+// Validates + normalizes one imported entry into a real customApps record.
+// Returns null (and never throws) for anything that doesn't look like a
+// usable app, so one bad entry in the array never aborts the whole import.
+// For a 'gh-download' entry this actually fetches the main file right now
+// (same network call the App Store's own install path makes) and caches it,
+// so the returned promise can reject — callers must catch per-entry.
+async function buildImportedApp(raw){
+  if (!raw || typeof raw !== 'object' || typeof raw.name !== 'string' || !raw.name.trim()) return null;
+  const icon = typeof raw.icon === 'string' && raw.icon ? raw.icon : 'star';
+  const id = (typeof raw.id === 'string' && raw.id) ? raw.id : genAppId();
+  if (raw.type === 'html' || raw.type === 'python'){
+    if (typeof raw.content !== 'string' || !raw.content.trim()) return null;
+    return { id: id, name: raw.name, icon: icon, type: raw.type, content: raw.content, url: '' };
+  }
+  if (raw.type === 'page'){
+    if (typeof raw.url !== 'string' || !raw.url.trim()) return null;
+    return { id: id, name: raw.name, icon: icon, type: 'page', content: '', url: raw.url };
+  }
+  if (raw.type === 'gh-online'){
+    if (!raw.gh || typeof raw.gh.repo !== 'string' || typeof raw.gh.main !== 'string') return null;
+    return { id: id, name: raw.name, icon: icon, type: 'gh-online', gh: { repo: raw.gh.repo, ref: raw.gh.ref || 'main', main: raw.gh.main } };
+  }
+  if (raw.type === 'gh-download'){
+    if (!raw.gh || typeof raw.gh.repo !== 'string' || typeof raw.gh.main !== 'string') return null;
+    const gh = { repo: raw.gh.repo, ref: raw.gh.ref || 'main', main: raw.gh.main, assets: Array.isArray(raw.gh.assets) ? raw.gh.assets : [] };
+    await downloadGhGame({ id: id, gh: gh }, () => {}); // throws on network failure — left to the caller
+    return { id: id, name: raw.name, icon: icon, type: 'gh-cached', gh: gh };
+  }
+  return null;
+}
+
+document.getElementById('import-apps-btn').addEventListener('click', async () => {
+  const urlInput = document.getElementById('import-apps-url');
+  const statusEl = document.getElementById('import-apps-status');
+  const btn = document.getElementById('import-apps-btn');
+  const url = urlInput.value.trim();
+  statusEl.style.color = 'var(--text-dim)';
+  if (!url){ statusEl.textContent = 'Paste a link first.'; statusEl.style.color = 'var(--error)'; return; }
+  btn.disabled = true;
+  statusEl.textContent = 'Fetching…';
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Request failed (HTTP ' + res.status + ')');
+    let data;
+    try { data = await res.json(); }
+    catch(e){ throw new Error('That URL did not return valid JSON.'); }
+    if (!Array.isArray(data)) throw new Error('Expected a JSON array of apps.');
+    let added = 0, skipped = 0, failed = 0;
+    for (const raw of data){
+      if (!raw || typeof raw !== 'object' || typeof raw.name !== 'string' || !raw.name.trim()){ failed++; continue; }
+      if (isDuplicateImportedApp(raw)){ skipped++; continue; }
+      let built = null;
+      try { built = await buildImportedApp(raw); }
+      catch(e){ built = null; }
+      if (!built){ failed++; continue; }
+      customApps.push(built);
+      added++;
+    }
+    if (added) saveCustomApps();
+    renderCustomizeAppList();
+    if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
+    const parts = [];
+    if (added) parts.push('Imported ' + added + ' app' + (added === 1 ? '' : 's'));
+    if (skipped) parts.push(skipped + ' already added');
+    if (failed) parts.push(failed + ' invalid or failed');
+    statusEl.textContent = parts.length ? parts.join(' — ') : 'Nothing to import.';
+    statusEl.style.color = added ? 'var(--accent)' : 'var(--error)';
+    if (added) urlInput.value = '';
+  } catch(err){
+    statusEl.textContent = 'Import failed: ' + (err && err.message ? err.message : 'could not fetch or parse that URL.');
+    statusEl.style.color = 'var(--error)';
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 /* =========================================================================
