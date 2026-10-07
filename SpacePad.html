@@ -103,7 +103,11 @@
       radial-gradient(ellipse 50% 60% at 55% 100%, rgba(139,124,246,0.11), transparent 60%),
       var(--bg);
     background-size: 200% 200%;
-    animation: nebulaDrift 150s ease-in-out infinite alternate;
+    background-position: 0% 0%, 100% 100%, 50% 100%, 0 0;
+    /* nebulaDrift (an 8% background-position creep over 150s) used to run
+       here. Animating background-position repaints this full-viewport layer
+       on the main thread every frame for a change nobody can see, so the
+       gradients now just sit at the animation's starting position. */
   }
   @keyframes nebulaDrift {
     0% { background-position: 0% 0%, 100% 100%, 50% 100%, 0 0; }
@@ -800,6 +804,54 @@
   @keyframes galaxySpin { to { transform: rotate(360deg); } }
   .stars-layer { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 
+  /* ---------- Background load shedding ----------
+     The global #starfield and the Stargazing window's own scene are two full
+     copies of the same animated sky; running both at once (plus whatever
+     sits on top) is what made compositing expensive. JS (updateBgState)
+     toggles these two classes on <html>:
+       sg-open    — the Stargazing scene is on screen, so the global sky just
+                    behind/around it freezes its ambient twinkle/drift and
+                    drops its own meteors (the scene has its own).
+       bg-covered — a maximized window is covering the desktop, so the global
+                    sky's star/planet/meteor layers aren't drawn at all (only
+                    the flat nebula gradient remains under the header/sidebar).
+     Effects fired on purpose (.aurora-surge, .meteor-once, .eclipse, ...)
+     are never touched by these rules. */
+  html.sg-open #starfield:not(.aurora-surge)::after,
+  html.sg-open #starfield > .stars-layer,
+  html.sg-open #starfield > .parallax-layer .planet:not(.eclipse),
+  html.sg-open #starfield > .parallax-layer .galaxy { animation-play-state: paused; }
+  html.sg-open #starfield > .meteor:not(.meteor-once),
+  html.sg-open #starfield > .comet:not(.meteor-once) { visibility: hidden; animation-play-state: paused; }
+  html.bg-covered #starfield:not(.aurora-surge)::after,
+  html.bg-covered #starfield > .stars-layer,
+  html.bg-covered #starfield > .parallax-layer .planet:not(.eclipse),
+  html.bg-covered #starfield > .parallax-layer .galaxy { animation-play-state: paused; }
+  html.bg-covered #starfield > .stars-layer,
+  html.bg-covered #starfield > .parallax-layer,
+  html.bg-covered #starfield > .meteor:not(.meteor-once),
+  html.bg-covered #starfield > .comet:not(.meteor-once) { visibility: hidden; animation-play-state: paused; }
+
+  /* ---------- Performance mode (Settings -> Appearance) ----------
+     A static starfield: no ambient animation at all (so an idle desktop does
+     zero per-frame work), no ambient meteors/comets, no parallax layers, and
+     lighter shadows/blurs. Cosmic effects you trigger yourself still play,
+     just with cheaper blurs. */
+  html.perf-mode #starfield:not(.aurora-surge)::after { animation: none; }
+  html.perf-mode .stars-layer { animation: none !important; transition: none; will-change: auto; }
+  html.perf-mode .stars-1 { opacity: .7; }
+  html.perf-mode .stars-bright { opacity: .75; }
+  html.perf-mode .parallax-layer { transition: none; will-change: auto; }
+  html.perf-mode .planet:not(.eclipse), html.perf-mode .galaxy { animation: none; will-change: auto; }
+  html.perf-mode .meteor:not(.meteor-once), html.perf-mode .comet:not(.meteor-once) { display: none; }
+  html.perf-mode .aurora-band { filter: blur(8px); }
+  html.perf-mode .bloom-cloud { filter: blur(12px); }
+  html.perf-mode .app-window { box-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+  html.perf-mode .stargazing-title { text-shadow: none; }
+  html.perf-mode .brand .dot::before, html.perf-mode .brand .dot::after { animation: none; }
+  html.perf-mode .brand .dot::before { opacity: .5; }
+  html.perf-mode .app-view.active { animation: none; }
+
   /* ---------- Top bar ---------- */
   header {
     display: flex;
@@ -807,8 +859,6 @@
     gap: 16px;
     padding: 10px 16px;
     background: rgba(18, 20, 42, 0.72);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     box-shadow: 0 1px 0 rgba(0,0,0,0.25);
     flex-shrink: 0;
@@ -828,7 +878,15 @@
   }
   .brand .dot {
     position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
-    box-shadow: 0 0 8px var(--accent); animation: brandPulse 2.4s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--accent);
+  }
+  /* The pulse used to animate box-shadow itself (a main-thread repaint
+     every frame); a pseudo-element with the peak glow fading in/out gives
+     the same pulse using opacity only. */
+  .brand .dot::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    box-shadow: 0 0 14px 3px var(--accent-cyan); opacity: 0;
+    animation: brandPulse 2.4s ease-in-out infinite;
   }
   .brand .dot::after {
     content: ''; position: absolute; width: 2.4px; height: 2.4px; border-radius: 50%; top: 50%; left: 50%;
@@ -839,7 +897,7 @@
     from { transform: rotate(0deg) translateX(8px) rotate(0deg); }
     to { transform: rotate(360deg) translateX(8px) rotate(-360deg); }
   }
-  @keyframes brandPulse { 0%, 100% { box-shadow: 0 0 6px var(--accent); } 50% { box-shadow: 0 0 14px 3px var(--accent-cyan); } }
+  @keyframes brandPulse { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
   .status {
     font-size: 11.5px;
     color: var(--text-dim);
@@ -857,7 +915,7 @@
      this used to be part of. Collapses down to icon-only. ---- */
   #app-sidebar {
     width: 190px; flex-shrink: 0; display: flex; flex-direction: column;
-    background: rgba(18, 20, 42, 0.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: rgba(18, 20, 42, 0.72);
     border-right: 1px solid var(--border); transition: width .18s ease; overflow: hidden; z-index: 2;
   }
   #app-sidebar.collapsed { width: 0; border-right: none; }
@@ -940,7 +998,7 @@
 
   .win-titlebar {
     display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px;
-    background: rgba(18, 20, 42, 0.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: rgba(18, 20, 42, 0.82);
     border-bottom: 1px solid var(--border); flex-shrink: 0; cursor: grab; user-select: none; touch-action: none;
   }
   .win-titlebar:active { cursor: grabbing; }
@@ -987,10 +1045,13 @@
   .desktop-heading h1 { margin: 0 0 4px; font-size: 20px; color: var(--text); letter-spacing: .3px; }
   .desktop-heading p { margin: 0 0 14px; font-size: 12.5px; color: var(--text-dim); }
   .desktop-search-row { position: relative; max-width: 280px; margin: 0 auto; }
-  .desktop-search-row svg.icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-dim); pointer-events: none; }
+  /* This magnifier was always drawn UNDER the input's backdrop blur (so it
+     never actually showed); with the blur gone it would now overlap the
+     placeholder, so keep it hidden to preserve the existing look. */
+  .desktop-search-row svg.icon { display: none; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-dim); pointer-events: none; }
   .desktop-search-row input {
     width: 100%; box-sizing: border-box; padding: 8px 12px 8px 32px; border-radius: 20px;
-    border: 1px solid var(--border); background: rgba(20, 19, 43, 0.55); backdrop-filter: blur(6px);
+    border: 1px solid var(--border); background: rgba(20, 19, 43, 0.55);
     color: var(--text); font-size: 12.5px;
   }
   .desktop-search-row input:focus { outline: none; border-color: var(--accent-dim); background: rgba(20, 19, 43, 0.8); }
@@ -1195,11 +1256,25 @@
   .preset-row-count { color: var(--text-dim); font-size: 10.5px; margin-left: 4px; }
   .effects-presets-empty { padding: 4px 10px 6px; color: var(--text-dim); font-size: 11px; font-style: italic; opacity: .8; }
 
+  /* ---- Shared "new tab method" picker ---- */
+  .newtab-split { display: inline-flex; align-items: stretch; }
+  .newtab-split #header-newtab-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .newtab-split #header-newtab-caret { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: -1px; padding-left: 8px; padding-right: 8px; }
+  .newtab-picker { display: flex; flex-direction: column; gap: 1px; min-width: 250px; }
+  .nt-opt { display: flex; align-items: flex-start; gap: 8px; padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 12px; color: var(--text); }
+  .nt-opt:hover { background: rgba(139,124,246,0.14); }
+  .nt-opt input[type="radio"] { accent-color: var(--accent); cursor: pointer; margin: 3px 0 0; flex-shrink: 0; }
+  .nt-opt b { font-weight: 600; display: block; }
+  .nt-opt small { display: block; color: var(--text-dim); font-size: 10.5px; line-height: 1.35; margin-top: 1px; }
+  #newtab-popover { position: fixed; z-index: 400; display: none; }
+  #newtab-popover.open { display: flex; opacity: 1; transform: none; pointer-events: auto; }
+  .toast .toast-action { margin-left: 6px; background: var(--accent); color: #14132b; border: none; border-radius: 6px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
   /* ---- Toast notifications ---- */
   #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
   .toast {
     display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--accent-dim);
-    border-radius: 10px; padding: 10px 16px; color: var(--text); font-size: 12.5px; max-width: 320px;
+    border-radius: 10px; padding: 10px 16px; color: var(--text); font-size: 12.5px; max-width: 380px;
     box-shadow: 0 10px 28px rgba(0,0,0,0.45); pointer-events: auto;
     animation: toastIn .25s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -1371,26 +1446,11 @@
   .tab.active { color: var(--text); background: var(--panel-2); }
   .tab.active .sq { box-shadow: 0 0 6px currentColor; }
   .tab[data-lang="html"].active { border-bottom-color: var(--html-c); }
-  .tab[data-lang="css"].active { border-bottom-color: var(--css-c); }
-  .tab[data-lang="js"].active { border-bottom-color: var(--js-c); }
-  .tab.tab-closed { display: none; }
-  .tab-close-btn {
-    border: none; background: transparent; color: var(--text-dim); cursor: pointer;
-    font-size: 20px; line-height: 1; padding: 2px 3px; margin-left: 2px; border-radius: 4px;
-    opacity: 0; transition: opacity .12s ease, color .12s ease, background .12s ease;
-  }
-  .tab:hover .tab-close-btn { opacity: .65; }
-  .tab-close-btn:hover { opacity: 1 !important; color: var(--error); background: rgba(255,107,138,0.12); }
-  .tab-reopen-btn {
-    width: auto; padding: 10px 14px; font-size: 15px; line-height: 1; color: var(--text-dim); cursor: pointer;
-    background: transparent; border: none; border-right: 1px solid var(--border); text-align: left;
-  }
-  .tab-reopen-btn:hover { color: var(--text); background: rgba(255,255,255,0.02); }
-  #reopen-tab-wrap { width: auto; }
-  #reopen-tab-wrap .dropdown-menu { left: 0; top: calc(100% + 6px); margin-left: 0; }
-  #reopenTabMenu .dropdown-item .sq { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 7px; }
-  #reopenTabMenu .dropdown-item[data-lang="css"] .sq { background: var(--css-c); }
-  #reopenTabMenu .dropdown-item[data-lang="js"] .sq { background: var(--js-c); }
+  /* Single-file editor: just one, non-closable "index.html" label — no close
+     button, no hover affordance suggesting it can be dismissed. */
+  .tab.single-tab { cursor: default; }
+  .tab.single-tab:hover { color: var(--text-dim); background: none; }
+  .tab.single-tab.active:hover { color: var(--text); background: var(--panel-2); }
 
   .editor-body { flex: 1; position: relative; min-height: 0; display:flex; }
   .code-panel { display: none; width: 100%; height: 100%; position: relative; }
@@ -1541,6 +1601,8 @@
   .custom-app-row .cust-app-type { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; margin-right: 4px; }
   .custom-app-empty { font-size: 12px; color: var(--text-dim); padding: 6px 0; }
   .store-item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  /* Off-screen cards of the (80+ item) list skip layout/paint until scrolled near. */
+  .store-item { content-visibility: auto; contain-intrinsic-size: auto 62px; }
   .store-item:first-of-type { border-top: none; }
   .store-item-glyph {
     width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
@@ -1549,7 +1611,6 @@
   }
   .store-item-body { flex: 1; min-width: 0; }
   .store-item-name { font-size: 13px; font-weight: 600; }
-  .store-item-name .store-item-badge { font-size: 9px; text-transform: uppercase; letter-spacing: .4px; font-weight: 700; color: #ffb454; border: 1px solid rgba(255,180,84,0.4); background: rgba(255,180,84,0.12); border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
   .store-item-desc { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; line-height: 1.35; }
   .store-item-btn { flex-shrink: 0; min-width: 74px; }
   .store-item-progress-wrap { flex-basis: 100%; display: none; margin-top: 2px; }
@@ -2170,7 +2231,13 @@
   </div>
   <span class="status" id="status">ready</span>
   <button type="button" id="header-sticky-add-btn" title="Add a sticky note"><svg class="icon"><use href="#icon-file-plus"></use></svg> Sticky note</button>
-  <button type="button" id="header-newtab-btn" title="Open the focused app in a new tab (right-click for the blob: method)"><svg class="icon"><use href="#icon-external-link"></use></svg> Open in new tab</button>
+  <div class="dropdown newtab-split">
+    <button type="button" id="header-newtab-btn" title="Open in a new tab"><svg class="icon"><use href="#icon-external-link"></use></svg> Open in new tab</button><button type="button" id="header-newtab-caret" class="dropdown-toggle" title="Choose how new tabs open" aria-label="Choose how new tabs open">▾</button>
+    <div class="dropdown-menu dropdown-menu-right" id="headerNewTabMenu">
+      <div class="dropdown-section-label">Open in new tab using</div>
+      <div class="newtab-picker" data-autoclose="1"></div>
+    </div>
+  </div>
   <div class="dropdown">
     <button class="dropdown-toggle" id="settingsMenuBtn" type="button"><svg class="icon"><use href="#icon-settings"></use></svg> More ▾</button>
     <div class="dropdown-menu dropdown-menu-right" id="settingsMenu">
@@ -2209,12 +2276,8 @@
       <div class="dropdown">
         <button class="dropdown-toggle" id="shareMenuBtn" type="button"><svg class="icon"><use href="#icon-link"></use></svg> Share ▾</button>
         <div class="dropdown-menu" id="shareMenu">
-          <div class="dropdown-section-label">New tab method</div>
-          <div class="share-method-row">
-            <label><input type="radio" name="shareMethod" value="blob" checked> Blob</label>
-            <label><input type="radio" name="shareMethod" value="data"> Data</label>
-            <label><input type="radio" name="shareMethod" value="blank"> About:blank</label>
-          </div>
+          <div class="dropdown-section-label">New tab method (shared everywhere)</div>
+          <div class="newtab-picker"></div>
           <div class="dropdown-divider"></div>
           <div class="dropdown-section-label">Open this app</div>
           <button type="button" class="dropdown-item" id="launch-tab-btn" title="Opens using whichever method is selected above"><svg class="icon"><use href="#icon-external-link"></use></svg> New tab</button>
@@ -2223,7 +2286,6 @@
           <div class="dropdown-section-label">Share the preview</div>
           <button type="button" class="dropdown-item" id="open-tab-btn" title="Opens using whichever method is selected above"><svg class="icon"><use href="#icon-external-link"></use></svg> Preview in new tab</button>
           <button type="button" class="dropdown-item" id="blob-link-btn" title="Valid until this tab closes"><svg class="icon"><use href="#icon-clipboard"></use></svg> Copy blob: link</button>
-          <button type="button" class="dropdown-item" id="data-link-btn" title="Self-contained, works anywhere, no expiry"><svg class="icon"><use href="#icon-clipboard"></use></svg> Copy data: link</button>
         </div>
       </div>
     </div>
@@ -2242,13 +2304,7 @@
   <div id="view-editor" class="app-view active">
     <div id="editors">
       <div class="tabs">
-        <div class="tab active" data-lang="html"><span class="sq"></span>index.html</div>
-        <div class="tab" data-lang="css"><span class="sq"></span>style.css<button type="button" class="tab-close-btn" data-lang="css" title="Close tab">×</button></div>
-        <div class="tab" data-lang="js"><span class="sq"></span>script.js<button type="button" class="tab-close-btn" data-lang="js" title="Close tab">×</button></div>
-        <div class="dropdown" id="reopen-tab-wrap" style="display:none;">
-          <button type="button" class="tab-reopen-btn" id="reopen-tab-btn" title="Reopen a closed tab">+</button>
-          <div class="dropdown-menu" id="reopenTabMenu"></div>
-        </div>
+        <div class="tab active single-tab" data-lang="html"><span class="sq"></span>index.html</div>
       </div>
       <div class="editor-body">
         <div id="find-replace-panel">
@@ -2269,14 +2325,6 @@
           <div class="gutter" id="gutter-html">1</div>
           <textarea class="code" id="code-html" spellcheck="false" wrap="off"></textarea>
         </div>
-        <div class="code-panel" data-lang="css">
-          <div class="gutter" id="gutter-css">1</div>
-          <textarea class="code" id="code-css" spellcheck="false" wrap="off"></textarea>
-        </div>
-        <div class="code-panel" data-lang="js">
-          <div class="gutter" id="gutter-js">1</div>
-          <textarea class="code" id="code-js" spellcheck="false" wrap="off"></textarea>
-        </div>
       </div>
     </div>
 
@@ -2284,7 +2332,7 @@
 
     <div id="preview-wrap">
       <div class="preview-toolbar">
-        <strong>Preview</strong><span>— renders index.html + style.css + script.js</span>
+        <strong>Preview</strong><span>— renders index.html</span>
         <button id="reload-btn"><svg class="icon"><use href="#icon-refresh-cw"></use></svg> reload</button>
       </div>
       <div id="link-bar" style="display:none;">
@@ -2635,11 +2683,7 @@
             <button class="dropdown-toggle" id="pyShareMenuBtn" type="button"><svg class="icon"><use href="#icon-link"></use></svg> Share ▾</button>
             <div class="dropdown-menu" id="pyShareMenu">
               <div class="dropdown-section-label">New tab method</div>
-              <div class="share-method-row">
-                <label><input type="radio" name="shareMethod" value="blob" checked> Blob</label>
-                <label><input type="radio" name="shareMethod" value="data"> Data</label>
-                <label><input type="radio" name="shareMethod" value="blank"> About:blank</label>
-              </div>
+              <div class="newtab-picker"></div>
               <div class="dropdown-divider"></div>
               <button type="button" class="dropdown-item" id="py-launch-tab-btn" title="Opens using whichever method is selected above"><svg class="icon"><use href="#icon-external-link"></use></svg> New tab</button>
               <button type="button" class="dropdown-item" id="py-launch-here-btn" title="Breaks out of any embedding frame and loads the app directly in this tab"><svg class="icon"><use href="#icon-maximize"></use></svg> Open in this tab</button>
@@ -2732,12 +2776,8 @@
       <div class="dropdown">
         <button type="button" class="ghost-btn stargazing-corner-btn" id="stargazing-newtab-btn" title="Open Stargazing in a new tab"><svg class="icon"><use href="#icon-external-link"></use></svg></button>
         <div class="dropdown-menu dropdown-menu-right" id="stargazingNewTabMenu">
-          <div class="dropdown-section-label">New tab method</div>
-          <div class="share-method-row">
-            <label><input type="radio" name="shareMethod" value="blob" checked> Blob</label>
-            <label><input type="radio" name="shareMethod" value="data"> Data</label>
-            <label><input type="radio" name="shareMethod" value="blank"> About:blank</label>
-          </div>
+          <div class="dropdown-section-label">New tab method (shared everywhere)</div>
+          <div class="newtab-picker"></div>
           <div class="dropdown-divider"></div>
           <button type="button" class="dropdown-item" id="stargazing-newtab-go-btn"><svg class="icon"><use href="#icon-external-link"></use></svg> Open in new tab</button>
         </div>
@@ -2867,7 +2907,7 @@
       <section class="conv-card" id="toolLaunchCard">
         <div class="conv-card-head">
           <h3><svg class="icon icon-fill"><use href="#icon-play"></use></svg> Quick launch <span class="conv-card-badge">no preview</span></h3>
-          <p>Drop a file or browse for one and it launches immediately in a new tab — no extra click. Paste code instead if you'd rather (pasted text is masked as you type, and launching then is one click away). Re-open the same code as <code>blob:</code>, <code>data:</code>, or <code>about:blank</code> any time; the code itself is never shown on screen, only its size.</p>
+          <p>Drop a file or browse for one and it launches immediately in a new tab — no extra click. Paste code instead if you'd rather (pasted text is masked as you type, and launching then is one click away). Re-open the same code as <code>blob:</code> or <code>about:blank</code> any time; the code itself is never shown on screen, only its size.</p>
         </div>
         <div class="drop-zone" id="toolLaunchDropZone">
           <span class="dz-icon"><svg class="icon icon-lg"><use href="#icon-folder"></use></svg></span>
@@ -2880,7 +2920,6 @@
         <div id="toolLaunchStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
         <div class="conv-btn-row">
           <button type="button" class="primary ghost-btn" id="toolLaunchBlobBtn" style="background:var(--accent); color:#14132b; border-color:var(--accent);">Open — Blob</button>
-          <button type="button" class="ghost-btn" id="toolLaunchDataBtn">Open — data:</button>
           <button type="button" class="ghost-btn" id="toolLaunchBlankBtn">Open — about:blank</button>
           <button type="button" class="ghost-btn" id="toolLaunchClearBtn">Clear</button>
         </div>
@@ -3243,6 +3282,13 @@
         </div>
         <div class="settings-row">
           <div>
+            <div class="settings-row-label">Performance mode</div>
+            <div class="settings-row-desc">Freezes the starfield, planets and ambient meteors and trims blurs and glows, so Spacepad runs smoother on slower computers. Effects you trigger still play. Turns on automatically on low-power devices until you choose.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="setPerfMode"><span class="toggle-track"></span></label>
+        </div>
+        <div class="settings-row">
+          <div>
             <div class="settings-row-label">Title &amp; icon</div>
             <div class="settings-row-desc">Rename the tab, set an icon, save/load presets.</div>
           </div>
@@ -3416,6 +3462,9 @@
         </div>
         <div id="customize-app-list" style="margin-top:8px;"></div>
 
+        <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);">Hidden desktop icons</h4>
+        <div id="customize-hidden-list"></div>
+
         <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);"><svg class="icon" style="width:13px;height:13px;"><use href="#icon-download"></use></svg> Export your apps</h4>
         <p style="margin:0 0 8px; font-size:11.5px; color:var(--text-dim);">Save your apps as a JSON file, upload it to a public GitHub repo or Gist, then share its jsDelivr link so others (or your other devices) can import it — e.g. <code>https://cdn.jsdelivr.net/gh/you/repo@main/spacepad-apps.json</code>.</p>
         <div class="conv-btn-row">
@@ -3440,7 +3489,7 @@
     <div class="settings-wrap">
       <div>
         <h2><svg class="icon"><use href="#icon-download"></use></svg> App Store</h2>
-        <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. A couple load a small library from a CDN at runtime, so those need a network connection to fully work; everything else works fully offline.</p>
+        <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. Everything here is self-contained and works fully offline. Use Remove to take one off your desktop again.</p>
       </div>
       <div class="settings-card">
         <h3><svg class="icon"><use href="#icon-plus"></use></svg> My Apps</h3>
@@ -3765,8 +3814,9 @@ function iconStandaloneSvg(name, colorHex, boxHex){
   const objectLayers = document.querySelectorAll('.parallax-layer');
   if (!starLayers.length && !objectLayers.length) return;
   let raf = null;
+  const rootEl = document.documentElement;
   document.addEventListener('mousemove', (e) => {
-    if (raf) return;
+    if (raf || rootEl.classList.contains('perf-mode')) return;
     raf = requestAnimationFrame(() => {
       const x = (e.clientX / window.innerWidth - 0.5) * 2;
       const y = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -3782,7 +3832,7 @@ function iconStandaloneSvg(name, colorHex, boxHex){
       });
       raf = null;
     });
-  });
+  }, { passive: true });
 })();
 
 document.getElementById('stargazing-wish-btn').addEventListener('click', () => {
@@ -4331,7 +4381,6 @@ document.getElementById('effects-random-btn').addEventListener('click', () => an
 document.getElementById('effects-auto-toggle').addEventListener('change', (e) => { cosmicAutoPlay = e.target.checked; });
 document.getElementById('stargazing-event-btn').addEventListener('click', () => showEventHint(triggerCosmicEvent()));
 
-document.getElementById('stargazing-newtab-go-btn').addEventListener('click', () => launchAppInNewTab('stargazingOnly'));
 
 // Hides the title/subtitle/buttons for a genuinely distraction-free view —
 // just the starfield. The corner button and the X key both toggle it
@@ -5052,35 +5101,12 @@ window.addEventListener('keydown', (e) => {
 // Browsers' popup blockers specifically watch for script-initiated window.open()
 // calls; a plain anchor click is treated as an ordinary link navigation and is
 // never blocked, even for blob: URLs or when triggered after an async task.
-// Chrome/Edge (and other modern Chromium-based browsers) refuse to navigate
-// the top-level frame to a data: URL at all — new tab, same tab, link click,
-// or window.open, it doesn't matter, it's silently blocked (console shows
-// "Not allowed to navigate top frame to data URL"). A data: URL used as an
-// <iframe> SOURCE is still perfectly fine though, so a data:text/html URL
-// gets wrapped in a tiny blob: shell that's just a full-viewport iframe
-// pointing at it — the actual top-level navigation lands on the (allowed)
-// blob: shell, and the real content loads inside it. Every caller of
-// openInNewTab gets this for free, including ones written before this fix.
+// Used for plain external links (GitHub, zip downloads, blob: links from the
+// Convert tab). Opening a Spacepad app/page in a new tab goes through
+// openHtmlWithMethod() further down instead, which honours the shared
+// "new tab method" setting.
 function openInNewTab(url){
-  let finalUrl = url;
-  if (/^data:text\/html/i.test(url)){
-    // The shell and the data: iframe end up on different opaque origins, so
-    // the shell's script can't read the iframe's document to copy its title
-    // — instead, decode just enough of the payload up front to pull a
-    // <title> out and set it directly on the shell, so the tab still shows
-    // the real page's title instead of a blank one.
-    let title = '';
-    try {
-      const m = url.match(/^data:text\/html(?:;charset=[^;,]+)?;base64,(.*)$/i);
-      if (m){
-        const decoded = decodeURIComponent(escape(atob(m[1])));
-        const tm = decoded.match(/<title[^>]*>([^<]*)<\/title>/i);
-        if (tm) title = tm[1];
-      }
-    } catch(e){ /* best-effort only — worst case the tab just shows a blank title */ }
-    const shell = '<!DOCTYPE html><html><head><meta charset="utf-8">' + (title ? '<title>' + title.replace(/</g, '&lt;') + '</title>' : '') + '</head><body style="margin:0;"><iframe src="' + url.replace(/"/g, '&quot;') + '" style="position:fixed; inset:0; width:100%; height:100%; border:none;"></iframe></body></html>';
-    finalUrl = URL.createObjectURL(new Blob([shell], { type: 'text/html' }));
-  }
+  const finalUrl = url;
   const a = document.createElement('a');
   a.href = finalUrl;
   a.target = '_blank';
@@ -5105,7 +5131,7 @@ const APP_SOURCE_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML
 // but the Stargazing view itself — genuinely just that page, not the
 // whole app with Stargazing merely selected by default.
 function buildDeepLinkHtml(view){
-  if (!view || view === 'editor') return APP_SOURCE_HTML;
+  if (!view) return APP_SOURCE_HTML;
   const isStargazingOnly = view === 'stargazingOnly';
   const targetView = isStargazingOnly ? 'stargazing' : view;
   // !important defeats any later CSS that might otherwise re-show the
@@ -5138,6 +5164,167 @@ function buildDeepLinkHtml(view){
 
 function getAppBlobUrl(view){
   return URL.createObjectURL(new Blob([buildDeepLinkHtml(view)], {type: 'text/html'}));
+}
+
+/* =========================================================================
+   NEW-TAB METHODS — one shared, persisted setting used by EVERY "open in a
+   new tab" entry point (header button + caret, window title-bar buttons,
+   Editor/Python Share menus, Stargazing corner menu, chat code blocks,
+   Run-from-URL). No data: URLs and no .html download here by design.
+   ========================================================================= */
+const NEWTAB_METHOD_KEY = 'spacepad_newtab_method_v1';
+const NEWTAB_DEFAULT_METHOD = 'blank';
+const NEWTAB_METHODS = [
+  { id: 'blank', label: 'About:blank', desc: 'New tab at about:blank with the app written into it. Most reliable; keeps your saved data.' },
+  { id: 'cloak', label: 'About:blank cloak', desc: 'about:blank tab holding a full-window frame of the app. Tab shows Spacepad\'s title and icon.' },
+  { id: 'blob',  label: 'Blob', desc: 'A blob: URL you can copy. Needs a normal http(s) origin to keep saved data.' },
+  { id: 'popup', label: 'Popup window', desc: 'A separate sized window (about 1100 x 720) instead of a tab.' },
+  { id: 'here',  label: 'This tab', desc: 'Replace the current tab with the app (no new tab).' }
+];
+function newTabMethodValid(id){ return NEWTAB_METHODS.some(m => m.id === id); }
+let newTabMethod = (function(){
+  try { const v = localStorage.getItem(NEWTAB_METHOD_KEY); if (newTabMethodValid(v)) return v; } catch(e){}
+  return NEWTAB_DEFAULT_METHOD; // also covers an older saved 'data' value
+})();
+function getNewTabMethod(){ return newTabMethod; }
+function getNewTabMethodLabel(){ const m = NEWTAB_METHODS.find(x => x.id === newTabMethod); return m ? m.label : ''; }
+function setNewTabMethod(id){
+  if (!newTabMethodValid(id)) return;
+  newTabMethod = id;
+  try { localStorage.setItem(NEWTAB_METHOD_KEY, id); } catch(e){}
+  document.querySelectorAll('.newtab-picker input[type="radio"]').forEach(r => { r.checked = (r.value === id); });
+  refreshNewTabTitles();
+}
+// Kept under its old name for the few call sites that still ask "which method".
+function getShareMethod(){ return getNewTabMethod(); }
+let newTabPickerSeq = 0;
+function renderNewTabPicker(container){
+  const name = 'newtabMethod' + (++newTabPickerSeq);
+  container.innerHTML = NEWTAB_METHODS.map(m =>
+    '<label class="nt-opt" title="' + escapeAttr(m.desc) + '"><input type="radio" name="' + name + '" value="' + m.id + '"' + (m.id === newTabMethod ? ' checked' : '') + '>' +
+    '<span><b>' + escapeHtml(m.label) + '</b><small>' + escapeHtml(m.desc) + '</small></span></label>'
+  ).join('');
+  container.addEventListener('change', (e) => {
+    const r = e.target.closest('input[type="radio"]'); if (!r) return;
+    setNewTabMethod(r.value);
+    if (container.dataset.autoclose) closeAllDropdowns();
+    if (container.dataset.popover) hideNewTabPopover();
+  });
+}
+function refreshNewTabTitles(){
+  const label = getNewTabMethodLabel();
+  document.querySelectorAll('.win-newtab').forEach(b => { b.title = 'Open in a new tab (' + label + '). Right-click to change the method.'; });
+  updateHeaderNewTabBtn();
+}
+function isOpaqueOrigin(){
+  try { return location.protocol === 'file:' || location.origin === 'null' || !location.origin; } catch(e){ return true; }
+}
+function pageTitleFromHtml(html){
+  const m = /<title[^>]*>([^<]*)<\/title>/i.exec(html.slice(0, 4000));
+  return (m && m[1].trim()) || 'Spacepad';
+}
+function pageIconHref(){
+  const l = document.querySelector('link[rel~="icon"]');
+  return l ? l.href : '';
+}
+// Core launcher. html = a full HTML document string. opts: { method, app }.
+// app=true means "this is a Spacepad app page" — those need the opener's
+// storage (localStorage / IndexedDB), which blob: tabs lose whenever the
+// opener has an opaque origin (file://, sandboxed preview), so blob falls
+// back to about:blank there with a notice instead of silently showing the
+// wrong app. Returns { method, url } (url only for blob).
+function openHtmlWithMethod(html, opts){
+  opts = opts || {};
+  let method = opts.method || getNewTabMethod();
+  if (!newTabMethodValid(method)) method = NEWTAB_DEFAULT_METHOD;
+  if (method === 'blob' && opts.app && isOpaqueOrigin()){
+    showToast('Blob tabs can\'t read Spacepad\'s saved data when it runs from a local file, so About:blank was used for this click.');
+    method = 'blank';
+  }
+  const blocked = () => {
+    showToast('Your browser blocked the new tab or popup.', 'error', {
+      label: 'Use This tab',
+      run: () => openHtmlWithMethod(html, { app: opts.app, method: 'here' })
+    });
+    return { method: method, url: null, blocked: true };
+  };
+  if (method === 'here'){
+    if (opts.app){ launchHtmlHere(html, true); return { method: 'here', url: null }; }
+    // Non-app pages (chat snippets, previews): never navigate away from the app, use a blob tab.
+    method = 'blob';
+  }
+  if (method === 'blob'){
+    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    const win = window.open(url, '_blank');
+    if (!win){ URL.revokeObjectURL(url); return blocked(); }
+    return { method: 'blob', url: url };
+  }
+  if (method === 'popup'){
+    const w = 1100, h = 720;
+    const left = Math.max(0, Math.round((screen.width - w) / 2)), top = Math.max(0, Math.round((screen.height - h) / 2));
+    const win = window.open('about:blank', '_blank', 'popup=yes,width=' + w + ',height=' + h + ',left=' + left + ',top=' + top);
+    if (!win) return blocked();
+    win.document.open(); win.document.write(html); win.document.close();
+    return { method: 'popup', url: null };
+  }
+  const win = window.open('about:blank', '_blank');
+  if (!win) return blocked();
+  if (method === 'cloak'){
+    const d = win.document;
+    const icon = pageIconHref();
+    d.open();
+    d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + escapeHtml(pageTitleFromHtml(html)) + '</title>' +
+      (icon ? '<link rel="icon" href="' + escapeAttr(icon) + '">' : '') +
+      '<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#0a0c1a}iframe{position:fixed;top:0;left:0;width:100%;height:100%;border:0;display:block}</style></head><body></body></html>');
+    d.close();
+    const f = d.createElement('iframe');
+    f.setAttribute('allow', 'fullscreen; clipboard-read; clipboard-write; autoplay; camera; microphone; geolocation');
+    f.srcdoc = html;
+    d.body.appendChild(f);
+    return { method: 'cloak', url: null };
+  }
+  win.document.open(); win.document.write(html); win.document.close();
+  return { method: 'blank', url: null };
+}
+// Replaces the current tab/frame with the page. Normal origins navigate to a
+// blob: URL (keeps same-origin storage). Opaque origins (file://, sandboxed
+// preview) would lose storage on a blob: page, so the current window is
+// re-pointed at about:blank (which inherits the origin) and the page written in.
+function launchHtmlHere(html, isApp){
+  if (isApp && isOpaqueOrigin()){
+    const w = window.open('about:blank', '_self');
+    if (w){ w.document.open(); w.document.write(html); w.document.close(); return; }
+  }
+  const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  try {
+    if (window.top !== window.self) window.top.location.href = blobUrl;
+    else window.location.href = blobUrl;
+  } catch (err) {
+    // Top-level navigation blocked by an embedding frame's sandbox — reload this frame instead.
+    window.location.href = blobUrl;
+  }
+}
+// Floating picker for right-click on the title-bar / header buttons.
+let newTabPopoverEl = null;
+function hideNewTabPopover(){ if (newTabPopoverEl) newTabPopoverEl.classList.remove('open'); }
+function showNewTabPopover(x, y){
+  if (!newTabPopoverEl){
+    newTabPopoverEl = document.createElement('div');
+    newTabPopoverEl.id = 'newtab-popover';
+    newTabPopoverEl.className = 'dropdown-menu';
+    newTabPopoverEl.innerHTML = '<div class="dropdown-section-label">Open in new tab using</div><div class="newtab-picker" data-popover="1"></div>';
+    document.body.appendChild(newTabPopoverEl);
+    renderNewTabPicker(newTabPopoverEl.querySelector('.newtab-picker'));
+    newTabPopoverEl.addEventListener('click', (e) => e.stopPropagation());
+    newTabPopoverEl.addEventListener('contextmenu', (e) => e.stopPropagation());
+    document.addEventListener('click', hideNewTabPopover);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideNewTabPopover(); });
+  }
+  closeAllDropdowns();
+  newTabPopoverEl.classList.add('open');
+  const r = newTabPopoverEl.getBoundingClientRect();
+  newTabPopoverEl.style.left = Math.max(8, Math.min(x, window.innerWidth - r.width - 8)) + 'px';
+  newTabPopoverEl.style.top = Math.max(8, Math.min(y, window.innerHeight - r.height - 8)) + 'px';
 }
 const statusEl = document.getElementById('status');
 
@@ -5202,12 +5389,13 @@ function loadCustomApps(){
   } catch(e){ customApps = []; }
 }
 function saveCustomApps(){
-  try { localStorage.setItem(CUSTOM_APPS_KEY, JSON.stringify(customApps)); } catch(e){ showToast('Could not save custom app — storage may be full.', 'error'); }
+  try { localStorage.setItem(CUSTOM_APPS_KEY, JSON.stringify(customApps)); return true; } catch(e){ showToast('Could not save custom app — storage may be full.', 'error'); return false; }
 }
 function findCustomApp(id){ return customApps.find(a => a.id === id); }
 function deleteCustomApp(id){
   const app = findCustomApp(id);
-  if (app && app.type === 'gh-cached'){
+  if (!app) return false;
+  if (app.type === 'gh-cached'){
     // Best-effort: drop this downloaded game's cached bytes out of
     // IndexedDB too, so removing it from the desktop actually frees the
     // space rather than leaving orphaned rows behind.
@@ -5218,11 +5406,147 @@ function deleteCustomApp(id){
   }
   customApps = customApps.filter(a => a.id !== id);
   saveCustomApps();
-  if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
+  if (iconPositions['custom:' + id]){ delete iconPositions['custom:' + id]; saveIconPositions(); }
+  // If this app is the one currently open in the shared custom-app window,
+  // close the window and blank its frame so the app stops running (audio,
+  // timers, game loops) instead of lingering invisibly.
+  if (currentCustomAppId === id){
+    closeWindow('custom-app');
+    currentCustomAppId = null;
+    const frame = document.getElementById('custom-app-frame');
+    if (frame){ frame.removeAttribute('src'); frame.srcdoc = ''; }
+  }
+  renderDesktopIcons();
   renderCustomizeAppList();
   renderAppStore();
-  if (currentCustomAppId === id){ closeWindow('custom-app'); currentCustomAppId = null; }
+  return true;
 }
+
+/* ---- In-app confirm dialog ----
+   Native confirm() is unreliable here: when Spacepad is embedded in a
+   sandboxed iframe (no allow-modals) it silently returns false without ever
+   showing anything, so "Delete" appeared to do nothing. This promise-based
+   modal always works. Resolves true on the confirm button, false on
+   Cancel / Esc / clicking the backdrop. */
+function appConfirm(title, message, okLabel, danger){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.className = 'net-popup-overlay';
+    ov.style.zIndex = '1300';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+    ov.innerHTML = '<div class="net-popup" style="max-width:360px;">' +
+      '<h3>' + escapeHtml(title) + '</h3><p>' + escapeHtml(message) + '</p>' +
+      '<div class="conv-btn-row" style="justify-content:center;">' +
+        '<button type="button" class="ghost-btn net-cancel" data-ac="no">Cancel</button>' +
+        '<button type="button" class="ghost-btn" data-ac="yes"' + (danger ? ' style="color:var(--error); border-color:var(--error);"' : '') + '>' + escapeHtml(okLabel || 'OK') + '</button>' +
+      '</div></div>';
+    let done = false;
+    function finish(v){
+      if (done) return; done = true;
+      document.removeEventListener('keydown', onKey, true);
+      ov.remove();
+      resolve(v);
+    }
+    function onKey(e){
+      if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); finish(false); }
+    }
+    ov.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-ac]');
+      if (b) finish(b.dataset.ac === 'yes');
+      else if (e.target === ov) finish(false);
+    });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(ov);
+    const yes = ov.querySelector('[data-ac="yes"]');
+    if (yes) yes.focus();
+  });
+}
+
+// The one entry point for every "delete this app" path (desktop right-click
+// menu, Delete key, Customize → Your apps, App Store → Remove).
+function removeCustomAppWithConfirm(id){
+  const app = findCustomApp(id);
+  if (!app) return Promise.resolve(false);
+  return appConfirm('Remove "' + app.name + '"?', 'It will be removed from your desktop and your apps list. You can add it again later.', 'Remove', true).then(ok => {
+    if (!ok) return false;
+    const done = deleteCustomApp(id);
+    if (done) showToast('"' + app.name + '" removed.');
+    return done;
+  });
+}
+
+/* ---- Hiding built-in desktop icons ----
+   Built-in apps can't be deleted, but their desktop icon can be hidden
+   (right-click → "Hide from desktop"); Customize → "Hidden desktop icons"
+   brings them back. They stay reachable from the sidebar and Ctrl+K. */
+const HIDDEN_BUILTINS_KEY = 'spacepad_hidden_builtins_v1';
+let hiddenBuiltins = [];
+try {
+  const raw = localStorage.getItem(HIDDEN_BUILTINS_KEY);
+  hiddenBuiltins = raw ? JSON.parse(raw) : [];
+  if (!Array.isArray(hiddenBuiltins)) hiddenBuiltins = [];
+} catch(e){ hiddenBuiltins = []; }
+function saveHiddenBuiltins(){ try { localStorage.setItem(HIDDEN_BUILTINS_KEY, JSON.stringify(hiddenBuiltins)); } catch(e){} }
+function setBuiltinHidden(view, hidden){
+  hiddenBuiltins = hiddenBuiltins.filter(v => v !== view);
+  if (hidden) hiddenBuiltins.push(view);
+  saveHiddenBuiltins();
+  renderDesktopIcons();
+  renderHiddenIconsList();
+}
+function renderHiddenIconsList(){
+  const wrap = document.getElementById('customize-hidden-list');
+  if (!wrap) return;
+  const items = DESKTOP_APPS.filter(a => hiddenBuiltins.indexOf(a.view) !== -1);
+  if (!items.length){ wrap.innerHTML = '<div class="custom-app-empty">No hidden icons. Right-click a built-in desktop icon to hide it.</div>'; return; }
+  wrap.innerHTML = items.map(a =>
+    '<div class="custom-app-row"><span class="cust-app-glyph">' + icon(a.icon, a.iconFill ? 'icon-fill' : '') + '</span>' +
+    '<span class="cust-app-name">' + escapeHtml(a.label) + '</span>' +
+    '<button type="button" class="ghost-btn" data-unhide="' + a.view + '">Show on desktop</button></div>'
+  ).join('');
+  wrap.querySelectorAll('[data-unhide]').forEach(b => b.addEventListener('click', () => setBuiltinHidden(b.dataset.unhide, false)));
+}
+
+/* ---- Desktop icon right-click menu ---- */
+function closeIconMenu(){
+  const m = document.getElementById('icon-context-menu');
+  if (m) m.remove();
+}
+function openIconMenu(x, y, btn){
+  closeIconMenu();
+  const view = btn.dataset.view;
+  const customId = btn.dataset.customId;
+  const items = [{ label: 'Open', run: () => switchAppView(view) }];
+  if (customId){
+    items.push({ label: 'Remove from desktop…', danger: true, run: () => removeCustomAppWithConfirm(customId) });
+  } else if (view !== 'customize'){ // Customize stays: it's where hidden icons are restored
+    items.push({ label: 'Hide from desktop', run: () => { setBuiltinHidden(view, true); showToast('Icon hidden — restore it from Customize.'); } });
+  }
+  const m = document.createElement('div');
+  m.id = 'icon-context-menu';
+  m.setAttribute('role', 'menu');
+  m.style.cssText = 'position:fixed;z-index:1200;min-width:170px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:5px;box-shadow:0 10px 28px rgba(0,0,0,0.5);';
+  m.innerHTML = items.map((it, i) =>
+    '<button type="button" role="menuitem" data-mi="' + i + '" style="display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:7px;font-size:12.5px;cursor:pointer;color:' + (it.danger ? 'var(--error)' : 'var(--text)') + ';">' + escapeHtml(it.label) + '</button>'
+  ).join('');
+  m.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-mi]');
+    if (!b) return;
+    const it = items[+b.dataset.mi];
+    closeIconMenu();
+    it.run();
+  });
+  m.addEventListener('mouseover', (e) => { const b = e.target.closest('[data-mi]'); if (b) b.style.background = 'rgba(139,124,246,0.18)'; });
+  m.addEventListener('mouseout', (e) => { const b = e.target.closest('[data-mi]'); if (b) b.style.background = 'none'; });
+  document.body.appendChild(m);
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.max(4, Math.min(x, window.innerWidth - r.width - 4)) + 'px';
+  m.style.top = Math.max(4, Math.min(y, window.innerHeight - r.height - 4)) + 'px';
+}
+document.addEventListener('mousedown', (e) => { if (!e.target.closest('#icon-context-menu')) closeIconMenu(); }, true);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeIconMenu(); });
+window.addEventListener('blur', closeIconMenu);
 loadCustomApps();
 
 // Desktop icons can be dragged to any free spot on the desktop (like a
@@ -5255,7 +5579,7 @@ const ICON_DRAG_THRESHOLD = 5;
 function renderDesktopIcons(){
   const grid = document.getElementById('desktop-icon-grid');
   if (!grid) return;
-  const builtins = DESKTOP_APPS.map(a => {
+  const builtins = DESKTOP_APPS.filter(a => hiddenBuiltins.indexOf(a.view) === -1).map(a => {
     const disabled = a.gated && !isOnlineMode;
     return '<button type="button" class="desktop-icon' + (disabled ? ' disabled' : '') + '" data-view="' + a.view + '"' +
       (disabled ? ' title="Unavailable in offline mode"' : '') + '>' +
@@ -5265,7 +5589,7 @@ function renderDesktopIcons(){
   }).join('');
   const custom = customApps.map(a => {
     const glyph = ICONS[a.icon] ? icon(a.icon, ICONS[a.icon].fill ? 'icon-fill' : '') : escapeHtml((a.name || '?').charAt(0).toUpperCase());
-    return '<button type="button" class="desktop-icon" data-view="custom:' + a.id + '" data-custom-id="' + a.id + '" title="Right-click to remove">' +
+    return '<button type="button" class="desktop-icon" data-view="custom:' + a.id + '" data-custom-id="' + a.id + '" title="Right-click for options">' +
       '<span class="desktop-icon-glyph">' + glyph + '</span>' +
       '<span class="desktop-icon-label">' + escapeHtml(a.name) + '</span>' +
     '</button>';
@@ -5323,12 +5647,16 @@ function renderDesktopIcons(){
       switchAppView(b.dataset.view);
     });
 
-    if (b.dataset.customId){
-      b.addEventListener('contextmenu', (e) => {
+    b.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openIconMenu(e.clientX, e.clientY, b);
+    });
+    b.addEventListener('keydown', (e) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && b.dataset.customId){
         e.preventDefault();
-        if (confirm('Remove "' + (findCustomApp(b.dataset.customId) || {}).name + '" from the desktop?')) deleteCustomApp(b.dataset.customId);
-      });
-    }
+        removeCustomAppWithConfirm(b.dataset.customId);
+      }
+    });
   });
   applyDesktopIconFilter();
 }
@@ -5532,7 +5860,13 @@ function getFocusedWinKey(){
 function updateHeaderNewTabBtn(){
   const btn = document.getElementById('header-newtab-btn');
   if (!btn) return;
-  btn.disabled = !getFocusedWinKey();
+  // Always available: with no window open it opens the whole desktop.
+  btn.disabled = false;
+  const caret = document.getElementById('header-newtab-caret');
+  if (caret) caret.disabled = false;
+  const key = getFocusedWinKey();
+  const what = key ? 'the focused app' : 'the desktop';
+  btn.title = 'Open ' + what + ' in a new tab (' + getNewTabMethodLabel() + '). Use the arrow or right-click to change the method.';
 }
 
 // Wires dragging (by the title bar), resizing (the 8 edge/corner handles),
@@ -5545,7 +5879,7 @@ function wireWindowChrome(rec){
   el.querySelector('.win-max').addEventListener('click', (e) => { e.stopPropagation(); toggleMaximize(rec.key); });
   const newTabBtn = el.querySelector('.win-newtab');
   if (newTabBtn){
-    // Default (left-click) uses the about:blank/document.write method, not
+    // Left-click uses the shared new-tab method (default about:blank/document.write, not
     // blob: — see the long comment above launchAppInNewTab() for why: a
     // blob: URL only shares the opener's storage when the opener itself has
     // a normal http(s) origin, and silently loses access to localStorage/
@@ -5555,8 +5889,9 @@ function wireWindowChrome(rec){
     // file, or embedded in a sandboxed preview. about:blank + document.write
     // was verified to keep working in both cases, so it's the safer default;
     // blob: is kept one right-click away for anyone who wants it.
-    newTabBtn.addEventListener('click', (e) => { e.stopPropagation(); launchAppInNewTab(resolveNewTabKeyForWinKey(rec.key), 'blank'); });
-    newTabBtn.addEventListener('contextmenu', (e) => { e.stopPropagation(); e.preventDefault(); launchAppInNewTab(resolveNewTabKeyForWinKey(rec.key), 'blob'); });
+    newTabBtn.title = 'Open in a new tab (' + getNewTabMethodLabel() + '). Right-click to change the method.';
+    newTabBtn.addEventListener('click', (e) => { e.stopPropagation(); launchAppInNewTab(resolveNewTabKeyForWinKey(rec.key)); });
+    newTabBtn.addEventListener('contextmenu', (e) => { e.stopPropagation(); e.preventDefault(); showNewTabPopover(e.clientX, e.clientY); });
   }
 
   const titlebar = el.querySelector('.win-titlebar');
@@ -5566,20 +5901,33 @@ function wireWindowChrome(rec){
     const layer = document.getElementById('windows-layer');
     const startX = e.clientX, startY = e.clientY;
     const startLeft = el.offsetLeft, startTop = el.offsetTop;
+    // Layout is measured once up front; while dragging only a compositor
+    // transform changes (coalesced to one write per frame), and left/top are
+    // committed once on release — so a drag never re-runs layout/paint of the
+    // window's contents per mousemove.
+    const winW = el.offsetWidth, layerW = layer.clientWidth, layerH = layer.clientHeight;
+    let nx = startLeft, ny = startTop, dragRaf = 0;
     e.preventDefault();
+    function flush(){
+      dragRaf = 0;
+      el.style.transform = 'translate3d(' + (nx - startLeft) + 'px,' + (ny - startTop) + 'px,0)';
+    }
     function onMove(ev){
-      let nx = startLeft + (ev.clientX - startX);
-      let ny = startTop + (ev.clientY - startY);
-      nx = Math.max(-el.offsetWidth + 80, Math.min(nx, layer.clientWidth - 80));
-      ny = Math.max(0, Math.min(ny, layer.clientHeight - 32));
-      el.style.left = nx + 'px'; el.style.top = ny + 'px';
+      nx = startLeft + (ev.clientX - startX);
+      ny = startTop + (ev.clientY - startY);
+      nx = Math.max(-winW + 80, Math.min(nx, layerW - 80));
+      ny = Math.max(0, Math.min(ny, layerH - 32));
+      if (!dragRaf){ el.style.willChange = 'transform'; dragRaf = requestAnimationFrame(flush); }
     }
     function onUp(){
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      if (dragRaf){ cancelAnimationFrame(dragRaf); dragRaf = 0; }
+      el.style.transform = ''; el.style.willChange = '';
+      el.style.left = nx + 'px'; el.style.top = ny + 'px';
       persistWinRect(rec);
     }
-    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mousemove', onMove, { passive: true });
     document.addEventListener('mouseup', onUp);
   });
 
@@ -5593,7 +5941,11 @@ function wireWindowChrome(rec){
       const startLeft = el.offsetLeft, startTop = el.offsetTop;
       const startW = el.offsetWidth, startH = el.offsetHeight;
       const minW = 300, minH = 200;
-      function onMove(ev){
+      let lastEv = null, resizeRaf = 0;
+      function applyResize(){
+        resizeRaf = 0;
+        if (!lastEv) return;
+        const ev = lastEv;
         const dx = ev.clientX - startX, dy = ev.clientY - startY;
         let left = startLeft, top = startTop, w = startW, h = startH;
         if (dir.indexOf('e') !== -1) w = Math.max(minW, startW + dx);
@@ -5603,12 +5955,16 @@ function wireWindowChrome(rec){
         el.style.left = left + 'px'; el.style.top = top + 'px';
         el.style.width = w + 'px'; el.style.height = h + 'px';
       }
+      // At most one layout per frame no matter how fast the mouse reports.
+      function onMove(ev){ lastEv = ev; if (!resizeRaf) resizeRaf = requestAnimationFrame(applyResize); }
       function onUp(){
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
+        if (resizeRaf){ cancelAnimationFrame(resizeRaf); resizeRaf = 0; }
+        applyResize();
         persistWinRect(rec);
       }
-      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mousemove', onMove, { passive: true });
       document.addEventListener('mouseup', onUp);
     });
   });
@@ -5621,7 +5977,7 @@ function createAppWindow(key, meta){
   winEl.innerHTML =
     '<div class="win-titlebar">' +
       '<span class="win-icon"></span><span class="win-title"></span>' +
-      '<button type="button" class="win-newtab" title="Open in a new tab. Right-click for the blob: method.">' + icon('external-link') + '</button>' +
+      '<button type="button" class="win-newtab" title="Open in a new tab. Right-click to choose the method.">' + icon('external-link') + '</button>' +
       '<button type="button" class="win-max" title="Maximize / restore">' + icon('maximize') + '</button>' +
       '<button type="button" class="win-close" title="Close">' + icon('x') + '</button>' +
     '</div>' +
@@ -5722,7 +6078,7 @@ function openApp(name){
 
   if (name === 'python') pyMaybeStartLoading();
   if (name === 'settings') settingsRefreshStorageUsed();
-  if (name === 'customize') renderCustomizeAppList();
+  if (name === 'customize'){ renderCustomizeAppList(); renderHiddenIconsList(); }
   if (name === 'appstore') renderAppStore();
   document.getElementById('editor-toolbar').style.display = name === 'editor' ? 'flex' : 'none';
   if (name === 'editor') statusEl.textContent = 'ready';
@@ -5805,16 +6161,20 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllDr
    alert()/confirm() stay reserved for things that genuinely need a decision
    or that the person must not miss.
    ========================================================================= */
-function showToast(message, type){
+function showToast(message, type, action){
   const container = document.getElementById('toast-container');
   const el = document.createElement('div');
   el.className = 'toast' + (type === 'error' ? ' error' : '');
   el.innerHTML = (type === 'error' ? icon('alert-triangle') : icon('check')) + '<span>' + escapeHtml(message) + '</span>';
+  const dismiss = () => { el.classList.add('leaving'); setTimeout(() => el.remove(), 200); };
+  if (action && action.label){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'toast-action'; b.textContent = action.label;
+    b.addEventListener('click', () => { dismiss(); try { action.run(); } catch(e){} });
+    el.appendChild(b);
+  }
   container.appendChild(el);
-  setTimeout(() => {
-    el.classList.add('leaving');
-    setTimeout(() => el.remove(), 200);
-  }, 3000);
+  setTimeout(dismiss, action ? 10000 : 3000);
 }
 
 /* =========================================================================
@@ -6248,6 +6608,7 @@ let netModeInitialized = false;
 
 function updateNetToggleBtn(){
   const btn = document.getElementById('net-toggle-btn');
+  if (!btn) return; // header is removed in the Stargazing-only new tab
   btn.innerHTML = isOnlineMode ? icon('globe') + ' Online' : icon('wifi') + ' Offline';
   btn.classList.toggle('offline-state', !isOnlineMode);
   btn.title = isOnlineMode ? 'Click to switch to offline mode' : 'Click to switch to online mode';
@@ -6328,7 +6689,10 @@ async function autoCheckConnectivity(){
   }
 }
 autoCheckConnectivity();
-setInterval(autoCheckConnectivity, 6000);
+// Skip the periodic probe while the tab is in the background; check again as
+// soon as it comes back.
+setInterval(() => { if (!document.hidden) autoCheckConnectivity(); }, 6000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoCheckConnectivity(); });
 // Re-check right away on the events that most often coincide with a real change,
 // for a snappier response than waiting for the next poll.
 window.addEventListener('online', autoCheckConnectivity);
@@ -6338,11 +6702,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) auto
 /* =========================================================================
    EDITOR VIEW (HTML / CSS / JS + live preview)
    ========================================================================= */
-const DEFAULT = {
-  html: `<h1>Hello, world 👋</h1>
-<p>Edit the HTML, CSS and JS tabs — the preview updates live.</p>
-<button id="btn">Click me</button>`,
-  css: `body {
+const DEFAULT = `<style>
+body {
   font-family: system-ui, sans-serif;
   max-width: 640px;
   margin: 60px auto;
@@ -6355,29 +6716,32 @@ button {
   border-radius: 6px;
   border: 1px solid #ccc;
   cursor: pointer;
-}`,
-  js: `document.getElementById('btn').addEventListener('click', () => {
+}
+</style>
+<h1>Hello, world 👋</h1>
+<p>Edit the HTML — the preview updates live. Add your own &lt;style&gt; and &lt;script&gt; tags, just like a real standalone HTML file.</p>
+<button id="btn">Click me</button>
+<script>
+document.getElementById('btn').addEventListener('click', () => {
   console.log('Button clicked at', new Date().toLocaleTimeString());
 });
-console.log('Script loaded.');`
-};
+console.log('Script loaded.');
+<\/script>`;
 
 const TEMPLATES = {
   blank: DEFAULT,
-  tailwind: {
-    html: `<script src="https://cdn.tailwindcss.com"><\/script>
+  tailwind: `<script src="https://cdn.tailwindcss.com"><\/script>
 <div class="max-w-md mx-auto mt-16 p-6 bg-white rounded-xl shadow-lg">
   <h1 class="text-2xl font-bold text-slate-800">Tailwind starter</h1>
   <p class="mt-2 text-slate-500">Edit this markup — Tailwind's utility classes are loaded from its CDN build above.</p>
   <button id="btn" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Click me</button>
-</div>`,
-    css: `/* Tailwind is loaded via CDN in index.html — this file is for any extra custom CSS. */`,
-    js: `document.getElementById('btn').addEventListener('click', () => {
+</div>
+<script>
+document.getElementById('btn').addEventListener('click', () => {
   console.log('Clicked at', new Date().toLocaleTimeString());
-});`
-  },
-  bootstrap: {
-    html: `<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+});
+<\/script>`,
+  bootstrap: `<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <div class="container mt-5">
   <div class="card" style="max-width: 420px;">
     <div class="card-body">
@@ -6387,23 +6751,24 @@ const TEMPLATES = {
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>`,
-    css: `/* Bootstrap is loaded via CDN in index.html — this file is for any extra custom CSS. */`,
-    js: `document.getElementById('btn').addEventListener('click', () => {
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>
+<script>
+document.getElementById('btn').addEventListener('click', () => {
   console.log('Clicked at', new Date().toLocaleTimeString());
-});`
-  },
-  react: {
-    html: `<script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+});
+<\/script>`,
+  react: `<script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 640px; margin: 60px auto; padding: 0 20px; color: #222; }
+button { padding: 8px 16px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer; }
+</style>
 <div id="root"></div>
-<!-- script.js is loaded as a Babel-transformed JSX script below by this page's build step -->`,
-    css: `body { font-family: system-ui, sans-serif; max-width: 640px; margin: 60px auto; padding: 0 20px; color: #222; }
-button { padding: 8px 16px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer; }`,
-    js: `// This is plain JS by default. To use JSX, change the <script> tag Codepad
-// generates for this file to type="text/babel" (Preview → View Source), or
-// just write React.createElement calls directly, e.g.:
+<script>
+// This is plain JS by default. To use JSX, change this <script> tag's type
+// to "text/babel" (the Babel standalone build above supports it), or just
+// write React.createElement calls directly, e.g.:
 const { useState } = React;
 function App(){
   const [count, setCount] = useState(0);
@@ -6413,8 +6778,8 @@ function App(){
     React.createElement('button', { onClick: () => setCount(count + 1) }, 'Click me')
   );
 }
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));`
-  }
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+<\/script>`
 };
 
 const EDITOR_AUTOSAVE_KEY = 'codepad_editor_autosave_v1';
@@ -6423,7 +6788,10 @@ function loadAutosave(){
     const raw = localStorage.getItem(EDITOR_AUTOSAVE_KEY);
     if (!raw) return null;
     const saved = JSON.parse(raw);
-    if (saved && typeof saved.html === 'string' && typeof saved.css === 'string' && typeof saved.js === 'string') return saved;
+    // Older autosaves (from before the CSS/JS tabs were removed) stored
+    // {html, css, js} separately — only the html field carries over; any
+    // old css/js content is intentionally discarded, not restored anywhere.
+    if (saved && typeof saved.html === 'string') return saved.html;
   } catch(e){ /* corrupt or unavailable — fall back to the default template */ }
   return null;
 }
@@ -6432,7 +6800,7 @@ function scheduleAutosave(){
   clearTimeout(autosaveTimer);
   autosaveTimer = setTimeout(() => {
     try {
-      localStorage.setItem(EDITOR_AUTOSAVE_KEY, JSON.stringify({ html: editors.html.value, css: editors.css.value, js: editors.js.value }));
+      localStorage.setItem(EDITOR_AUTOSAVE_KEY, JSON.stringify({ html: editors.html.value }));
     } catch(e){ /* storage full or blocked — this session just won't be restorable */ }
   }, 600);
 }
@@ -6558,30 +6926,21 @@ function wireEditorEnhancements(ta, indentUnit, onChange){
 
 const editors = {
   html: document.getElementById('code-html'),
-  css: document.getElementById('code-css'),
-  js: document.getElementById('code-js'),
 };
 const gutters = {
   html: document.getElementById('gutter-html'),
-  css: document.getElementById('gutter-css'),
-  js: document.getElementById('gutter-js'),
 };
 const restored = loadAutosave();
 const startingCode = restored || DEFAULT;
-editors.html.value = startingCode.html;
-editors.css.value = startingCode.css;
-editors.js.value = startingCode.js;
+editors.html.value = startingCode;
 
 document.querySelectorAll('#fileMenu [data-template]').forEach(btn => {
   btn.addEventListener('click', () => {
     const key = btn.getAttribute('data-template');
     if (!key || !TEMPLATES[key]) return;
-    const hasContent = editors.html.value.trim() || editors.css.value.trim() || editors.js.value.trim();
-    if (hasContent && !confirm('Load this template? It will replace your current HTML, CSS, and JS.')) return;
-    const tpl = TEMPLATES[key];
-    editors.html.value = tpl.html;
-    editors.css.value = tpl.css;
-    editors.js.value = tpl.js;
+    const hasContent = editors.html.value.trim();
+    if (hasContent && !confirm('Load this template? It will replace your current HTML.')) return;
+    editors.html.value = TEMPLATES[key];
     Object.keys(editors).forEach(updateGutter);
     scheduleAutosave();
     run();
@@ -6593,63 +6952,22 @@ const preview = document.getElementById('preview');
 const consoleEl = document.getElementById('console');
 const autorun = document.getElementById('autorun');
 
-document.querySelectorAll('#view-editor .tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('#view-editor .tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('#view-editor .code-panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.querySelector('.code-panel[data-lang="' + tab.dataset.lang + '"]').classList.add('active');
-  });
-});
+// Single-file editor: there's just the one "index.html" tab left, so a
+// click has nothing to switch to — it's a non-interactive label now,
+// kept purely for the visual/branding consistency of the tab bar.
 
-// CSS and JS tabs can be closed (hidden, not deleted — their content stays
-// exactly as it was in the underlying textarea and still contributes to
-// the built preview) and reopened later via the "+" button. HTML always
-// stays open since a build needs at least a document to render into.
-function refreshReopenTabUi(){
-  const closedTabs = Array.from(document.querySelectorAll('#view-editor .tab.tab-closed'));
-  const wrap = document.getElementById('reopen-tab-wrap');
-  wrap.style.display = closedTabs.length ? '' : 'none';
-  const menu = document.getElementById('reopenTabMenu');
-  menu.innerHTML = closedTabs.map(t => {
-    const lang = t.dataset.lang;
-    const name = lang === 'css' ? 'style.css' : 'script.js';
-    return '<button type="button" class="dropdown-item" data-lang="' + lang + '"><span class="sq"></span>' + name + '</button>';
-  }).join('');
-  menu.querySelectorAll('.dropdown-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = document.querySelector('#view-editor .tab[data-lang="' + btn.dataset.lang + '"]');
-      tab.classList.remove('tab-closed');
-      tab.click();
-      refreshReopenTabUi();
-    });
-  });
-}
-document.querySelectorAll('#view-editor .tab-close-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation(); // don't also trigger the tab's own click-to-select handler
-    const lang = btn.dataset.lang;
-    const tab = document.querySelector('#view-editor .tab[data-lang="' + lang + '"]');
-    const wasActive = tab.classList.contains('active');
-    tab.classList.add('tab-closed');
-    if (wasActive) selectEditorTab('html'); // fall back to a tab that's guaranteed to still be open
-    refreshReopenTabUi();
-  });
-});
-wireDropdown('reopen-tab-btn', 'reopenTabMenu');
-refreshReopenTabUi();
-
-function selectEditorTab(lang){
-  document.querySelector('#view-editor .tab[data-lang="' + lang + '"]').click();
-}
-function activeEditorLang(){
-  const tab = document.querySelector('#view-editor .tab.active');
-  return tab ? tab.dataset.lang : 'html';
-}
+function selectEditorTab(lang){ /* no-op: only one tab (html) exists now */ }
+function activeEditorLang(){ return 'html'; }
 
 function updateGutter(lang){
   const ta = editors[lang], g = gutters[lang];
-  const lines = ta.value.split('\n').length;
+  // Count newlines without allocating a split() array, and only rebuild the
+  // gutter DOM when the number of lines actually changed (most keystrokes
+  // don't add or remove a line).
+  const v = ta.value;
+  let lines = 1;
+  for (let i = v.indexOf('\n'); i !== -1; i = v.indexOf('\n', i + 1)) lines++;
+  if (g.childElementCount === lines) return;
   let out = '';
   for (let i = 1; i <= lines; i++) out += '<div>' + i + '</div>';
   g.innerHTML = out;
@@ -6696,23 +7014,31 @@ consoleReplInput.addEventListener('keydown', (e) => {
   consoleReplInput.value = '';
 });
 
-function buildDoc(){
-  const html = editors.html.value, css = editors.css.value, js = editors.js.value;
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>${css}</style>
-</head>
-<body>
-${html}
+// The editor's single textarea now holds a complete, self-contained HTML
+// document — markup plus its own inline <style>/<script> tags, exactly like
+// a real standalone .html file. This is exactly what gets downloaded,
+// shared, or opened in a new tab: there's nothing left to combine it with.
+function getDocContent(){
+  return editors.html.value;
+}
+
+// For the live preview only (never for download/share — see getDocContent),
+// a small bridge script is spliced into the document so the preview's
+// console.log/warn/error reach the console panel below and the REPL bar can
+// run a line of JS inside the preview's own scope. It has to land before any
+// of the user's own inline <script> tags run, so it's inserted right after
+// the opening <head>/<html> tag — or right at the very top when the user's
+// HTML is just a bare fragment with no <head>/<html> wrapper of its own.
+function buildPreviewDoc(){
+  const html = getDocContent();
+  const bridge = `
 <script>
 (function(){
   const send = (level) => (...args) => { parent.postMessage({__codepad:true, level, args}, '*'); };
   console.log = send('log'); console.warn = send('warn'); console.error = send('error');
   window.addEventListener('error', (e) => send('error')(e.message + ' (line ' + e.lineno + ')'));
   // Lets the outer page's console REPL run a line of JS in this same
-  // document/scope (so it can see globals the page's own script defined).
+  // document/scope (so it can see globals the page's own script(s) defined).
   window.addEventListener('message', function(e){
     if (!e.data || !e.data.__codepadRepl) return;
     try {
@@ -6720,19 +7046,16 @@ ${html}
       send('__repl_result__')(result === undefined ? 'undefined' : result);
     } catch(err){ send('error')('REPL: ' + err.message); }
   });
-  try {
-/*__CODEPAD_USER_JS_START__*/
-${js}
-/*__CODEPAD_USER_JS_END__*/
-  } catch (err) { send('error')('Uncaught: ' + err.message); }
 })();
 <\/script>
-</body>
-</html>`;
+`;
+  if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (m) => m + bridge);
+  if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, (m) => m + bridge);
+  return bridge + html;
 }
 
 function run(){
-  preview.srcdoc = buildDoc();
+  preview.srcdoc = buildPreviewDoc();
   if (document.querySelector('.view-tab[data-view="editor"]').classList.contains('active'))
     statusEl.textContent = 'ran at ' + new Date().toLocaleTimeString();
 }
@@ -6748,18 +7071,9 @@ document.getElementById('run-btn').addEventListener('click', run);
 document.getElementById('reload-btn').addEventListener('click', run);
 document.getElementById('clear-console').addEventListener('click', () => consoleEl.innerHTML = '');
 
-// Reads whichever "new tab method" radio the person has selected in a
-// Share menu — Editor's and Python's Share menus both use the same radio
-// `name`, so picking one anywhere applies everywhere (that's just how
-// same-named radios behave natively, no extra sync code needed).
-function getShareMethod(){
-  const checked = document.querySelector('input[name="shareMethod"]:checked');
-  return checked ? checked.value : 'blob';
-}
 // Wraps a chat code block into a viewable HTML page based on its language,
 // then opens it using whichever new-tab method is currently selected
-// (blob/data/about:blank — the same shared choice used elsewhere in the
-// app). HTML opens as-is; JS and CSS get a minimal wrapper so there's
+// (the same shared new-tab method used everywhere else in the app). HTML opens as-is; JS and CSS get a minimal wrapper so there's
 // something to actually see; anything else is shown as plain readable text
 // rather than silently doing nothing.
 function wrapCodeBlockAsHtml(cb){
@@ -6777,22 +7091,7 @@ function wrapCodeBlockAsHtml(cb){
     '</head><body>' + escapeHtml(cb.code) + '</body></html>';
 }
 function openCodeBlockInNewTab(cb){
-  const html = wrapCodeBlockAsHtml(cb);
-  const method = getShareMethod();
-  if (method === 'blank'){
-    const win = window.open('about:blank', '_blank');
-    if (!win) { alert('The browser blocked this popup. Allow popups for this page, or pick a different method.'); return; }
-    win.document.open(); win.document.write(html); win.document.close();
-    return;
-  }
-  if (method === 'data'){
-    const b64 = btoa(unescape(encodeURIComponent(html)));
-    const dataUrl = 'data:text/html;base64,' + b64;
-    if (dataUrl.length > 1800000) { alert('This snippet is too large to fit in a data: link. Use Blob or About:blank instead.'); return; }
-    openInNewTab(dataUrl);
-    return;
-  }
-  openInNewTab(URL.createObjectURL(new Blob([html], {type: 'text/html'})));
+  openHtmlWithMethod(wrapCodeBlockAsHtml(cb), {});
 }
 
 /* =========================================================================
@@ -6851,19 +7150,8 @@ async function runUrlFetchAndRun(){
     const kind = runUrlDetectKind(url, text);
 
     if (kind === 'html'){
-      const method = getShareMethod();
-      if (method === 'blank'){
-        const win = window.open('about:blank', '_blank');
-        if (!win) throw new Error('The browser blocked this popup — allow popups for this page and try again.');
-        win.document.open(); win.document.write(text); win.document.close();
-      } else if (method === 'data'){
-        const b64 = btoa(unescape(encodeURIComponent(text)));
-        const dataUrl = 'data:text/html;base64,' + b64;
-        if (dataUrl.length > 1800000) throw new Error('This file is too large for a data: link — pick Blob or About:blank instead (Stargazing\'s "new tab method" menu).');
-        openInNewTab(dataUrl);
-      } else {
-        openInNewTab(URL.createObjectURL(new Blob([text], { type: 'text/html' })));
-      }
+      const res2 = openHtmlWithMethod(text, {});
+      if (res2.blocked) throw new Error('The browser blocked the popup \u2014 use the toast action or allow popups for this page.');
       setInlineStatus(statusEl, 'Detected HTML — opened in a new tab.', 'var(--accent)');
     } else {
       pyEditors.py.value = text;
@@ -7276,14 +7564,12 @@ safeInit(function(){
 });
 
 /* ---- Tool: Quick launch — paste/drag/browse HTML, open without previewing it ---- */
-const TOOL_LAUNCH_DATA_LIMIT = 400000; // data: URIs get impractical well before browsers' hard URL-length caps
 safeInit(function(){
   const dropZone = document.getElementById('toolLaunchDropZone');
   const fileInput = document.getElementById('toolLaunchFileInput');
   const textarea = document.getElementById('toolLaunchInput');
   const statusEl = document.getElementById('toolLaunchStatus');
   const blobBtn = document.getElementById('toolLaunchBlobBtn');
-  const dataBtn = document.getElementById('toolLaunchDataBtn');
   const blankBtn = document.getElementById('toolLaunchBlankBtn');
   let code = '';
   let sourceLabel = '';
@@ -7299,11 +7585,8 @@ safeInit(function(){
     const hasCode = bytes > 0;
     blobBtn.disabled = !hasCode;
     blankBtn.disabled = !hasCode;
-    const overDataLimit = bytes >= TOOL_LAUNCH_DATA_LIMIT;
-    dataBtn.disabled = !hasCode || overDataLimit;
-    dataBtn.title = overDataLimit ? 'data: links get unreliable above ~400 KB — use Blob or About:blank instead.' : '';
     if (!hasCode){ setInlineStatus(statusEl, 'Nothing loaded yet.', 'var(--text-dim)'); return; }
-    setInlineStatus(statusEl, (sourceLabel ? sourceLabel + ' — ' : '') + formatBytes(bytes) + (overDataLimit ? ' (too large for data:)' : ' ready') + '.', 'var(--accent)');
+    setInlineStatus(statusEl, (sourceLabel ? sourceLabel + ' — ' : '') + formatBytes(bytes) + ' ready.', 'var(--accent)');
   }
   function setCode(newCode, label){
     code = newCode;
@@ -7335,7 +7618,7 @@ safeInit(function(){
     // "Quick launch" means quick — a dropped/picked file opens immediately
     // as a blob: tab (the most reliable of the three options) instead of
     // waiting for a second click. The buttons below still work for
-    // re-opening as data:/about:blank, or after pasting code instead.
+    // re-opening as blob:/about:blank, or after pasting code instead.
     if (!openBlobNow()) setInlineStatus(statusEl, 'Loaded ' + file.name + ', but the browser blocked the popup — click "Open — Blob" (or allow popups) to launch it.', 'var(--error)');
   }
 
@@ -7359,16 +7642,6 @@ safeInit(function(){
   blobBtn.addEventListener('click', () => {
     if (!code) return;
     if (!openBlobNow()) setInlineStatus(statusEl, 'The browser blocked this popup — allow popups for this page and try again.', 'var(--error)');
-  });
-  dataBtn.addEventListener('click', () => {
-    if (!code || byteLength(code) >= TOOL_LAUNCH_DATA_LIMIT) return;
-    try {
-      const b64 = btoa(unescape(encodeURIComponent(code)));
-      // Chrome/Edge block a script-driven window.open() straight to a data:
-      // URL (a phishing-hardening measure) — a real click on an <a> element
-      // isn't blocked the same way, which is exactly what openInNewTab does.
-      openInNewTab('data:text/html;base64,' + b64);
-    } catch(e){ setInlineStatus(statusEl, 'Could not encode this as a data: link: ' + e.message, 'var(--error)'); }
   });
   blankBtn.addEventListener('click', () => {
     if (!code) return;
@@ -8095,16 +8368,19 @@ safeInit(function(){
     }));
     list.querySelectorAll('.tool-snippet-insert').forEach(btn => btn.addEventListener('click', () => {
       const snippet = matches[+btn.dataset.i];
-      const ta = editors[snippet.lang];
-      if (!ta) return;
+      const ta = editors.html;
+      // The editor is a single HTML file now — a CSS/JS snippet gets wrapped
+      // in its own <style>/<script> tag so it drops straight into the markup;
+      // an HTML snippet is inserted as-is.
+      const wrapped = snippet.lang === 'css' ? ('<style>\n' + snippet.code + '\n</style>')
+        : snippet.lang === 'js' ? ('<script>\n' + snippet.code + '\n</' + 'script>')
+        : snippet.code;
       const start = ta.selectionStart, end = ta.selectionEnd;
-      ta.value = ta.value.slice(0, start) + snippet.code + ta.value.slice(end);
-      ta.selectionStart = ta.selectionEnd = start + snippet.code.length;
-      updateGutter(snippet.lang);
+      ta.value = ta.value.slice(0, start) + wrapped + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + wrapped.length;
+      updateGutter('html');
       scheduleAutosave();
       switchAppView('editor');
-      document.querySelectorAll('#view-editor .tab').forEach(t => t.classList.toggle('active', t.dataset.lang === snippet.lang));
-      document.querySelectorAll('#view-editor .code-panel').forEach(p => p.classList.toggle('active', p.dataset.lang === snippet.lang));
       ta.focus();
     }));
   }
@@ -8115,52 +8391,31 @@ safeInit(function(){
 // via whichever method is selected — shared by both Editor's and Python's
 // Share menus.
 function launchAppInNewTab(view, forcedMethod){
-  const method = forcedMethod || getShareMethod();
-  const html = buildDeepLinkHtml(view);
-  if (method === 'blank'){
-    const win = window.open('about:blank', '_blank');
-    if (!win) { alert('The browser blocked this popup. Allow popups for this page, or pick a different method.'); return; }
-    win.document.open(); win.document.write(html); win.document.close();
-    return;
-  }
-  if (method === 'data'){
-    const b64 = btoa(unescape(encodeURIComponent(html)));
-    const dataUrl = 'data:text/html;base64,' + b64;
-    if (dataUrl.length > 1800000) { alert('This app is too large to fit in a data: link (browsers cap URL length). Use Blob or About:blank instead.'); return; }
-    openInNewTab(dataUrl);
-    return;
-  }
-  openInNewTab(getAppBlobUrl(view));
+  // Make sure the Editor's latest text is saved so the new tab restores it.
+  try { localStorage.setItem(EDITOR_AUTOSAVE_KEY, JSON.stringify({ html: editors.html.value })); } catch(e){}
+  return openHtmlWithMethod(buildDeepLinkHtml(view), { method: forcedMethod, app: true });
 }
 function launchAppHere(view){
-  const blobUrl = getAppBlobUrl(view);
-  try {
-    if (window.top !== window.self) window.top.location.href = blobUrl;
-    else window.location.href = blobUrl;
-  } catch (err) {
-    // Top-level navigation blocked by an embedding frame's sandbox — reload this frame instead.
-    window.location.href = blobUrl;
-  }
+  launchHtmlHere(buildDeepLinkHtml(view), true);
 }
 
-// Global header button — opens whichever window is currently focused (per
-// getFocusedWinKey(), the same winOrder/appWindows bookkeeping every other
-// window-manager action uses), with the same left-click=blob / right-click=
-// about:blank split as each window's own titlebar button, so there's no
-// surprise switching between the two.
+// Global header button — opens the focused window's app (per
+// getFocusedWinKey()), or the whole desktop when nothing is open, using the
+// shared new-tab method. Never disabled. The caret next to it picks the
+// method; right-click shows the same picker.
 const headerNewTabBtn = document.getElementById('header-newtab-btn');
 headerNewTabBtn.addEventListener('click', () => {
   const key = getFocusedWinKey();
-  if (!key) return; // nothing open — button is disabled in this state, but guard anyway
-  launchAppInNewTab(resolveNewTabKeyForWinKey(key), 'blank');
+  launchAppInNewTab(key ? resolveNewTabKeyForWinKey(key) : 'desktop');
 });
 headerNewTabBtn.addEventListener('contextmenu', (e) => {
   e.preventDefault();
-  const key = getFocusedWinKey();
-  if (!key) return;
-  launchAppInNewTab(resolveNewTabKeyForWinKey(key), 'blob');
+  showNewTabPopover(e.clientX, e.clientY);
 });
-updateHeaderNewTabBtn();
+wireDropdown('header-newtab-caret', 'headerNewTabMenu');
+document.querySelectorAll('.newtab-picker').forEach(renderNewTabPicker);
+refreshNewTabTitles();
+document.getElementById('stargazing-newtab-go-btn').addEventListener('click', () => launchAppInNewTab('stargazingOnly'));
 
 document.getElementById('launch-tab-btn').addEventListener('click', () => launchAppInNewTab('editor'));
 document.getElementById('launch-here-btn').addEventListener('click', () => launchAppHere('editor'));
@@ -8174,46 +8429,19 @@ let currentBlobUrl = null;
 function showLink(url, label){ linkOutput.value = url; linkTypeLabel.textContent = label; linkBar.style.display = 'flex'; }
 
 document.getElementById('open-tab-btn').addEventListener('click', () => {
-  const method = getShareMethod();
-  const doc = buildDoc();
-  if (method === 'blank'){
-    const win = window.open('about:blank', '_blank');
-    if (!win) { alert('The browser blocked this popup. Allow popups for this page, or pick a different method.'); return; }
-    win.document.open(); win.document.write(doc); win.document.close();
-    return;
+  const res = openHtmlWithMethod(getDocContent(), {});
+  if (res.url){
+    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = res.url;
+    showLink(res.url, 'blob: link (works until this page is closed)');
   }
-  if (method === 'data'){
-    const b64 = btoa(unescape(encodeURIComponent(doc)));
-    const dataUrl = 'data:text/html;base64,' + b64;
-    if (dataUrl.length > 1800000) { alert('This page is too large to fit in a data: link (browsers cap URL length). Use Blob, About:blank, or Download .html instead.'); return; }
-    openInNewTab(dataUrl);
-    showLink(dataUrl, 'data: link (works anywhere, no expiry)');
-    return;
-  }
-  if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-  const blob = new Blob([doc], {type: 'text/html'});
-  currentBlobUrl = URL.createObjectURL(blob);
-  openInNewTab(currentBlobUrl);
-  showLink(currentBlobUrl, 'blob: link (works until this page is closed)');
 });
 document.getElementById('blob-link-btn').addEventListener('click', () => {
   if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-  const blob = new Blob([buildDoc()], {type: 'text/html'});
+  const blob = new Blob([getDocContent()], {type: 'text/html'});
   currentBlobUrl = URL.createObjectURL(blob);
   navigator.clipboard.writeText(currentBlobUrl).catch(() => {});
   showLink(currentBlobUrl, 'blob: link (copied — only works in this tab/session, until this page is closed)');
-  linkOutput.select();
-});
-document.getElementById('data-link-btn').addEventListener('click', () => {
-  const doc = buildDoc();
-  const b64 = btoa(unescape(encodeURIComponent(doc)));
-  const dataUrl = 'data:text/html;base64,' + b64;
-  if (dataUrl.length > 1800000) {
-    alert('This page is too large to fit in a data: link (browsers cap URL length). Use "Download .html" or "Open in new tab" instead.');
-    return;
-  }
-  navigator.clipboard.writeText(dataUrl).catch(() => {});
-  showLink(dataUrl, 'data: link (copied — portable, but very long; paste into address bar to open)');
   linkOutput.select();
 });
 document.getElementById('copy-link-btn').addEventListener('click', () => {
@@ -8226,7 +8454,7 @@ document.getElementById('copy-link-btn').addEventListener('click', () => {
 document.getElementById('close-link-bar').addEventListener('click', () => linkBar.style.display = 'none');
 
 document.getElementById('save-btn').addEventListener('click', () => {
-  const blob = new Blob([buildDoc()], {type: 'text/html'});
+  const blob = new Blob([getDocContent()], {type: 'text/html'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'my-page.html'; a.click();
   URL.revokeObjectURL(url);
@@ -8237,18 +8465,10 @@ document.getElementById('open-file').addEventListener('change', (e) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    const text = reader.result;
-    const styleMatch = text.match(/<style>([\s\S]*?)<\/style>/i);
-    const scriptMatch = text.match(/<script>([\s\S]*?)<\/script>/i);
-    let body = text.match(/<body>([\s\S]*?)<\/body>/i);
-    body = body ? body[1] : text;
-    let js = scriptMatch ? scriptMatch[1] : '';
-    const sentinelMatch = js.match(/\/\*__CODEPAD_USER_JS_START__\*\/([\s\S]*?)\/\*__CODEPAD_USER_JS_END__\*\//);
-    if (sentinelMatch) js = sentinelMatch[1]; // strip Codepad's injected console-bridge wrapper, keep only the original script
-    body = body.replace(/<script>[\s\S]*?<\/script>/i, '').trim();
-    editors.html.value = body;
-    editors.css.value = styleMatch ? styleMatch[1].trim() : '';
-    editors.js.value = js.trim();
+    // The editor is a single HTML file now, so an opened file's content
+    // loads straight in as-is — no more splitting it into separate
+    // html/css/js pieces.
+    editors.html.value = reader.result;
     Object.keys(editors).forEach(updateGutter);
     run();
     scheduleAutosave();
@@ -8672,29 +8892,32 @@ function appendMessage(role, text, scroll, msgIndex){
       editBtn.textContent = rendered.codeBlocks.length > 1 ? 'Insert all into editor' : 'Insert into editor';
       editBtn.addEventListener('click', function(){
         const blocks = JSON.parse(div.dataset.codeBlocks);
-        function targetFor(lang){
-          if (/^(css)$/i.test(lang)) return 'css';
-          if (/^(js|javascript|jsx|ts|typescript)$/i.test(lang)) return 'js';
-          if (/^(html|htm|xml|svg)$/i.test(lang)) return 'html';
-          return null; // unrecognized language tag — don't guess, leave that tab alone
+        // The editor is a single HTML file now, so every recognized block
+        // gets folded into it in order — CSS wrapped in <style>, JS wrapped
+        // in <script>, and HTML/markup inserted as-is — the same way the
+        // old separate html/css/js tabs used to combine into one preview.
+        function wrap(lang, code){
+          if (/^(css)$/i.test(lang)) return '<style>\n' + code + '\n</style>';
+          if (/^(js|javascript|jsx|ts|typescript)$/i.test(lang)) return '<script>\n' + code + '\n</' + 'script>';
+          return code;
         }
-        let lastTarget = null;
+        const parts = [];
         let usedFallback = false;
         blocks.forEach(function(cb, i){
-          let target = targetFor(cb.lang);
+          const lang = cb.lang || '';
+          const recognized = /^(css|js|javascript|jsx|ts|typescript|html|htm|xml|svg)$/i.test(lang);
           // No/unrecognized language tag: only the *first* untagged block falls back to
-          // the html tab (a bare snippet is usually markup); later untagged blocks are skipped
-          // rather than overwriting something we already just inserted.
-          if (!target && i === 0 && !usedFallback) { target = 'html'; usedFallback = true; }
-          if (!target) return;
-          editors[target].value = cb.code;
-          updateGutter(target);
-          lastTarget = target;
+          // plain markup; later untagged blocks are skipped rather than guessing.
+          if (!recognized && !(i === 0 && !usedFallback)) return;
+          if (!recognized) usedFallback = true;
+          parts.push(wrap(lang, cb.code));
         });
-        if (lastTarget){
+        if (parts.length){
+          editors.html.value = parts.join('\n\n');
+          updateGutter('html');
           switchAppView('editor');
-          selectEditorTab(lastTarget);
           run();
+          scheduleAutosave();
         }
       });
       actions.appendChild(editBtn);
@@ -9328,27 +9551,19 @@ function ghDownloadFile(url, filename){
 // Only html/css/js exist as real tabs here (unlike the reference app's fully
 // dynamic file list), so anything else falls back to whichever tab is
 // currently active rather than inventing a new tab for it.
-function ghGuessEditorLang(filename){
-  const ext = (String(filename).split('.').pop() || '').toLowerCase();
-  if (ext === 'html' || ext === 'htm') return 'html';
-  if (ext === 'css') return 'css';
-  if (ext === 'js' || ext === 'mjs' || ext === 'cjs') return 'js';
-  return activeEditorLang();
-}
+// The editor is a single HTML file now, so a fetched file always lands
+// there, whatever its extension — same as "Open…" (file import).
 function ghInsertFileIntoEditor(url, filename){
   fetch(url).then(r => {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.text();
   }).then(text => {
-    const lang = ghGuessEditorLang(filename);
-    const ta = editors[lang];
-    if (!ta) return;
-    if (ta.value.trim() && !confirm('Replace the current ' + lang.toUpperCase() + ' tab contents with "' + filename + '"?')) return;
+    const ta = editors.html;
+    if (ta.value.trim() && !confirm('Replace the current editor contents with "' + filename + '"?')) return;
     ta.value = text;
-    updateGutter(lang);
+    updateGutter('html');
     scheduleAutosave();
     switchAppView('editor');
-    selectEditorTab(lang);
   }).catch(err => alert('Could not load file content: ' + err.message));
 }
 
@@ -10199,10 +10414,7 @@ function renderCustomizeAppList(){
     '</div>';
   }).join('');
   wrap.querySelectorAll('[data-open-id]').forEach(btn => btn.addEventListener('click', () => switchAppView('custom:' + btn.dataset.openId)));
-  wrap.querySelectorAll('[data-del-id]').forEach(btn => btn.addEventListener('click', () => {
-    const app = findCustomApp(btn.dataset.delId);
-    if (confirm('Delete "' + (app ? app.name : 'this app') + '"? This can\'t be undone.')) deleteCustomApp(btn.dataset.delId);
-  }));
+  wrap.querySelectorAll('[data-del-id]').forEach(btn => btn.addEventListener('click', () => removeCustomAppWithConfirm(btn.dataset.delId)));
 }
 
 /* =========================================================================
@@ -10217,17 +10429,12 @@ function renderCustomizeAppList(){
    randomly generated one) purely so isStoreAppInstalled() can tell
    whether this particular store item is already on the desktop.
 
-   Every entry here is self-contained HTML run in an iframe (the same
-   'html' custom-app type as any user-written HTML app). Two of them
-   ("Markdown Previewer", "Confetti Party") load a small library from
-   cdn.jsdelivr.net at runtime for real functionality — everything else is
-   written inline with no network dependency at all. The CDN entries are
-   written defensively on purpose: the library is only ever touched after
-   a successful <script onload>, every call site is wrapped in try/catch
-   and guarded with a typeof check, and a failed <script onerror> (or the
-   library object simply never appearing) just swaps in a plain-text
-   fallback — never an uncaught error, since a blocked/offline network
-   is a perfectly normal, expected case here. ---- */
+   Every entry here is self-contained inline HTML run in an iframe (the same
+   'html' custom-app type as any user-written HTML app) with no network
+   dependency at all. The old jsDelivr/GitHub-sourced catalog entries were
+   removed; the 'gh-cached'/'gh-online'/'page' custom-app types (and their
+   helpers below) remain only so apps a user added via Customize → Add app
+   → GitHub repo, Import, or installed earlier keep opening. ---- */
 const STORE_APPS = [
   {
     id: 'store_2048', name: '2048', icon: 'play',
@@ -10601,148 +10808,6 @@ const STORE_APPS = [
 </body></html>`
   },
   {
-    id: 'store_markdown', name: 'Markdown Previewer', icon: 'file-text',
-    description: 'Live markdown preview powered by marked.js from cdn.jsdelivr.net. Needs a network connection; falls back to plain text if the library can’t load.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8">
-<style>
- body{margin:0;font-family:system-ui,sans-serif;background:#151520;color:#eee;display:flex;height:100vh;box-sizing:border-box;}
- .pane{flex:1;padding:16px;box-sizing:border-box;overflow:auto;}
- textarea{width:100%;height:100%;box-sizing:border-box;background:#0e0e18;color:#eee;border:1px solid #333;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:13px;resize:none;}
- #preview{border-left:1px solid #333;}
- #status{position:fixed;top:6px;right:16px;font-size:11px;color:#9be8ff;background:#151520;padding:2px 6px;border-radius:4px;}
-</style></head>
-<body>
-<div id="status">Loading renderer…</div>
-<div class="pane"><textarea id="input" spellcheck="false"># Hello!
-
-Type some **markdown** on the left.</textarea></div>
-<div class="pane" id="preview"></div>
-<script>var markedReady = false;<\/script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
-  onload="markedReady = true; document.getElementById('status').textContent = 'Ready';"
-  onerror="document.getElementById('status').textContent = 'Renderer unavailable offline — showing plain text.';">
-<\/script>
-<script>
-(function(){
-  var input = document.getElementById('input');
-  var preview = document.getElementById('preview');
-  function render(){
-    var text = input.value;
-    try {
-      if (markedReady && typeof marked !== 'undefined'){
-        var html = typeof marked.parse === 'function' ? marked.parse(text) : marked(text);
-        preview.innerHTML = html;
-      } else {
-        preview.textContent = text;
-      }
-    } catch(e){
-      preview.textContent = text;
-    }
-  }
-  input.addEventListener('input', render);
-  setTimeout(render, 800);
-  render();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_confetti', name: 'Confetti Party', icon: 'flask',
-    description: 'A celebration button powered by canvas-confetti from cdn.jsdelivr.net. Needs a network connection; shows a plain message if the library can’t load.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8">
-<style>
- body{margin:0;font-family:system-ui,sans-serif;background:#141420;color:#eee;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;box-sizing:border-box;}
- button{padding:12px 24px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;font-size:15px;font-weight:600;}
- button:hover{background:#6875ff;}
- #status{margin-top:14px;font-size:12px;color:#9be8ff;min-height:16px;text-align:center;max-width:280px;}
-</style></head>
-<body>
-<button id="goBtn">🎉 Celebrate!</button>
-<div id="status">Loading confetti library…</div>
-<script>var confettiReady = false;<\/script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"
-  onload="confettiReady = true; document.getElementById('status').textContent = 'Ready — click the button!';"
-  onerror="document.getElementById('status').textContent = 'Confetti library unavailable offline.';">
-<\/script>
-<script>
-document.getElementById('goBtn').addEventListener('click', function(){
-  try {
-    if (confettiReady && typeof confetti === 'function'){
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-    } else {
-      document.getElementById('status').textContent = 'Confetti library unavailable — try again with a connection.';
-    }
-  } catch(e){
-    document.getElementById('status').textContent = 'Something went wrong loading confetti.';
-  }
-});
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_whackamole', name: 'Whack-a-Mole', icon: 'star',
-    description: 'Click the moles before they duck back down. Score climbs as long as you keep tapping. Runs fully offline.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:20px;}
-h1{margin:0 0 4px;} #score{color:#9be8ff;margin-bottom:12px;}
-#grid{display:grid;grid-template-columns:repeat(3,90px);grid-gap:14px;}
-.hole{width:90px;height:90px;border-radius:50%;background:#0f0f23;border:3px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
-.mole{width:70%;height:70%;border-radius:50%;background:#c98a4b;display:none;align-items:center;justify-content:center;font-size:28px;}
-.hole.up .mole{display:flex;}
-#timeLeft{margin-top:12px;color:#aaa;font-size:13px;}
-button{margin-top:14px;padding:8px 18px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;font-size:14px;}
-</style></head><body>
-<h1>Whack-a-Mole</h1>
-<div id="score">Score: 0</div>
-<div id="grid"></div>
-<div id="timeLeft">Click Start to play</div>
-<button id="startBtn">Start</button>
-<script>
-(function(){
-  var grid = document.getElementById('grid');
-  var holes = [];
-  for (var i=0;i<9;i++){
-    var h = document.createElement('div'); h.className='hole';
-    var m = document.createElement('div'); m.className='mole'; m.textContent='🐹';
-    h.appendChild(m); grid.appendChild(h); holes.push(h);
-  }
-  var score=0, timer=null, spawnTimer=null, timeLeft=30, playing=false;
-  function setScore(v){ score=v; document.getElementById('score').textContent='Score: '+score; }
-  holes.forEach(function(h){
-    h.addEventListener('click', function(){
-      if (!playing) return;
-      if (h.classList.contains('up')){ h.classList.remove('up'); setScore(score+1); }
-    });
-  });
-  function popRandom(){
-    holes.forEach(function(h){ h.classList.remove('up'); });
-    var idx = Math.floor(Math.random()*holes.length);
-    holes[idx].classList.add('up');
-  }
-  document.getElementById('startBtn').addEventListener('click', function(){
-    if (playing) return;
-    playing = true; setScore(0); timeLeft = 30;
-    document.getElementById('timeLeft').textContent = 'Time left: '+timeLeft+'s';
-    spawnTimer = setInterval(popRandom, 700);
-    timer = setInterval(function(){
-      timeLeft--;
-      document.getElementById('timeLeft').textContent = 'Time left: '+timeLeft+'s';
-      if (timeLeft<=0){
-        clearInterval(timer); clearInterval(spawnTimer);
-        holes.forEach(function(h){ h.classList.remove('up'); });
-        playing=false;
-        document.getElementById('timeLeft').textContent = 'Time up! Final score: '+score;
-      }
-    }, 1000);
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
     id: 'store_memorymatch', name: 'Memory Match', icon: 'clipboard',
     description: 'Flip cards two at a time and find every matching pair. A classic concentration game, runs fully offline.',
     type: 'html',
@@ -10802,186 +10867,6 @@ button{margin-top:10px;padding:8px 18px;border-radius:8px;border:1px solid #555;
     document.getElementById('win').textContent='';
     render();
   });
-  render();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_reaction', name: 'Reaction Time Tester', icon: 'clock',
-    description: 'Wait for the screen to turn green, then click as fast as you can. Tracks your best time this session.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;box-sizing:border-box;}
-#pad{width:280px;height:200px;border-radius:14px;background:#b8433a;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;font-size:16px;padding:14px;box-sizing:border-box;}
-#pad.ready{background:#2f9e44;}
-#pad.wait{background:#3a3a5c;}
-#stats{margin-top:16px;font-size:13px;color:#9be8ff;text-align:center;}
-</style></head><body>
-<div id="pad" class="wait">Click to start</div>
-<div id="stats">Best: — ms</div>
-<script>
-(function(){
-  var pad = document.getElementById('pad');
-  var state = 'idle'; var startTime=0; var timeout=null; var best=null;
-  function setIdle(text){ state='idle'; pad.className='wait'; pad.textContent=text; }
-  setIdle('Click to start');
-  pad.addEventListener('click', function(){
-    if (state==='idle'){
-      state='waiting'; pad.className='wait'; pad.textContent='Wait for green…';
-      var delay = 800 + Math.random()*2200;
-      timeout = setTimeout(function(){
-        state='ready'; pad.className='ready'; pad.textContent='Click now!'; startTime = Date.now();
-      }, delay);
-    } else if (state==='waiting'){
-      clearTimeout(timeout);
-      setIdle('Too soon! Click to try again');
-    } else if (state==='ready'){
-      var ms = Date.now()-startTime;
-      if (best===null || ms<best){ best=ms; document.getElementById('stats').textContent='Best: '+best+' ms'; }
-      setIdle('Your time: '+ms+' ms — click to retry');
-    }
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_tnt', name: 'TNT Simulator', icon: 'flask',
-    description: 'A cartoon chain-reaction sandbox. Click anywhere to drop a "bomb" and watch a burst of particles ripple outward and trigger nearby bombs. Pure canvas physics, no gore, runs fully offline.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;background:#0a0a14;overflow:hidden;font-family:system-ui,sans-serif;}
-#hud{position:fixed;top:8px;left:10px;color:#9be8ff;font-size:12px;background:rgba(20,20,32,0.6);padding:6px 10px;border-radius:6px;}
-canvas{display:block;cursor:crosshair;}
-</style></head><body>
-<div id="hud">Click anywhere to place TNT · chain reactions trigger nearby crates</div>
-<canvas id="c"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('c');
-  var ctx = canvas.getContext('2d');
-  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-
-  var crates = [];
-  var particles = [];
-  function spawnCrates(){
-    crates = [];
-    for (var i=0;i<14;i++){
-      crates.push({ x: 60+Math.random()*(canvas.width-120), y: 60+Math.random()*(canvas.height-120), r: 16, alive: true });
-    }
-  }
-  spawnCrates();
-
-  function explode(x, y){
-    var hue = 20 + Math.random()*40;
-    for (var i=0;i<40;i++){
-      var ang = Math.random()*Math.PI*2;
-      var speed = 2+Math.random()*6;
-      particles.push({
-        x:x, y:y, vx: Math.cos(ang)*speed, vy: Math.sin(ang)*speed,
-        life: 40+Math.random()*20, hue: hue+Math.random()*20-10, size: 2+Math.random()*3
-      });
-    }
-    crates.forEach(function(c){
-      if (c.alive){
-        var d = Math.hypot(c.x-x, c.y-y);
-        if (d < 90) setTimeout(function(){ if (c.alive){ c.alive=false; explode(c.x, c.y); } }, 90 + d);
-      }
-    });
-  }
-
-  canvas.addEventListener('click', function(e){
-    explode(e.clientX, e.clientY);
-  });
-
-  function drawCrate(c){
-    if (!c.alive) return;
-    ctx.fillStyle = '#8a5a2b';
-    ctx.fillRect(c.x-c.r, c.y-c.r, c.r*2, c.r*2);
-    ctx.strokeStyle = '#c98a4b';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(c.x-c.r, c.y-c.r, c.r*2, c.r*2);
-    ctx.fillStyle = '#e0c93a';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('TNT', c.x, c.y+5);
-  }
-
-  function loop(){
-    ctx.fillStyle = 'rgba(10,10,20,0.28)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    crates.forEach(drawCrate);
-    particles.forEach(function(p, i){
-      p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.vx *= 0.98; p.life--;
-      ctx.beginPath();
-      ctx.fillStyle = 'hsl('+p.hue+', 90%, 60%)';
-      ctx.globalAlpha = Math.max(0, p.life/60);
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    });
-    particles = particles.filter(function(p){ return p.life>0; });
-    if (crates.every(function(c){ return !c.alive; }) && particles.length===0) spawnCrates();
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_clicker', name: 'Cosmic Clicker', icon: 'star',
-    description: 'An idle-style clicker: tap the star for points, buy upgrades to earn points automatically. Progress is kept only for the current session.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:22px;}
-h1{margin:0 0 4px;} #count{font-size:28px;font-weight:700;color:#f0c419;margin-bottom:10px;}
-#star{font-size:70px;cursor:pointer;user-select:none;background:none;border:none;transition:transform .08s ease;}
-#star:active{transform:scale(0.9);}
-#perSec{color:#9be8ff;font-size:12px;margin-bottom:16px;}
-.shop{display:flex;flex-direction:column;gap:8px;width:280px;}
-.shop button{display:flex;justify-content:space-between;padding:10px 12px;border-radius:8px;border:1px solid #444;background:#2a2a44;color:#eee;cursor:pointer;font-size:13px;}
-.shop button:disabled{opacity:0.4;cursor:not-allowed;}
-.shop button:hover:not(:disabled){border-color:#8b7cf6;}
-</style></head><body>
-<h1>Cosmic Clicker</h1>
-<div id="count">0 points</div>
-<button id="star">⭐</button>
-<div id="perSec">+0 / sec</div>
-<div class="shop" id="shop"></div>
-<script>
-(function(){
-  var points = 0, perSec = 0;
-  var upgrades = [
-    { id:'a', name:'Satellite', cost:10, add:1, owned:0 },
-    { id:'b', name:'Space Station', cost:60, add:5, owned:0 },
-    { id:'c', name:'Fleet of Rockets', cost:300, add:20, owned:0 }
-  ];
-  function fmt(n){ return Math.floor(n).toLocaleString(); }
-  function render(){
-    document.getElementById('count').textContent = fmt(points)+' points';
-    document.getElementById('perSec').textContent = '+'+fmt(perSec)+' / sec';
-    var shop = document.getElementById('shop');
-    shop.innerHTML = '';
-    upgrades.forEach(function(u){
-      var btn = document.createElement('button');
-      btn.disabled = points < u.cost;
-      var left = document.createElement('span'); left.textContent = u.name+' (owned: '+u.owned+')';
-      var right = document.createElement('span'); right.textContent = fmt(u.cost)+' pts';
-      btn.appendChild(left); btn.appendChild(right);
-      btn.addEventListener('click', function(){
-        if (points >= u.cost){
-          points -= u.cost; u.owned++; perSec += u.add; u.cost = Math.round(u.cost*1.6);
-          render();
-        }
-      });
-      shop.appendChild(btn);
-    });
-  }
-  document.getElementById('star').addEventListener('click', function(){ points += 1; render(); });
-  setInterval(function(){ if (perSec>0){ points += perSec/10; render(); } }, 100);
   render();
 })();
 <\/script>
@@ -11211,578 +11096,6 @@ button{margin-top:14px;padding:8px 18px;border-radius:8px;border:1px solid #555;
 </body></html>`
   },
   {
-    id: 'store_rps', name: 'Rock Paper Scissors', icon: 'refresh-cw',
-    description: 'Play rock, paper or scissors against the computer. Tracks your win/loss/tie record for the session.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:26px;}
-h1{margin:0 0 10px;}
-.choices{display:flex;gap:10px;margin-bottom:16px;}
-.choices button{font-size:30px;padding:10px 16px;border-radius:10px;border:1px solid #555;background:#2a2a44;cursor:pointer;}
-.choices button:hover{border-color:#8b7cf6;}
-#result{font-size:15px;min-height:22px;margin-bottom:8px;text-align:center;}
-#record{color:#9be8ff;font-size:13px;}
-</style></head><body>
-<h1>Rock Paper Scissors</h1>
-<div class="choices">
-  <button data-c="rock">🪨</button>
-  <button data-c="paper">📄</button>
-  <button data-c="scissors">✂️</button>
-</div>
-<div id="result">Pick one!</div>
-<div id="record">W: 0 · L: 0 · T: 0</div>
-<script>
-(function(){
-  var opts = ['rock','paper','scissors'];
-  var w=0,l=0,t=0;
-  var beats = { rock:'scissors', paper:'rock', scissors:'paper' };
-  document.querySelectorAll('.choices button').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var you = btn.dataset.c;
-      var cpu = opts[Math.floor(Math.random()*3)];
-      var msg = 'You: '+you+' vs CPU: '+cpu+' — ';
-      if (you===cpu){ msg+='Tie!'; t++; }
-      else if (beats[you]===cpu){ msg+='You win!'; w++; }
-      else { msg+='CPU wins!'; l++; }
-      document.getElementById('result').textContent = msg;
-      document.getElementById('record').textContent = 'W: '+w+' · L: '+l+' · T: '+t;
-    });
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_etch', name: 'Etch-a-Sketch', icon: 'edit',
-    description: 'Move your mouse to draw glowing lines on a dark canvas. Click Clear to start a fresh sketch.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#0a0a14;color:#eee;display:flex;flex-direction:column;align-items:center;padding:14px;}
-h1{margin:0 0 8px;}
-canvas{background:#0a0a14;border:1px solid #333;border-radius:8px;cursor:crosshair;touch-action:none;}
-.row{display:flex;gap:8px;margin-top:10px;align-items:center;}
-input[type=color]{width:36px;height:30px;border:none;background:none;cursor:pointer;}
-button{padding:7px 16px;border-radius:8px;border:1px solid #555;background:#4a4a7c;color:#fff;cursor:pointer;}
-</style></head><body>
-<h1>Etch-a-Sketch</h1>
-<canvas id="c" width="480" height="360"></canvas>
-<div class="row">
-  <label style="font-size:12px;color:#aaa;">Color <input type="color" id="colorPick" value="#8be0ff"></label>
-  <button id="clearBtn">Clear</button>
-</div>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  ctx.lineCap = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = '#8be0ff';
-  var drawing = false, lastX=0, lastY=0;
-  function pos(e){
-    var r = canvas.getBoundingClientRect();
-    var cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-    var cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-    return [cx, cy];
-  }
-  function start(e){ drawing = true; var p = pos(e); lastX=p[0]; lastY=p[1]; }
-  function move(e){
-    if (!drawing) return;
-    var p = pos(e);
-    ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p[0],p[1]); ctx.stroke();
-    lastX=p[0]; lastY=p[1];
-    if (e.preventDefault) e.preventDefault();
-  }
-  function end(){ drawing = false; }
-  canvas.addEventListener('mousedown', start);
-  canvas.addEventListener('mousemove', move);
-  window.addEventListener('mouseup', end);
-  canvas.addEventListener('touchstart', start);
-  canvas.addEventListener('touchmove', move, { passive:false });
-  canvas.addEventListener('touchend', end);
-  document.getElementById('colorPick').addEventListener('input', function(e){ ctx.strokeStyle = e.target.value; });
-  document.getElementById('clearBtn').addEventListener('click', function(){ ctx.clearRect(0,0,canvas.width,canvas.height); });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_bubblepop', name: 'Bubble Pop', icon: 'moon',
-    description: 'Bubbles float up the screen — click to pop as many as you can before they escape off the top.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#0a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:14px;overflow:hidden;}
-h1{margin:0 0 6px;} #score{color:#9be8ff;margin-bottom:6px;}
-canvas{background:linear-gradient(#0a1a2e,#122442);border-radius:8px;cursor:pointer;}
-</style></head><body>
-<h1>Bubble Pop</h1>
-<div id="score">Popped: 0</div>
-<canvas id="c" width="360" height="440"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height;
-  var bubbles = [], popped = 0;
-  function spawn(){
-    bubbles.push({ x: 20+Math.random()*(W-40), y: H+20, r: 14+Math.random()*16, speed: 0.6+Math.random()*1.4, hue: 180+Math.random()*80 });
-  }
-  setInterval(spawn, 450);
-  canvas.addEventListener('click', function(e){
-    var r = canvas.getBoundingClientRect();
-    var mx = e.clientX-r.left, my = e.clientY-r.top;
-    for (var i=bubbles.length-1;i>=0;i--){
-      var b = bubbles[i];
-      if (Math.hypot(mx-b.x, my-b.y) < b.r){ bubbles.splice(i,1); popped++; document.getElementById('score').textContent='Popped: '+popped; break; }
-    }
-  });
-  function loop(){
-    ctx.clearRect(0,0,W,H);
-    var grad = ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'#0a1a2e'); grad.addColorStop(1,'#122442');
-    ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
-    bubbles.forEach(function(b){ b.y -= b.speed; });
-    bubbles = bubbles.filter(function(b){ return b.y > -30; });
-    bubbles.forEach(function(b){
-      ctx.beginPath();
-      ctx.fillStyle = 'hsla('+b.hue+',80%,65%,0.55)';
-      ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle = 'hsla('+b.hue+',80%,80%,0.9)';
-      ctx.lineWidth = 2; ctx.stroke();
-    });
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_simon', name: 'Simon Sequence', icon: 'palette',
-    description: 'Watch the color sequence light up, then repeat it back by clicking the same squares in order. Gets one step longer each round.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:22px;}
-h1{margin:0 0 6px;} #status{color:#9be8ff;margin-bottom:14px;min-height:18px;}
-#pad{display:grid;grid-template-columns:repeat(2,100px);grid-gap:10px;}
-.sq{width:100px;height:100px;border-radius:10px;cursor:pointer;opacity:0.55;transition:opacity .1s;}
-.sq.lit{opacity:1;box-shadow:0 0 20px currentColor;}
-#c0{background:#e05a4a;color:#e05a4a;} #c1{background:#4ad0e0;color:#4ad0e0;}
-#c2{background:#e0d63a;color:#e0d63a;} #c3{background:#7de03a;color:#7de03a;}
-button{margin-top:16px;padding:8px 18px;border-radius:8px;border:1px solid #555;background:#4a4a7c;color:#fff;cursor:pointer;}
-</style></head><body>
-<h1>Simon Sequence</h1>
-<div id="status">Click Start</div>
-<div id="pad">
-  <div class="sq" id="c0" data-i="0"></div><div class="sq" id="c1" data-i="1"></div>
-  <div class="sq" id="c2" data-i="2"></div><div class="sq" id="c3" data-i="3"></div>
-</div>
-<button id="startBtn">Start</button>
-<script>
-(function(){
-  var sqs = [document.getElementById('c0'),document.getElementById('c1'),document.getElementById('c2'),document.getElementById('c3')];
-  var seq = [], playerStep = 0, accepting = false;
-  function flash(i, cb){
-    sqs[i].classList.add('lit');
-    setTimeout(function(){ sqs[i].classList.remove('lit'); if (cb) setTimeout(cb, 180); }, 380);
-  }
-  function playSeq(i){
-    if (i >= seq.length){ accepting = true; playerStep = 0; document.getElementById('status').textContent = 'Your turn — repeat the sequence'; return; }
-    flash(seq[i], function(){ playSeq(i+1); });
-  }
-  function nextRound(){
-    seq.push(Math.floor(Math.random()*4));
-    accepting = false;
-    document.getElementById('status').textContent = 'Watch closely… round '+seq.length;
-    setTimeout(function(){ playSeq(0); }, 500);
-  }
-  sqs.forEach(function(sq, i){
-    sq.addEventListener('click', function(){
-      if (!accepting) return;
-      flash(i);
-      if (seq[playerStep] === i){
-        playerStep++;
-        if (playerStep === seq.length){
-          accepting = false;
-          document.getElementById('status').textContent = 'Correct! Next round…';
-          setTimeout(nextRound, 800);
-        }
-      } else {
-        accepting = false;
-        document.getElementById('status').textContent = 'Wrong! Game over at round '+seq.length+'. Click Start to retry.';
-        seq = [];
-      }
-    });
-  });
-  document.getElementById('startBtn').addEventListener('click', function(){ seq = []; nextRound(); });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_fireworks', name: 'Fireworks Canvas', icon: 'star',
-    description: 'Click anywhere on the night sky to launch a firework that bursts into colorful sparks. A relaxing visual toy, runs fully offline.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;background:#03030a;overflow:hidden;}
-canvas{display:block;cursor:pointer;}
-#hint{position:fixed;top:8px;left:10px;color:#9be8ff;font-size:12px;font-family:system-ui,sans-serif;background:rgba(20,20,32,0.6);padding:6px 10px;border-radius:6px;}
-</style></head><body>
-<div id="hint">Click to launch a firework</div>
-<canvas id="c"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  var rockets = [], sparks = [];
-  canvas.addEventListener('click', function(e){
-    rockets.push({ x: e.clientX, y: canvas.height, tx: e.clientX, ty: e.clientY, hue: Math.random()*360 });
-  });
-  function loop(){
-    ctx.fillStyle = 'rgba(3,3,10,0.25)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    rockets.forEach(function(r, i){
-      var dx = r.tx-r.x, dy = r.ty-r.y;
-      var d = Math.hypot(dx,dy);
-      if (d < 8){
-        for (var k=0;k<50;k++){
-          var ang = Math.random()*Math.PI*2, spd = 1+Math.random()*4;
-          sparks.push({ x:r.x, y:r.y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, life:60+Math.random()*20, hue:r.hue+Math.random()*30-15 });
-        }
-        rockets.splice(i,1);
-      } else {
-        r.x += dx/d*6; r.y += dy/d*6;
-        ctx.fillStyle = 'hsl('+r.hue+',90%,70%)';
-        ctx.beginPath(); ctx.arc(r.x,r.y,2.4,0,Math.PI*2); ctx.fill();
-      }
-    });
-    sparks.forEach(function(s){ s.x+=s.vx; s.y+=s.vy; s.vy += 0.05; s.life--; });
-    sparks = sparks.filter(function(s){ return s.life>0; });
-    sparks.forEach(function(s){
-      ctx.globalAlpha = Math.max(0, s.life/70);
-      ctx.fillStyle = 'hsl('+s.hue+',90%,65%)';
-      ctx.beginPath(); ctx.arc(s.x,s.y,2,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha = 1;
-    });
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_balloonpop', name: 'Balloon Pop Clicker', icon: 'play',
-    description: 'Pop as many rising balloons as you can in 20 seconds. Miss too many and they float off the top of the screen.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#142030;color:#eee;display:flex;flex-direction:column;align-items:center;padding:14px;}
-h1{margin:0 0 6px;} #hud{color:#9be8ff;margin-bottom:6px;}
-canvas{background:#0d1826;border-radius:8px;cursor:pointer;}
-button{margin-top:10px;padding:8px 18px;border-radius:8px;border:1px solid #555;background:#4a4a7c;color:#fff;cursor:pointer;}
-</style></head><body>
-<h1>Balloon Pop</h1>
-<div id="hud">Score: 0 · Time: 20s</div>
-<canvas id="c" width="360" height="440"></canvas>
-<button id="startBtn">Start</button>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height;
-  var balloons=[], score=0, timeLeft=20, playing=false, spawner=null, ticker=null;
-  var colors = ['#e05a4a','#4ad0e0','#e0d63a','#7de03a','#c98af0'];
-  function spawn(){ balloons.push({ x: 24+Math.random()*(W-48), y: H+20, r:20, speed:0.9+Math.random()*1.3, color: colors[Math.floor(Math.random()*colors.length)] }); }
-  canvas.addEventListener('click', function(e){
-    if (!playing) return;
-    var r = canvas.getBoundingClientRect();
-    var mx=e.clientX-r.left, my=e.clientY-r.top;
-    for (var i=balloons.length-1;i>=0;i--){
-      if (Math.hypot(mx-balloons[i].x, my-balloons[i].y) < balloons[i].r){ balloons.splice(i,1); score++; document.getElementById('hud').textContent='Score: '+score+' · Time: '+timeLeft+'s'; break; }
-    }
-  });
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = '#0d1826'; ctx.fillRect(0,0,W,H);
-    balloons.forEach(function(b){
-      if (playing) b.y -= b.speed;
-      ctx.beginPath(); ctx.fillStyle = b.color;
-      ctx.ellipse(b.x,b.y,b.r*0.8,b.r,0,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle = '#888'; ctx.beginPath(); ctx.moveTo(b.x,b.y+b.r); ctx.lineTo(b.x,b.y+b.r+14); ctx.stroke();
-    });
-    if (playing) balloons = balloons.filter(function(b){ return b.y > -30; });
-    requestAnimationFrame(draw);
-  }
-  document.getElementById('startBtn').addEventListener('click', function(){
-    if (playing) return;
-    playing=true; score=0; timeLeft=20; balloons=[];
-    document.getElementById('hud').textContent = 'Score: 0 · Time: 20s';
-    spawner = setInterval(spawn, 500);
-    ticker = setInterval(function(){
-      timeLeft--;
-      document.getElementById('hud').textContent = 'Score: '+score+' · Time: '+timeLeft+'s';
-      if (timeLeft<=0){
-        clearInterval(spawner); clearInterval(ticker); playing=false;
-        document.getElementById('hud').textContent = 'Final score: '+score+' — press Start to retry';
-      }
-    }, 1000);
-  });
-  draw();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_snowglobe', name: 'Gravity Snow Globe', icon: 'flask',
-    description: 'Tilt-free snow globe: click to burst a flurry of particles that drift and settle with simple gravity. A calm little physics sandbox.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;background:#0a0e1a;overflow:hidden;font-family:system-ui,sans-serif;}
-#hint{position:fixed;top:8px;left:10px;color:#9be8ff;font-size:12px;background:rgba(20,20,32,0.6);padding:6px 10px;border-radius:6px;}
-canvas{display:block;cursor:pointer;}
-</style></head><body>
-<div id="hint">Click to release a flurry of snow</div>
-<canvas id="c"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  var flakes = [];
-  canvas.addEventListener('click', function(e){
-    for (var i=0;i<35;i++){
-      flakes.push({ x:e.clientX, y:e.clientY, vx:(Math.random()-0.5)*4, vy:(Math.random()-1.2)*3, r:1.5+Math.random()*2.5, settled:false });
-    }
-  });
-  var floorY = 0;
-  function loop(){
-    floorY = canvas.height - 4;
-    ctx.fillStyle = 'rgba(10,14,26,0.25)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#fff';
-    flakes.forEach(function(f){
-      if (!f.settled){
-        f.vy += 0.05; f.x += f.vx; f.y += f.vy; f.vx *= 0.995;
-        if (f.y > floorY){ f.y = floorY; f.settled = true; }
-      }
-      ctx.globalAlpha = 0.85;
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha = 1;
-    });
-    if (flakes.length > 900) flakes.splice(0, flakes.length-900);
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_guessnum', name: 'Number Guesser', icon: 'search',
-    description: 'The computer picks a secret number between 1 and 100 — guess it in as few tries as possible with higher/lower hints.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:30px;}
-h1{margin:0 0 6px;} p{color:#aaa;font-size:13px;margin:0 0 16px;}
-.row{display:flex;gap:8px;} input{padding:8px 10px;border-radius:6px;border:1px solid #555;background:#0e0e18;color:#eee;width:100px;font-size:14px;}
-button{padding:8px 16px;border-radius:6px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;font-size:14px;}
-#msg{margin-top:14px;min-height:20px;color:#8be0ff;} #tries{margin-top:4px;color:#9be8ff;font-size:12px;}
-</style></head><body>
-<h1>Number Guesser</h1>
-<p>I'm thinking of a number from 1 to 100.</p>
-<div class="row">
-  <input id="guessInput" type="number" min="1" max="100" placeholder="Your guess">
-  <button id="guessBtn">Guess</button>
-</div>
-<div id="msg"></div>
-<div id="tries">Tries: 0</div>
-<script>
-(function(){
-  var secret = Math.floor(Math.random()*100)+1, tries=0, done=false;
-  function guess(){
-    if (done) return;
-    var v = parseInt(document.getElementById('guessInput').value, 10);
-    if (isNaN(v)){ document.getElementById('msg').textContent = 'Enter a number first.'; return; }
-    tries++;
-    document.getElementById('tries').textContent = 'Tries: '+tries;
-    if (v === secret){ document.getElementById('msg').textContent = 'Correct! It was '+secret+'. 🎉'; done=true; }
-    else if (v < secret){ document.getElementById('msg').textContent = 'Higher…'; }
-    else { document.getElementById('msg').textContent = 'Lower…'; }
-  }
-  document.getElementById('guessBtn').addEventListener('click', guess);
-  document.getElementById('guessInput').addEventListener('keydown', function(e){ if (e.key==='Enter') guess(); });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_jumper', name: 'Jump Runner', icon: 'rocket',
-    description: 'Press Space (or tap) to jump over incoming obstacles in this side-scrolling runner. Speed increases the longer you last.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#101828;color:#eee;display:flex;flex-direction:column;align-items:center;padding:14px;}
-h1{margin:0 0 6px;} #score{color:#9be8ff;margin-bottom:6px;}
-canvas{background:#0c1420;border-radius:8px;}
-#msg{margin-top:8px;color:#f08a3a;min-height:18px;}
-</style></head><body>
-<h1>Jump Runner</h1>
-<div id="score">Score: 0</div>
-<canvas id="c" width="420" height="220" tabindex="0"></canvas>
-<div id="msg">Space / tap to jump</div>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height, groundY = H-30;
-  var player = { x:60, y:groundY, vy:0, size:22, jumping:false };
-  var obstacles = [], alive=true, score=0, speed=4, tick=0;
-  function reset(){
-    player.y = groundY; player.vy=0; player.jumping=false;
-    obstacles=[]; alive=true; score=0; speed=4; tick=0;
-    document.getElementById('msg').textContent = 'Space / tap to jump';
-  }
-  function jump(){
-    if (!alive){ reset(); return; }
-    if (!player.jumping){ player.vy = -9.5; player.jumping = true; }
-  }
-  document.addEventListener('keydown', function(e){ if (e.key===' '){ e.preventDefault(); jump(); } });
-  canvas.addEventListener('mousedown', jump);
-  function loop(){
-    if (alive){
-      tick++;
-      player.vy += 0.55; player.y += player.vy;
-      if (player.y > groundY){ player.y = groundY; player.vy=0; player.jumping=false; }
-      if (tick % 70 === 0) obstacles.push({ x: W+10, w: 16+Math.random()*14 });
-      obstacles.forEach(function(o){ o.x -= speed; });
-      obstacles = obstacles.filter(function(o){ return o.x > -30; });
-      speed += 0.003;
-      score += 1;
-      obstacles.forEach(function(o){
-        if (o.x < player.x+player.size/2 && o.x+o.w > player.x-player.size/2 && player.y > groundY-10){
-          alive = false;
-          document.getElementById('msg').textContent = 'Hit! Score: '+Math.floor(score/6)+' — click/press Space to retry';
-        }
-      });
-      document.getElementById('score').textContent = 'Score: '+Math.floor(score/6);
-    }
-    ctx.fillStyle = '#0c1420'; ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle = '#333'; ctx.beginPath(); ctx.moveTo(0,groundY+player.size/2); ctx.lineTo(W,groundY+player.size/2); ctx.stroke();
-    ctx.fillStyle = '#8b7cf6';
-    ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-    ctx.fillStyle = '#e0703a';
-    obstacles.forEach(function(o){ ctx.fillRect(o.x, groundY-16, o.w, 26); });
-    requestAnimationFrame(loop);
-  }
-  reset(); loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_catchstar', name: 'Catch the Falling Star', icon: 'star',
-    description: 'Move the basket left and right to catch falling stars and avoid the rocks. Three misses and it is game over.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#0f0f1e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:14px;}
-h1{margin:0 0 6px;} #hud{color:#9be8ff;margin-bottom:6px;}
-canvas{background:#0a0a16;border-radius:8px;}
-</style></head><body>
-<h1>Catch the Falling Star</h1>
-<div id="hud">Score: 0 · Lives: 3</div>
-<canvas id="c" width="360" height="420" tabindex="0"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height;
-  var basket = { x: W/2, w:60, h:14 };
-  var items = [], score=0, lives=3, alive=true, tick=0, speed=2.2;
-  var keys = {};
-  document.addEventListener('keydown', function(e){ keys[e.key]=true; });
-  document.addEventListener('keyup', function(e){ keys[e.key]=false; });
-  canvas.addEventListener('mousemove', function(e){
-    var r = canvas.getBoundingClientRect();
-    basket.x = Math.max(basket.w/2, Math.min(W-basket.w/2, e.clientX-r.left));
-  });
-  function spawn(){ items.push({ x: 16+Math.random()*(W-32), y:-10, isStar: Math.random()>0.3, r:12 }); }
-  function reset(){ items=[]; score=0; lives=3; alive=true; tick=0; speed=2.2; document.getElementById('hud').textContent='Score: 0 · Lives: 3'; }
-  function loop(){
-    if (alive){
-      tick++;
-      if (keys['ArrowLeft']) basket.x -= 5;
-      if (keys['ArrowRight']) basket.x += 5;
-      basket.x = Math.max(basket.w/2, Math.min(W-basket.w/2, basket.x));
-      if (tick % 45 === 0) spawn();
-      items.forEach(function(it){ it.y += speed; });
-      items = items.filter(function(it){
-        if (it.y > H-24 && it.y < H && Math.abs(it.x-basket.x) < basket.w/2){
-          if (it.isStar) score += 1; else lives -= 1;
-          document.getElementById('hud').textContent = 'Score: '+score+' · Lives: '+Math.max(0,lives);
-          if (lives<=0) alive = false;
-          return false;
-        }
-        return it.y < H+20;
-      });
-      speed += 0.001;
-    }
-    ctx.fillStyle = '#0a0a16'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = '#8a5a2b'; ctx.fillRect(basket.x-basket.w/2, H-24, basket.w, basket.h);
-    items.forEach(function(it){
-      ctx.fillStyle = it.isStar ? '#f0d419' : '#8a5a5a';
-      ctx.beginPath(); ctx.arc(it.x,it.y,it.r,0,Math.PI*2); ctx.fill();
-    });
-    if (!alive){
-      ctx.fillStyle = '#fff'; ctx.font = '16px sans-serif'; ctx.textAlign='center';
-      ctx.fillText('Game over — score '+score+' (click to retry)', W/2, H/2);
-    }
-    requestAnimationFrame(loop);
-  }
-  canvas.addEventListener('click', function(){ if (!alive) reset(); });
-  reset(); loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_pong', name: 'Solo Pong', icon: 'monitor',
-    description: 'Classic Pong against a simple computer-controlled paddle. First to 5 points wins the round.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#08080f;color:#eee;display:flex;flex-direction:column;align-items:center;padding:14px;}
-h1{margin:0 0 6px;} #hud{color:#9be8ff;margin-bottom:6px;}
-canvas{background:#050508;border-radius:8px;}
-</style></head><body>
-<h1>Solo Pong</h1>
-<div id="hud">You: 0 · CPU: 0</div>
-<canvas id="c" width="420" height="280" tabindex="0"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
-  var W=canvas.width, H=canvas.height;
-  var you = { y: H/2-25, h:50 }, cpu = { y: H/2-25, h:50 };
-  var pw = 8, ballX=W/2, ballY=H/2, vx=4, vy=3, scoreYou=0, scoreCpu=0;
-  canvas.addEventListener('mousemove', function(e){
-    var r = canvas.getBoundingClientRect();
-    you.y = Math.max(0, Math.min(H-you.h, e.clientY-r.top-you.h/2));
-  });
-  function resetBall(dir){ ballX=W/2; ballY=H/2; vx = 4*dir; vy = (Math.random()*4-2); }
-  function loop(){
-    ballX += vx; ballY += vy;
-    if (ballY < 4 || ballY > H-4) vy *= -1;
-    if (ballX < pw+10 && ballY > you.y && ballY < you.y+you.h){ vx = Math.abs(vx)*1.03; }
-    else if (ballX < 4){ scoreCpu++; document.getElementById('hud').textContent='You: '+scoreYou+' · CPU: '+scoreCpu; resetBall(1); }
-    if (ballX > W-pw-10 && ballY > cpu.y && ballY < cpu.y+cpu.h){ vx = -Math.abs(vx)*1.03; }
-    else if (ballX > W-4){ scoreYou++; document.getElementById('hud').textContent='You: '+scoreYou+' · CPU: '+scoreCpu; resetBall(-1); }
-    var cpuCenter = cpu.y+cpu.h/2;
-    if (cpuCenter < ballY-8) cpu.y += 3.2;
-    else if (cpuCenter > ballY+8) cpu.y -= 3.2;
-    cpu.y = Math.max(0, Math.min(H-cpu.h, cpu.y));
-    ctx.fillStyle = '#050508'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = '#8b7cf6'; ctx.fillRect(6, you.y, pw, you.h);
-    ctx.fillStyle = '#5ee6ff'; ctx.fillRect(W-pw-6, cpu.y, pw, cpu.h);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ballX,ballY,6,0,Math.PI*2); ctx.fill();
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-<\/script>
-</body></html>`
-  },
-  {
     id: 'store_breakout', name: 'Brick Breaker', icon: 'tool',
     description: 'Move the paddle with the mouse to bounce the ball and clear every brick. A compact single-screen Breakout.',
     type: 'html',
@@ -11909,72 +11222,6 @@ label{font-size:11px;color:#999;display:block;margin-bottom:4px;}
   toSel.addEventListener('change', convert);
   document.getElementById('val').addEventListener('input', convert);
   populate();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_bmi', name: 'BMI Calculator', icon: 'flask',
-    description: 'Enter your height and weight to compute Body Mass Index and see which general range it falls in.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;padding:24px;}
-h1{margin:0 0 14px;font-size:18px;}
-.row{display:flex;gap:10px;margin-bottom:10px;align-items:center;}
-label{font-size:12px;color:#999;width:110px;}
-input{padding:8px;border-radius:6px;border:1px solid #555;background:#0e0e18;color:#eee;font-size:13px;flex:1;}
-button{margin-top:8px;padding:9px 18px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-#result{margin-top:16px;font-size:15px;color:#8be0ff;}
-</style></head><body>
-<h1>BMI Calculator</h1>
-<div class="row"><label>Height (cm)</label><input id="height" type="number" value="170"></div>
-<div class="row"><label>Weight (kg)</label><input id="weight" type="number" value="65"></div>
-<button id="calcBtn">Calculate</button>
-<div id="result"></div>
-<script>
-(function(){
-  document.getElementById('calcBtn').addEventListener('click', function(){
-    var h = parseFloat(document.getElementById('height').value)/100;
-    var w = parseFloat(document.getElementById('weight').value);
-    if (!h || !w){ document.getElementById('result').textContent = 'Enter both values.'; return; }
-    var bmi = w/(h*h);
-    var cat = bmi<18.5 ? 'Underweight' : bmi<25 ? 'Normal range' : bmi<30 ? 'Overweight' : 'Obese';
-    document.getElementById('result').textContent = 'BMI: '+bmi.toFixed(1)+' — '+cat+' (general range, not medical advice)';
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_tip', name: 'Tip Calculator', icon: 'clipboard',
-    description: 'Enter a bill amount and tip percentage to split it evenly among any number of people.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;padding:24px;}
-h1{margin:0 0 14px;font-size:18px;}
-.row{display:flex;gap:10px;margin-bottom:10px;align-items:center;}
-label{font-size:12px;color:#999;width:110px;}
-input{padding:8px;border-radius:6px;border:1px solid #555;background:#0e0e18;color:#eee;font-size:13px;flex:1;}
-#result{margin-top:16px;font-size:15px;color:#8be0ff;line-height:1.7;}
-</style></head><body>
-<h1>Tip Calculator</h1>
-<div class="row"><label>Bill total</label><input id="bill" type="number" value="50"></div>
-<div class="row"><label>Tip %</label><input id="tipPct" type="number" value="18"></div>
-<div class="row"><label>People</label><input id="people" type="number" value="1" min="1"></div>
-<div id="result"></div>
-<script>
-(function(){
-  function calc(){
-    var bill = parseFloat(document.getElementById('bill').value)||0;
-    var pct = parseFloat(document.getElementById('tipPct').value)||0;
-    var people = Math.max(1, parseInt(document.getElementById('people').value,10)||1);
-    var tip = bill*pct/100;
-    var total = bill+tip;
-    document.getElementById('result').innerHTML =
-      'Tip: $'+tip.toFixed(2)+'<br>Total: $'+total.toFixed(2)+'<br>Per person: $'+(total/people).toFixed(2);
-  }
-  ['bill','tipPct','people'].forEach(function(id){ document.getElementById(id).addEventListener('input', calc); });
-  calc();
 })();
 <\/script>
 </body></html>`
@@ -12128,101 +11375,6 @@ button{padding:9px 14px;border-radius:8px;border:1px solid #555;background:#5865
     try { navigator.clipboard && navigator.clipboard.writeText(out.value); } catch(e){}
   });
   gen();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_dice', name: 'Dice Roller', icon: 'star',
-    description: 'Roll one or more virtual dice with a satisfying animation. Pick how many sides and how many dice to roll.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:26px;}
-h1{margin:0 0 14px;}
-.row{display:flex;gap:10px;margin-bottom:14px;align-items:center;font-size:12.5px;}
-select,input{padding:7px;border-radius:6px;border:1px solid #555;background:#0e0e18;color:#eee;}
-button{padding:9px 18px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-#dice{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px;max-width:320px;}
-.die{width:50px;height:50px;border-radius:10px;background:#2a2a44;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;border:1px solid #555;}
-#total{margin-top:10px;color:#9be8ff;}
-</style></head><body>
-<h1>Dice Roller</h1>
-<div class="row">
-  <label>Dice: <input id="count" type="number" value="2" min="1" max="10" style="width:50px;"></label>
-  <label>Sides: <select id="sides"><option>4</option><option selected>6</option><option>8</option><option>10</option><option>12</option><option>20</option></select></label>
-  <button id="rollBtn">Roll</button>
-</div>
-<div id="dice"></div>
-<div id="total"></div>
-<script>
-(function(){
-  document.getElementById('rollBtn').addEventListener('click', function(){
-    var count = Math.max(1, Math.min(10, parseInt(document.getElementById('count').value,10)||1));
-    var sides = parseInt(document.getElementById('sides').value,10);
-    var results = [];
-    for (var i=0;i<count;i++) results.push(1+Math.floor(Math.random()*sides));
-    document.getElementById('dice').innerHTML = results.map(function(r){ return '<div class="die">'+r+'</div>'; }).join('');
-    document.getElementById('total').textContent = 'Total: '+results.reduce(function(a,b){return a+b;},0);
-  });
-  document.getElementById('rollBtn').click();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_coinflip', name: 'Coin Flipper', icon: 'refresh-cw',
-    description: 'Flip a virtual coin with a quick animation and keep a running heads/tails tally.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:30px;}
-h1{margin:0 0 16px;}
-#coin{width:100px;height:100px;border-radius:50%;background:linear-gradient(160deg,#f0c419,#c9962b);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#3a2a08;margin-bottom:16px;transition:transform .4s ease;}
-button{padding:9px 20px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-#tally{margin-top:14px;color:#9be8ff;font-size:13px;}
-</style></head><body>
-<h1>Coin Flipper</h1>
-<div id="coin">Heads</div>
-<button id="flipBtn">Flip</button>
-<div id="tally">Heads: 0 · Tails: 0</div>
-<script>
-(function(){
-  var heads=0, tails=0, spins=0;
-  document.getElementById('flipBtn').addEventListener('click', function(){
-    spins++;
-    var coin = document.getElementById('coin');
-    coin.style.transform = 'rotateY('+(spins*360+180)+'deg)';
-    setTimeout(function(){
-      var result = Math.random() < 0.5 ? 'Heads' : 'Tails';
-      coin.textContent = result;
-      if (result==='Heads') heads++; else tails++;
-      document.getElementById('tally').textContent = 'Heads: '+heads+' · Tails: '+tails;
-    }, 200);
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_scratchpad', name: 'Sticky Scratchpad', icon: 'file-text',
-    description: 'A quick freeform notepad that saves what you type in this browser tab automatically as you go (per browser, not synced).',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;}
-h1{margin:0;padding:14px 18px 8px;font-size:15px;}
-textarea{flex:1;margin:0 18px 18px;border-radius:8px;border:1px solid #444;background:#fff8dc;color:#2a2410;padding:14px;font-family:ui-monospace,monospace;font-size:13.5px;resize:none;}
-#status{padding:0 18px 10px;font-size:11px;color:#9be8ff;}
-</style></head><body>
-<h1>📝 Scratchpad</h1>
-<textarea id="pad" placeholder="Type anything… it is kept only in this tab."></textarea>
-<div id="status">Saved locally in this app instance.</div>
-<script>
-(function(){
-  var pad = document.getElementById('pad');
-  var KEY = 'spacepad_scratchpad_content';
-  try { pad.value = sessionStorage.getItem(KEY) || ''; } catch(e){}
-  pad.addEventListener('input', function(){
-    try { sessionStorage.setItem(KEY, pad.value); } catch(e){}
-  });
 })();
 <\/script>
 </body></html>`
@@ -12401,73 +11553,6 @@ li button{background:transparent;border:none;color:#e05a4a;cursor:pointer;font-s
 </body></html>`
   },
   {
-    id: 'store_quote', name: 'Random Quote Generator', icon: 'book-open',
-    description: 'Click for a fresh, randomly-picked short quote from a built-in offline collection.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;box-sizing:border-box;padding:24px;text-align:center;}
-#quote{font-size:18px;max-width:420px;margin-bottom:10px;line-height:1.5;}
-#author{color:#9be8ff;font-size:13px;margin-bottom:18px;}
-button{padding:9px 20px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-</style></head><body>
-<div id="quote"></div>
-<div id="author"></div>
-<button id="nextBtn">New Quote</button>
-<script>
-(function(){
-  var quotes = [
-    ['The best way to predict the future is to invent it.','Alan Kay'],
-    ['Simplicity is the ultimate sophistication.','Leonardo da Vinci'],
-    ['Do or do not, there is no try.','Yoda'],
-    ['The only way to do great work is to love what you do.','Steve Jobs'],
-    ['Stay hungry, stay foolish.','Stewart Brand'],
-    ['Whatever you can do, or dream you can, begin it.','Goethe'],
-    ['It always seems impossible until it is done.','Nelson Mandela'],
-    ['Small steps every day add up to big change.','Unknown'],
-    ['Curiosity is the engine of achievement.','Ken Robinson'],
-    ['Fall seven times, stand up eight.','Japanese Proverb']
-  ];
-  function show(){
-    var q = quotes[Math.floor(Math.random()*quotes.length)];
-    document.getElementById('quote').textContent = '"'+q[0]+'"';
-    document.getElementById('author').textContent = '— '+q[1];
-  }
-  document.getElementById('nextBtn').addEventListener('click', show);
-  show();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_namepicker', name: 'Random Name Picker', icon: 'users',
-    description: 'Type a list of names (one per line) and draw a random winner — handy for picking who goes first.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;padding:22px;display:flex;flex-direction:column;height:100vh;box-sizing:border-box;}
-h1{margin:0 0 10px;font-size:16px;}
-textarea{width:100%;height:130px;box-sizing:border-box;border-radius:8px;border:1px solid #444;background:#0e0e18;color:#eee;padding:10px;font-size:13px;resize:none;margin-bottom:10px;}
-button{padding:9px 18px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;align-self:flex-start;}
-#winner{margin-top:16px;font-size:20px;color:#f0c419;font-weight:700;text-align:center;}
-</style></head><body>
-<h1>Random Name Picker</h1>
-<textarea id="names" placeholder="Alice&#10;Bob&#10;Charlie">Alice
-Bob
-Charlie</textarea>
-<button id="pickBtn">Pick a Winner</button>
-<div id="winner"></div>
-<script>
-(function(){
-  document.getElementById('pickBtn').addEventListener('click', function(){
-    var names = document.getElementById('names').value.split('\\n').map(function(s){ return s.trim(); }).filter(Boolean);
-    if (!names.length){ document.getElementById('winner').textContent = 'Add at least one name.'; return; }
-    var winner = names[Math.floor(Math.random()*names.length)];
-    document.getElementById('winner').textContent = '🎉 ' + winner;
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
     id: 'store_typing', name: 'Typing Speed Test', icon: 'keyboard',
     description: 'Type the given sample sentence as fast and accurately as you can — get your words-per-minute when you finish.',
     type: 'html',
@@ -12636,53 +11721,6 @@ button{margin-top:16px;padding:10px 22px;border-radius:8px;border:1px solid #555
 </body></html>`
   },
   {
-    id: 'store_tonegen', name: 'Tone Generator', icon: 'flask',
-    description: 'Play a steady audio tone at a chosen frequency and waveform using the Web Audio API — handy for basic ear tests.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:30px;}
-h1{margin:0 0 14px;}
-.row{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:13px;}
-input[type=range]{width:200px;} select{padding:6px;border-radius:6px;background:#0e0e18;color:#eee;border:1px solid #555;}
-button{padding:10px 22px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-#freqVal{font-size:22px;font-weight:700;margin-bottom:10px;}
-</style></head><body>
-<h1>Tone Generator</h1>
-<div id="freqVal">440 Hz</div>
-<div class="row"><input type="range" id="freq" min="100" max="2000" value="440"></div>
-<div class="row">
-  <label>Wave: <select id="wave"><option value="sine">Sine</option><option value="square">Square</option><option value="triangle">Triangle</option><option value="sawtooth">Sawtooth</option></select></label>
-</div>
-<button id="toggleBtn">Play</button>
-<script>
-(function(){
-  var ctx=null, osc=null, gain=null, playing=false;
-  document.getElementById('freq').addEventListener('input', function(){
-    document.getElementById('freqVal').textContent = this.value+' Hz';
-    if (osc) osc.frequency.setValueAtTime(parseFloat(this.value), ctx.currentTime);
-  });
-  document.getElementById('wave').addEventListener('change', function(){
-    if (osc) osc.type = this.value;
-  });
-  document.getElementById('toggleBtn').addEventListener('click', function(){
-    if (!playing){
-      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-      osc = ctx.createOscillator(); gain = ctx.createGain();
-      osc.type = document.getElementById('wave').value;
-      osc.frequency.value = parseFloat(document.getElementById('freq').value);
-      gain.gain.value = 0.15;
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start();
-      playing = true; this.textContent = 'Stop';
-    } else {
-      osc.stop(); osc.disconnect(); playing = false; this.textContent = 'Play';
-    }
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
     id: 'store_wordcount', name: 'Word Counter', icon: 'file-text',
     description: 'Paste or type text to see live word, character and sentence counts, plus an estimated reading time.',
     type: 'html',
@@ -12707,88 +11745,6 @@ textarea{flex:1;border-radius:8px;border:1px solid #444;background:#0e0e18;color
       '<span>Words: '+words+'</span><span>Characters: '+chars+'</span><span>Sentences: '+sentences+'</span><span>~'+readMins+' min read</span>';
   }
   document.getElementById('input').addEventListener('input', update);
-  update();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_agecalc', name: 'Age Calculator', icon: 'calendar',
-    description: 'Enter a birth date to see exactly how many years, months and days old that makes you today.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;padding:24px;}
-h1{margin:0 0 14px;font-size:16px;}
-input{padding:9px;border-radius:6px;border:1px solid #555;background:#0e0e18;color:#eee;font-size:13px;}
-button{margin-left:8px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-#result{margin-top:16px;font-size:15px;color:#8be0ff;line-height:1.7;}
-</style></head><body>
-<h1>Age Calculator</h1>
-<input type="date" id="dob">
-<button id="calcBtn">Calculate</button>
-<div id="result"></div>
-<script>
-(function(){
-  document.getElementById('calcBtn').addEventListener('click', function(){
-    var v = document.getElementById('dob').value;
-    if (!v){ document.getElementById('result').textContent = 'Pick a date first.'; return; }
-    var dob = new Date(v+'T00:00:00');
-    var now = new Date();
-    var years = now.getFullYear()-dob.getFullYear();
-    var months = now.getMonth()-dob.getMonth();
-    var days = now.getDate()-dob.getDate();
-    if (days<0){ months--; var prevMonth = new Date(now.getFullYear(), now.getMonth(), 0); days += prevMonth.getDate(); }
-    if (months<0){ years--; months += 12; }
-    var totalDays = Math.floor((now-dob)/86400000);
-    document.getElementById('result').innerHTML =
-      'You are <b>'+years+'</b> years, <b>'+months+'</b> months, <b>'+days+'</b> days old<br>(about '+totalDays.toLocaleString()+' days total)';
-  });
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_colorpicker', name: 'Hex/RGB Color Picker', icon: 'palette',
-    description: 'Pick a color and instantly see its HEX, RGB and HSL values, ready to copy into your own code.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;padding:24px;display:flex;flex-direction:column;align-items:center;}
-h1{margin:0 0 14px;font-size:16px;}
-input[type=color]{width:100px;height:70px;border:none;background:none;cursor:pointer;margin-bottom:14px;}
-.vals{font-family:ui-monospace,monospace;font-size:13.5px;line-height:2;background:#0e0e18;padding:14px 20px;border-radius:8px;}
-.vals span{color:#8be0ff;}
-</style></head><body>
-<h1>Color Picker</h1>
-<input type="color" id="pick" value="#8b7cf6">
-<div class="vals" id="vals"></div>
-<script>
-(function(){
-  function hexToRgb(hex){
-    var m = hex.replace('#','').match(/.{2}/g).map(function(h){ return parseInt(h,16); });
-    return m;
-  }
-  function rgbToHsl(r,g,b){
-    r/=255; g/=255; b/=255;
-    var max=Math.max(r,g,b), min=Math.min(r,g,b), h,s,l=(max+min)/2;
-    if (max===min){ h=s=0; }
-    else {
-      var d = max-min;
-      s = l>0.5 ? d/(2-max-min) : d/(max+min);
-      if (max===r) h = (g-b)/d + (g<b?6:0);
-      else if (max===g) h = (b-r)/d+2;
-      else h = (r-g)/d+4;
-      h/=6;
-    }
-    return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
-  }
-  function update(){
-    var hex = document.getElementById('pick').value;
-    var rgb = hexToRgb(hex);
-    var hsl = rgbToHsl(rgb[0],rgb[1],rgb[2]);
-    document.getElementById('vals').innerHTML =
-      'HEX: <span>'+hex+'</span><br>RGB: <span>rgb('+rgb.join(', ')+')</span><br>HSL: <span>hsl('+hsl[0]+', '+hsl[1]+'%, '+hsl[2]+'%)</span>';
-  }
-  document.getElementById('pick').addEventListener('input', update);
   update();
 })();
 <\/script>
@@ -12828,230 +11784,19 @@ button{padding:8px 14px;border-radius:8px;border:1px solid #555;background:#4a4a
 })();
 <\/script>
 </body></html>`
-  },
-  {
-    id: 'store_advice', name: 'Random Advice Generator', icon: 'book-open',
-    description: 'Click for a short, random piece of everyday advice from a built-in offline collection.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;box-sizing:border-box;padding:24px;text-align:center;}
-#advice{font-size:19px;max-width:420px;margin-bottom:20px;line-height:1.5;color:#f0e6ff;}
-button{padding:9px 20px;border-radius:8px;border:1px solid #555;background:#5865f2;color:#fff;cursor:pointer;}
-</style></head><body>
-<div id="advice"></div>
-<button id="nextBtn">New Advice</button>
-<script>
-(function(){
-  var advice = [
-    'Take breaks — your best ideas often show up when you step away.',
-    'Write things down; your future self will thank you.',
-    'Small, consistent effort beats occasional bursts of intensity.',
-    'Ask the question — the worst answer is the one you never get.',
-    'Keep your workspace a little tidier than you think you need to.',
-    'Drink some water and stretch, right now.',
-    'Done is better than perfect, most of the time.',
-    'Say thank you more than you think you need to.',
-    'Back up anything you would be upset to lose.',
-    'When stuck, explain the problem out loud to no one in particular.'
-  ];
-  function show(){ document.getElementById('advice').textContent = advice[Math.floor(Math.random()*advice.length)]; }
-  document.getElementById('nextBtn').addEventListener('click', show);
-  show();
-})();
-<\/script>
-</body></html>`
-  },
-  {
-    id: 'store_eventcountdown', name: 'Event Countdown', icon: 'calendar',
-    description: 'Pick a future date and see a live countdown of days, hours, minutes and seconds until it arrives.',
-    type: 'html',
-    content: `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;font-family:system-ui,sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;align-items:center;padding:26px;}
-h1{margin:0 0 14px;font-size:16px;}
-input{padding:9px;border-radius:6px;border:1px solid #555;background:#0e0e18;color:#eee;margin-bottom:16px;}
-#countdown{font-size:26px;font-weight:700;color:#8be0ff;font-variant-numeric:tabular-nums;}
-#label{font-size:12px;color:#999;margin-top:6px;}
-</style></head><body>
-<h1>Event Countdown</h1>
-<input type="datetime-local" id="target">
-<div id="countdown">—</div>
-<div id="label"></div>
-<script>
-(function(){
-  var interval = null;
-  document.getElementById('target').addEventListener('change', function(){
-    clearInterval(interval);
-    var target = new Date(this.value);
-    if (isNaN(target.getTime())) return;
-    function tick(){
-      var diff = target - new Date();
-      if (diff <= 0){ document.getElementById('countdown').textContent = 'It is here!'; clearInterval(interval); return; }
-      var d = Math.floor(diff/86400000);
-      var h = Math.floor((diff%86400000)/3600000);
-      var m = Math.floor((diff%3600000)/60000);
-      var s = Math.floor((diff%60000)/1000);
-      document.getElementById('countdown').textContent = d+'d '+h+'h '+m+'m '+s+'s';
-    }
-    tick();
-    interval = setInterval(tick, 1000);
-    document.getElementById('label').textContent = 'Counting down to your chosen moment';
-  });
-})();
-<\/script>
-</body></html>`
   }
-
 ];
 
 /* =========================================================================
-   GH-SOURCED GAMES — real, existing open-source browser games fetched at
-   RUNTIME from their real GitHub repos via jsDelivr's github mode
-   (cdn.jsdelivr.net/gh/<user>/<repo>@<ref>/<path>), never bundled into this
-   file's source. Each entry only carries a repo/ref/path pointer (a few
-   bytes of metadata) — "type: 'gh-download'" entries are actually fetched
-   and cached into IndexedDB the first time someone clicks Download, so they
-   replay fully offline afterward from a blob: URL; "type: 'gh-online'"
-   entries have too complex an asset graph (build steps, many nested files)
-   to safely cache this way, so they're clearly badged "Online" and always
-   load live in an iframe pointed at the jsDelivr URL, exactly like the
-   existing user-made 'page' custom-app type — they simply need a network
-   connection, same as Chat/GitHub already do when offline.
+   GITHUB-SOURCED APP HELPERS — used only by user-added apps (Customize →
+   Add app → GitHub repo, Import by link) and by 'gh-cached'/'gh-online'
+   apps that were installed from the old store catalog. Files are fetched
+   from GitHub through jsDelivr (cdn.jsdelivr.net/gh/<user>/<repo>@<ref>/…)
+   only when the person asks for it — nothing here is in the store catalog.
    ========================================================================= */
 function ghRawUrl(repo, ref, path){
   return 'https://cdn.jsdelivr.net/gh/' + repo + '@' + encodeURIComponent(ref) + '/' + path;
 }
-const GH_GAMES = [
-  { id: 'store_gh_tetris', name: 'Tetris Arcade', icon: 'play', online: false,
-    description: 'A real open-source Tetris, downloaded from GitHub (jakesgordon/javascript-tetris) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'jakesgordon/javascript-tetris', ref: 'master', main: 'index.html',
-      assets: [ { rel: 'stats.js', path: 'stats.js' } ] } },
-  { id: 'store_gh_snake', name: 'Serpent Swarm', icon: 'star', online: false,
-    description: 'A real open-source snake game, downloaded from GitHub (moralec/snake) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'moralec/snake', ref: 'main', main: 'app/index.html', assets: [] } },
-  { id: 'store_gh_invaders', name: 'Space Invaders', icon: 'rocket', online: false,
-    description: 'A real open-source Space Invaders clone, downloaded from GitHub (kubowania/space-invaders) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'kubowania/space-invaders', ref: 'master', main: 'index.html',
-      assets: [ { rel: 'app.js', path: 'app.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_minesweeper', name: 'Minesweeper', icon: 'flask', online: false,
-    description: 'A real open-source Minesweeper, downloaded from GitHub (kubowania/minesweeper) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'kubowania/minesweeper', ref: 'master', main: 'index.html',
-      assets: [ { rel: 'app.js', path: 'app.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_15puzzle', name: '15 Puzzle', icon: 'tool', online: false,
-    description: 'A real open-source sliding 15 Puzzle, downloaded from GitHub (arnisritins/15-Puzzle) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'arnisritins/15-Puzzle', ref: 'master', main: 'index.html',
-      assets: [ { rel: '15-puzzle.js', path: '15-puzzle.js' }, { rel: '15-puzzle.css', path: '15-puzzle.css' } ] } },
-  { id: 'store_gh_breaker', name: 'Breaker Arcade', icon: 'tool', online: false,
-    description: 'A real open-source brick-breaker, downloaded from GitHub (16Yongjin/html-games) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '16Yongjin/html-games', ref: 'master', main: 'brick-breaker.html', assets: [] } },
-  { id: 'store_gh_maze', name: 'Maze Weaver', icon: 'globe', online: false,
-    description: 'A real open-source maze generator/game, downloaded from GitHub (16Yongjin/html-games) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '16Yongjin/html-games', ref: 'master', main: 'maze.html', assets: [] } },
-  { id: 'store_gh_stack', name: 'Block Stack', icon: 'play', online: false,
-    description: 'A real open-source tower-stacking game, downloaded from GitHub (16Yongjin/html-games) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '16Yongjin/html-games', ref: 'master', main: 'stack.html', assets: [] } },
-  { id: 'store_gh_gomoku', name: 'Gomoku', icon: 'star', online: false,
-    description: 'A real open-source five-in-a-row board game, downloaded from GitHub (16Yongjin/html-games) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '16Yongjin/html-games', ref: 'master', main: 'omok.html', assets: [] } },
-  { id: 'store_gh_janggi', name: 'Janggi Chess', icon: 'flask', online: false,
-    description: 'A real open-source Korean chess (Janggi), downloaded from GitHub (16Yongjin/html-games) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '16Yongjin/html-games', ref: 'master', main: 'janggi.html', assets: [] } },
-  { id: 'store_gh_tetrisblocks', name: 'Tetris Blocks', icon: 'play', online: false,
-    description: 'A second, different real open-source Tetris implementation, downloaded from GitHub (16Yongjin/html-games) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '16Yongjin/html-games', ref: 'master', main: 'tetris.html', assets: [] } },
-  { id: 'store_gh_pong', name: 'Pong Arcade', icon: 'monitor', online: false,
-    description: 'A real open-source Pong, downloaded from GitHub (vermaharsha/Pong-Game) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'vermaharsha/Pong-Game', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'script.js', path: 'script.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_wordle', name: 'Wordle Clone', icon: 'edit', online: false,
-    description: 'A real open-source Wordle clone, downloaded from GitHub (doeixd/Wordle-Vanilla) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'doeixd/Wordle-Vanilla', ref: 'master', main: 'index.html',
-      assets: [ { rel: 'script.js', path: 'script.js' }, { rel: 'styles.css', path: 'styles.css' }, { rel: 'possibleWords.js', path: 'possibleWords.js' } ] } },
-  { id: 'store_gh_sudoku', name: 'Sudoku', icon: 'tool', online: false,
-    description: 'A real open-source Sudoku, downloaded from GitHub (EleftheriaBatsou/sudoku) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'EleftheriaBatsou/sudoku', ref: 'main', main: 'sudoku-web/index.html',
-      assets: [ { rel: 'style.css', path: 'sudoku-web/style.css' }, { rel: 'script.js', path: 'sudoku-web/script.js' } ] } },
-  { id: 'store_gh_pacman', name: 'Pac-Man', icon: 'star', online: false,
-    description: 'A real open-source Pac-Man, downloaded from GitHub (hammadshakeelai/pacman) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'hammadshakeelai/pacman', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'game.js', path: 'game.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_flappy', name: 'Flappy Basic', icon: 'rocket', online: false,
-    description: 'A real open-source minimal Flappy Bird clone, downloaded from GitHub (ash123112/flappy-basic) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'ash123112/flappy-basic', ref: 'main', main: 'index.html', assets: [] } },
-  { id: 'store_gh_yahtzee', name: 'Yahtzee', icon: 'play', online: false,
-    description: 'A real open-source Yahtzee, downloaded from GitHub (99fk/yahtzee-html) and cached for offline play.',
-    type: 'gh-download', gh: { repo: '99fk/yahtzee-html', ref: 'main', main: 'index.html', assets: [] } },
-  { id: 'store_gh_blackjack', name: 'Blackjack', icon: 'flask', online: false,
-    description: 'A real open-source Blackjack, downloaded from GitHub (FabioGuerreiro/vanillaJs-blackJack) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'FabioGuerreiro/vanillaJs-blackJack', ref: 'master', main: 'index.html',
-      assets: [ { rel: 'styles/blackjack.css', path: 'styles/blackjack.css' }, { rel: 'scripts/deck.js', path: 'scripts/deck.js' }, { rel: 'scripts/players.js', path: 'scripts/players.js' }, { rel: 'scripts/blackjack.js', path: 'scripts/blackjack.js' } ] } },
-  { id: 'store_gh_lightsout', name: 'Lights Out', icon: 'moon', online: false,
-    description: 'A real open-source Lights Out puzzle, downloaded from GitHub (handson-matsu/lights-out) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'handson-matsu/lights-out', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'script.js', path: 'script.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_2048orig', name: '2048 (Original)', icon: 'play', online: true,
-    description: 'The original 2048 by its creator (gabrielecirulli/2048). Too many interlinked files to cache simply, so it plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'gabrielecirulli/2048', ref: 'master', main: 'index.html' } },
-
-  /* ---- Second batch: more real open-source arcade games, same pipeline ----
-     Verified by actually reading each repo's file listing and raw source
-     before adding it here (never guessed) — see the per-entry notes. None
-     of the two "genre reference" games the user asked for ("helix jump or
-     slope or something") use those trademarked names; they're renamed to
-     original titles while crediting the real upstream repo in the
-     description, same convention as the rest of this list. */
-  { id: 'store_gh_skyhopper', name: 'Sky Hopper', icon: 'rocket', online: false,
-    description: 'A real open-source vertical platform-jumper in the Doodle Jump genre, downloaded from GitHub (levxyca/doodle-jump) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'levxyca/doodle-jump', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'app.js', path: 'app.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_asteroidfield', name: 'Asteroid Field', icon: 'star', online: false,
-    description: 'A real open-source Asteroids-style space shooter, downloaded from GitHub (jsocol/asteroids) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'jsocol/asteroids', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'asteroids.js', path: 'asteroids.js' }, { rel: 'style.css', path: 'style.css' } ] } },
-  { id: 'store_gh_roadcrosser', name: 'Road Crosser', icon: 'tool', online: false,
-    description: 'A real open-source Frogger-style road-crossing game, downloaded from GitHub (morimay421/frogger-lite) and cached for offline play. A single self-contained file, no extra assets to fetch.',
-    type: 'gh-download', gh: { repo: 'morimay421/frogger-lite', ref: 'main', main: 'index.html', assets: [] } },
-  { id: 'store_gh_patternrecall', name: 'Pattern Recall', icon: 'flask', online: false,
-    description: 'A real open-source Simon-says style color-sequence memory game, downloaded from GitHub (saquibmonaf/Simon-Game) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'saquibmonaf/Simon-Game', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'style.css', path: 'style.css' }, { rel: 'app.js', path: 'app.js' } ] } },
-  { id: 'store_gh_neoncycles', name: 'Neon Cycles', icon: 'monitor', online: false,
-    description: 'A real open-source Tron-style light-cycle arcade game with procedurally synthesized sound (no audio files), downloaded from GitHub (Emirhankrcbn/Light-Cycle) and cached for offline play.',
-    type: 'gh-download', gh: { repo: 'Emirhankrcbn/Light-Cycle', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'style.css', path: 'style.css' }, { rel: 'script.js', path: 'script.js' } ] } },
-  { id: 'store_gh_downhillroller', name: 'Downhill Roller', icon: 'globe', online: false,
-    description: 'A real open-source 3D endless downhill roller built with three.js — the genre of "slope"-style games — downloaded from GitHub (juwalbose/ThreeJSEndlessRunner3D) and cached for offline play. All graphics are procedurally generated code, no art assets.',
-    type: 'gh-download', gh: { repo: 'juwalbose/ThreeJSEndlessRunner3D', ref: 'master', main: 'EndlessRoller.html',
-      assets: [ { rel: 'lib/three.min.js', path: 'lib/three.min.js' }, { rel: 'lib/stats.min.js', path: 'lib/stats.min.js' },
-        { rel: 'src/OrbitControls.js', path: 'src/OrbitControls.js' }, { rel: 'src/endlessroller.js', path: 'src/endlessroller.js' } ] } },
-  { id: 'store_gh_molebash', name: 'Mole Bash', icon: 'bug', online: true,
-    description: 'A real open-source whack-a-mole reflex game with an image asset (kubowania/whac-a-mole). Too simple a repo to need this, but the image makes it unsafe to inline-cache, so it plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'kubowania/whac-a-mole', ref: 'master', main: 'index.html' } },
-  { id: 'store_gh_forestdash', name: 'Forest Dash', icon: 'play', online: true,
-    description: 'A real open-source side-scrolling platformer with sprite sheets and several linked script files (Pizzaboi87/jumping-game). Plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'Pizzaboi87/jumping-game', ref: 'main', main: 'index.html' } },
-
-  /* ---- Third batch: a genuine single-file/dependency-free "helix jump"
-     (ball-rolling-down-a-spiral-tower) clone could not be found again on
-     GitHub — every repo search turns up either a Unity/C# project (no web
-     build at all) or a 3D-engine demo, not a plain HTML/JS game. Broadened
-     to other fun arcade/reflex/physics-toy single-file browser games
-     instead, same verification rigor (real repo, real file content read
-     via fetch, real jsDelivr URL confirmed) as every other entry here. */
-  { id: 'store_gh_ballblast', name: 'Ball Blast', icon: 'star', online: true,
-    description: 'A real open-source arcade ball-blaster reflex game, canvas-based with sprite and sound assets (AananthV/Ball-Blast). Plays live from GitHub via jsDelivr — needs a connection.',
-    type: 'gh-online', gh: { repo: 'AananthV/Ball-Blast', ref: 'master', main: 'game.html' } },
-  { id: 'store_gh_bouncephysics', name: 'Bounce Physics', icon: 'globe', online: false,
-    description: 'A real open-source bouncing-balls physics toy/simulation, downloaded from GitHub (MTrajK/bouncing-balls) and cached for offline play. Click to launch balls and watch the collision physics.',
-    type: 'gh-download', gh: { repo: 'MTrajK/bouncing-balls', ref: 'master', main: 'src/index.html',
-      assets: [ { rel: 'css/styles.css', path: 'src/css/styles.css' }, { rel: 'js/vector2d.js', path: 'src/js/vector2d.js' },
-        { rel: 'js/balls.js', path: 'src/js/balls.js' }, { rel: 'js/bouncing-balls.js', path: 'src/js/bouncing-balls.js' },
-        { rel: 'js/choice.js', path: 'src/js/choice.js' } ] } },
-  { id: 'store_gh_dodgerun', name: 'Dodge Run', icon: 'rocket', online: false,
-    description: 'A real open-source jump-and-dodge reflex runner, downloaded from GitHub (abdulwahabtfs590-cmyk/JUMP-AND-DODGE) and cached for offline play. A single self-contained HTML/CSS/JS trio, no image or audio assets.',
-    type: 'gh-download', gh: { repo: 'abdulwahabtfs590-cmyk/JUMP-AND-DODGE', ref: 'main', main: 'index.html',
-      assets: [ { rel: 'script.js', path: 'script.js' }, { rel: 'style.css', path: 'style.css' } ] } }
-];
-STORE_APPS.push(...GH_GAMES);
 
 /* ---- IndexedDB store for downloaded GH game files (text bytes) ---- */
 const GH_DB_NAME = 'spacepad_gh_games_v1';
@@ -13151,10 +11896,6 @@ async function buildGhGameBlobUrl(item){
   }
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
 }
-function isGhGameDownloaded(id){
-  const app = findCustomApp(id);
-  return !!(app && app.type === 'gh-cached');
-}
 
 function isStoreAppInstalled(id){ return !!findCustomApp(id); }
 
@@ -13172,30 +11913,39 @@ function renderAppStore(){
   wrap.innerHTML = visible.map(item => {
     const installed = isStoreAppInstalled(item.id);
     const glyph = ICONS[item.icon] ? icon(item.icon, ICONS[item.icon].fill ? 'icon-fill' : '') : escapeHtml(item.name.charAt(0).toUpperCase());
-    const btnLabel = installed ? 'Open' : (item.type === 'gh-online' ? 'Play Online' : 'Download');
-    const badge = item.online ? '<span class="store-item-badge">Online</span>' : '';
+    const btnHtml = installed
+      ? '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Open</button>' +
+        '<button type="button" class="ghost-btn store-item-btn store-item-remove" data-store-remove="' + item.id + '" style="color:var(--error); border-color:var(--error);">Remove</button>'
+      : '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Install</button>';
     return '<div class="store-item">' +
       '<span class="store-item-glyph">' + glyph + '</span>' +
       '<div class="store-item-body">' +
-        '<div class="store-item-name">' + escapeHtml(item.name) + badge + '</div>' +
+        '<div class="store-item-name">' + escapeHtml(item.name) + '</div>' +
         '<div class="store-item-desc">' + escapeHtml(item.description) + '</div>' +
       '</div>' +
-      '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">' + btnLabel + '</button>' +
+      btnHtml +
       '<div class="store-item-progress-wrap" id="store-progress-' + item.id + '">' +
         '<div class="store-item-progress-track"><div class="store-item-progress-fill"></div></div>' +
-        '<div class="store-item-progress-label">Downloading…</div>' +
+        '<div class="store-item-progress-label">Installing…</div>' +
       '</div>' +
     '</div>';
   }).join('');
-  wrap.querySelectorAll('[data-store-id]').forEach(btn => btn.addEventListener('click', () => onStoreItemClick(btn)));
+  // One delegated listener (bound once) instead of re-attaching a handler to
+  // every card on each re-render.
+  if (!wrap._storeDelegated){
+    wrap._storeDelegated = true;
+    wrap.addEventListener('click', (e) => {
+      const rm = e.target.closest('[data-store-remove]');
+      if (rm && wrap.contains(rm)){ removeCustomAppWithConfirm(rm.dataset.storeRemove); return; }
+      const btn = e.target.closest('[data-store-id]');
+      if (btn && wrap.contains(btn)) onStoreItemClick(btn);
+    });
+  }
 }
 
-// Drives one store card's whole install/download interaction: a real,
-// determinate, per-file network download (with progress) for 'gh-download'
-// items that get cached into IndexedDB for offline replay; a quick
-// simulated fill for everything else (the 51 original inline apps, and
-// 'gh-online' items) so every card in the store feels the same to use even
-// though only the GH-download path is doing real network work.
+// Drives one store card's install interaction: every catalog entry is
+// self-contained inline HTML, so installing is instant (no network) — a
+// brief progress-bar fill just keeps the interaction feeling consistent.
 function onStoreItemClick(btn){
   const item = STORE_APPS.find(s => s.id === btn.dataset.storeId);
   if (!item) return;
@@ -13217,44 +11967,15 @@ function onStoreItemClick(btn){
     if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
     showToast('"' + item.name + '" added to the desktop.');
   }
-  function failInstall(message){
-    btn.disabled = false;
-    if (progressWrap) progressWrap.classList.remove('active');
-    if (fill) fill.style.width = '0%';
-    showToast(message, 'error');
-  }
-
-  if (item.type === 'gh-download'){
-    if (label) label.textContent = 'Downloading 0/' + (1 + item.gh.assets.length) + '…';
-    downloadGhGame(item, (done, total) => {
-      if (fill) fill.style.width = Math.round((done / total) * 100) + '%';
-      if (label) label.textContent = 'Downloading ' + done + '/' + total + '…';
-    }).then(() => {
-      if (label) label.textContent = 'Done';
-      finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'gh-cached', gh: item.gh });
-    }).catch(err => {
-      failInstall('Could not download "' + item.name + '" — check your connection.');
-    });
-    return;
-  }
-
-  // 'html' (the 51 built-in apps) and 'gh-online' both install instantly —
-  // no real network fetch is needed either way — but still animate the same
-  // progress bar briefly so the interaction reads identically across the
-  // whole store.
   let pct = 0;
   const stepMs = 90;
   const timer = setInterval(() => {
     pct = Math.min(100, pct + 34);
     if (fill) fill.style.width = pct + '%';
-    if (label) label.textContent = pct >= 100 ? 'Done' : 'Downloading…';
+    if (label) label.textContent = pct >= 100 ? 'Done' : 'Installing…';
     if (pct >= 100){
       clearInterval(timer);
-      if (item.type === 'gh-online'){
-        finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'page', url: ghRawUrl(item.gh.repo, item.gh.ref, item.gh.main) });
-      } else {
-        finishInstall({ id: item.id, name: item.name, icon: item.icon, type: item.type, content: item.content || '', url: item.url || '' });
-      }
+      finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'html', content: item.content || '', url: '' });
     }
   }, stepMs);
 }
@@ -13939,7 +12660,10 @@ function pyScheduleAutosave(){
 
 function updatePyGutter(lang){
   const ta = pyEditors[lang], g = pyGutters[lang];
-  const lines = ta.value.split('\n').length;
+  const v = ta.value;
+  let lines = 1;
+  for (let i = v.indexOf('\n'); i !== -1; i = v.indexOf('\n', i + 1)) lines++;
+  if (g.childElementCount === lines) return; // line count unchanged — nothing to rebuild
   let out = '';
   for (let i = 1; i <= lines; i++) out += '<div>' + i + '</div>';
   g.innerHTML = out;
@@ -14756,6 +13480,57 @@ function applyTabSize(size){
 }
 applyTabSize(parseInt(settingsGet(TAB_SIZE_KEY, '2'), 10) || 2);
 document.getElementById('setTabSize').addEventListener('change', (e) => applyTabSize(parseInt(e.target.value, 10) || 2));
+
+// Performance mode: persisted like the other Appearance options. With no saved
+// choice it defaults on only where the device or user asks for it —
+// prefers-reduced-motion, or a very low core count — and the person's own
+// toggle (saved as '1' or '0') always wins afterwards.
+const PERF_MODE_KEY = 'codepad_perf_mode_v1';
+function perfModeDefault(){
+  try {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return true;
+  } catch(e){}
+  return false;
+}
+function applyPerfMode(on, persist){
+  document.documentElement.classList.toggle('perf-mode', !!on);
+  document.getElementById('setPerfMode').checked = !!on;
+  if (persist) settingsSet(PERF_MODE_KEY, on ? '1' : '0');
+  if (on){ // clear any leftover parallax offsets so the sky sits still
+    document.querySelectorAll('.stars-layer, .parallax-layer').forEach(el => { el.style.transform = ''; });
+  }
+}
+(function(){
+  const saved = settingsGet(PERF_MODE_KEY, null);
+  applyPerfMode(saved === null ? perfModeDefault() : saved === '1', false);
+})();
+document.getElementById('setPerfMode').addEventListener('change', (e) => applyPerfMode(e.target.checked, true));
+
+// Keeps the sg-open / bg-covered classes (see "Background load shedding" in
+// the CSS) in sync with which windows are actually on screen.
+(function initBgState(){
+  const layer = document.getElementById('windows-layer');
+  const root = document.documentElement;
+  let queued = false;
+  function update(){
+    queued = false;
+    const maxed = !!layer.querySelector('.app-window.maximized:not(.win-hidden)');
+    const scene = document.querySelector('.stargazing-scene');
+    const sg = !!(scene && scene.offsetParent !== null);
+    root.classList.toggle('bg-covered', maxed);
+    root.classList.toggle('sg-open', sg);
+  }
+  function queue(){ if (!queued){ queued = true; requestAnimationFrame(update); } }
+  // Only window-level changes matter (class flips on .app-window itself, or a
+  // window being added/removed) — not every class change inside app content.
+  new MutationObserver(muts => {
+    for (const m of muts){
+      if (m.type === 'childList' || (m.target.classList && m.target.classList.contains('app-window'))){ queue(); return; }
+    }
+  }).observe(layer, { attributes: true, attributeFilter: ['class'], subtree: true, childList: true });
+  queue();
+})();
 
 function applyReduceMotion(on){
   document.documentElement.classList.toggle('reduce-motion', !!on);
