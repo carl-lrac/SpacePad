@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Space Tab</title>
+<title>SpacePad</title>
 <link rel="icon" id="default-favicon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23e3ddff%22%2F%3E%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23a996ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%236f5ce0%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%230a0c1a%22%2F%3E%3Ccircle%20cx%3D%2218.7%22%20cy%3D%225.2%22%20r%3D%223.6%22%20fill%3D%22%238b7cf6%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%2218.8%22%20cy%3D%225.3%22%20r%3D%220.55%22%20fill%3D%22%23eae6ff%22%2F%3E%3Ccircle%20cx%3D%224.6%22%20cy%3D%2216.4%22%20r%3D%220.4%22%20fill%3D%22%23cfe0ff%22%2F%3E%3Ccircle%20cx%3D%226.6%22%20cy%3D%226.6%22%20r%3D%220.32%22%20fill%3D%22%23cfe0ff%22%20opacity%3D%220.8%22%2F%3E%3Cpath%20d%3D%22M21%2012.79A9%209%200%201%201%2011.21%203%207%207%200%200%200%2021%2012.79z%22%20transform%3D%22translate(1.6%201.6)%20scale(0.76)%22%20fill%3D%22url(%23g)%22%2F%3E%3C%2Fsvg%3E">
 <style>
   :root{
@@ -917,8 +917,8 @@
      present as the backdrop, with every open app floating above it as its
      own draggable/resizable window (#windows-layer). There is no sidebar:
      apps launch from the desktop icons or Ctrl+K, and the compact
-     open-windows dock (#win-dock, below the desktop, shown only while a
-     window is open) switches/minimizes/closes windows and shows the desktop. ---- */
+     bottom taskbar (#taskbar, always visible) switches/minimizes/closes windows,
+     shows the desktop and hosts the clock + system tray. ---- */
   #desktop-area { flex: 1; min-height: 0; position: relative; overflow: hidden; }
 
   #desktop-screen {
@@ -960,42 +960,122 @@
   .win-close:hover { color: var(--error) !important; border-color: var(--error) !important; background: rgba(255,107,138,0.12) !important; }
   .win-titlebar button:active { transform: scale(0.9); }
 
-  /* ---- Open-windows dock (replaces the old left sidebar) ---- */
-  #win-dock {
-    display: none; flex-shrink: 0; align-items: center; gap: 8px; padding: 5px 10px;
-    background: rgba(18, 20, 42, 0.78); border-top: 1px solid var(--border);
-    position: relative; z-index: 50; min-height: 40px;
+  /* ---- Taskbar: always-visible bar at the bottom of the viewport. Left: start
+     button, Show desktop, one icon button per open window. Right: the system
+     tray (perf / network / battery / info / sticky / theme / clock / corner).
+     It is a normal flex item of #app-right (below #desktop-area), so the
+     desktop, window layer, maximized windows and clamping all shrink by its
+     height automatically; with auto-hide on it floats instead (see below). ---- */
+  #taskbar {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 4px 8px; min-height: 44px;
+    background: var(--panel); border-top: 1px solid var(--border); box-shadow: 0 -1px 0 rgba(0,0,0,0.18);
+    position: relative; z-index: 60; font-size: 12px; color: var(--text-dim);
   }
-  #win-dock.has-windows { display: flex; }
-  #win-dock-list { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: thin; padding: 2px 0; }
-  .dock-desktop {
-    display: flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer;
-    background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--border);
-    border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600;
+  html.tb-autohide #taskbar {
+    position: fixed; left: 0; right: 0; bottom: 0; transform: translateY(calc(100% + 2px)); transition: transform .18s ease;
   }
-  .dock-desktop:hover { color: var(--accent); border-color: var(--accent-dim); }
-  .dock-chip {
-    display: flex; align-items: stretch; flex-shrink: 0; max-width: 190px;
-    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  html.tb-autohide #taskbar.tb-reveal { transform: none; }
+  html.perf-mode #taskbar, html.reduce-motion #taskbar { transition: none; }
+  #taskbar.tb-gone { display: none; }
+  #taskbar button { font-family: inherit; }
+  .tb-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; cursor: pointer; position: relative;
+    height: 32px; min-width: 32px; padding: 0 8px; font-size: 12px; font-weight: 600; color: var(--text-dim);
+    background: transparent; border: 1px solid transparent; border-radius: calc(var(--win-radius, 10px) * .8);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .tb-btn .icon { width: 16px; height: 16px; }
+  .tb-btn:hover { color: var(--text); background: var(--panel-3); border-color: var(--border); }
+  .tb-btn[aria-expanded="true"], .tb-btn.on { color: var(--accent); border-color: var(--accent-dim); }
+  .tb-btn:focus-visible, .tb-chip-main:focus-visible, .tb-chip-x:focus-visible, .tb-pop button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  #tb-start { color: var(--accent); }
+  #tb-list { display: flex; gap: 4px; flex: 1 1 0; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 2px 0; scroll-behavior: auto; }
+  #tb-list::-webkit-scrollbar { display: none; }
+  .tb-sep { width: 1px; align-self: stretch; margin: 6px 2px; background: var(--border); flex-shrink: 0; }
+  .tb-chip {
+    position: relative; display: flex; flex: 0 1 168px; min-width: 38px; max-width: 200px; height: 32px;
+    border: 1px solid transparent; border-radius: calc(var(--win-radius, 10px) * .8); background: transparent;
     transition: background .15s ease, border-color .15s ease, opacity .15s ease;
   }
-  .dock-chip:hover { border-color: var(--accent-dim); }
-  .dock-chip.focused { background: rgba(139,124,246,0.18); border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
-  .dock-chip.minimized { opacity: .62; }
-  .dock-chip-main {
-    display: flex; align-items: center; gap: 7px; min-width: 0; background: none; border: none; color: var(--text-dim);
-    cursor: pointer; padding: 5px 4px 5px 10px; font-size: 12px; font-weight: 600;
+  .tb-chip:hover { background: var(--panel-3); border-color: var(--border); }
+  .tb-chip.focused { background: color-mix(in srgb, var(--accent) 20%, transparent); border-color: var(--accent); }
+  .tb-chip.minimized { opacity: .6; }
+  .tb-chip-main {
+    display: flex; align-items: center; justify-content: center; gap: 7px; flex: 1; min-width: 0; padding: 0 8px; height: 100%;
+    background: none; border: none; border-radius: inherit; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 600;
   }
-  .dock-chip.focused .dock-chip-main { color: var(--text); }
-  .dock-chip-icon { display: flex; color: var(--accent-cyan); flex-shrink: 0; }
-  .dock-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dock-chip-close {
-    background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 0 8px; display: flex; align-items: center;
+  .tb-chip.focused .tb-chip-main { color: var(--text); }
+  .tb-chip-icon { display: flex; flex-shrink: 0; color: var(--accent-cyan); font-size: 16px; }
+  .tb-chip-icon .icon { width: 16px; height: 16px; }
+  .tb-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+  .tb-chip { container-type: inline-size; }
+  /* labels shrink (ellipsis) first, then drop out once the button gets too narrow to read */
+  @container (max-width: 92px){ .tb-chip-label { display: none; } .tb-chip-main { padding: 0; } }
+  #taskbar.tb-icons-only .tb-chip-label { display: none; }
+  #taskbar.tb-icons-only .tb-chip { flex: 0 0 38px; }
+  .tb-chip::after {
+    content: ''; position: absolute; left: 50%; bottom: 2px; width: 5px; height: 3px; margin-left: -2.5px; border-radius: 2px;
+    background: var(--text-dim); opacity: .75; transition: width .15s ease, margin .15s ease, background .15s ease;
   }
-  .dock-chip-close:hover { color: var(--error); }
-  .dock-chip-close svg { width: 11px; height: 11px; }
-  .dock-desktop:focus-visible, .dock-chip-main:focus-visible, .dock-chip-close:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-  @media (max-width: 600px){ .dock-chip { max-width: 130px; } .dock-desktop span { display: none; } }
+  .tb-chip.focused::after { width: 16px; margin-left: -8px; background: var(--accent); opacity: 1; }
+  .tb-chip.minimized::after { background: transparent; box-shadow: inset 0 0 0 1px var(--text-dim); }
+  .tb-chip-x {
+    position: absolute; top: -5px; right: -4px; width: 16px; height: 16px; padding: 0; display: none; align-items: center; justify-content: center;
+    background: var(--panel-3); color: var(--text-dim); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; z-index: 2;
+  }
+  .tb-chip-x svg { width: 9px; height: 9px; }
+  .tb-chip-x:hover { color: var(--error); border-color: var(--error); }
+  .tb-chip:hover .tb-chip-x, .tb-chip:focus-within .tb-chip-x { display: flex; }
+  #tb-tray { display: flex; align-items: center; gap: 2px; flex-shrink: 0; margin-left: auto; }
+  .tb-item { position: relative; display: flex; align-items: center; flex-shrink: 0; }
+  .tb-item[hidden], .tb-btn[hidden] { display: none !important; }
+  .tb-btn.tb-bad { color: var(--error); }
+  .tb-btn.tb-good { color: var(--accent-cyan); }
+  .tb-batt-txt, .tb-fps-txt { font-variant-numeric: tabular-nums; }
+  #tb-clock { flex-direction: column; align-items: flex-end; justify-content: center; gap: 0; line-height: 1.15; padding: 0 9px; color: var(--text); }
+  #tb-clock .tb-time { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .2px; }
+  #tb-clock .tb-date { font-size: 10.5px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
+  #tb-clock.tb-nodate { justify-content: center; }
+  #tb-corner { min-width: 10px; width: 10px; padding: 0; margin-left: 4px; border-radius: 0; border: none; border-left: 1px solid var(--border); height: 32px; }
+  #tb-corner:hover { background: var(--panel-3); }
+  .tb-pop {
+    position: absolute; right: 0; bottom: calc(100% + 10px); z-index: 70; width: 272px; max-width: calc(100vw - 16px);
+    background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: var(--card-radius, 12px);
+    padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); text-align: left; font-weight: 400;
+  }
+  .tb-pop[hidden] { display: none; }
+  .tb-pop h4 { margin: 0 0 6px; font-size: 12px; color: var(--text-dim); font-weight: 600; letter-spacing: .3px; text-transform: uppercase; }
+  .tb-cal-head { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+  .tb-cal-head b { flex: 1; text-align: center; font-size: 13px; }
+  .tb-cal-head button, .tb-pop .tb-today {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; min-width: 26px; height: 26px; padding: 0 7px; font-size: 11.5px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .tb-cal-head button:hover, .tb-pop .tb-today:hover { border-color: var(--accent-dim); color: var(--accent); }
+  .tb-cal-head button .icon { width: 13px; height: 13px; }
+  .tb-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .tb-cal span { padding: 4px 0; border-radius: 6px; }
+  .tb-cal .dow { color: var(--text-dim); font-size: 10px; font-weight: 600; }
+  .tb-cal .out { color: var(--text-dim); opacity: .45; }
+  .tb-cal .today { background: var(--accent); color: #14132b; font-weight: 700; }
+  .tb-pop-meta { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text-dim); line-height: 1.55; }
+  .tb-pop-meta b { color: var(--text); font-weight: 600; }
+  .tb-info-row { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 3px 0; }
+  .tb-info-row b { color: var(--text-dim); font-weight: 500; }
+  .tb-info-row span { font-variant-numeric: tabular-nums; text-align: right; }
+  #tb-menu { position: fixed; z-index: 1200; min-width: 190px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 5px; box-shadow: 0 10px 28px rgba(0,0,0,0.5); }
+  #tb-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--text); padding: 8px 10px; border-radius: 7px; font-size: 12.5px; cursor: pointer; }
+  #tb-menu button:hover, #tb-menu button:focus-visible { background: color-mix(in srgb, var(--accent) 20%, transparent); outline: none; }
+  #tb-menu button.danger { color: var(--error); }
+  #tb-menu .tb-menu-title { padding: 5px 10px 4px; font-size: 11px; color: var(--text-dim); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html.density-compact #taskbar { padding: 2px 8px; min-height: 36px; }
+  html.density-compact .tb-btn, html.density-compact .tb-chip { height: 28px; }
+  @media (max-width: 760px){
+    .tb-chip { flex: 0 0 38px; }
+    .tb-chip-label, .tb-btn .tb-lbl, #tb-clock .tb-date.tb-wide { display: none; }
+  }
+  @media (max-width: 540px){ #tb-sticky-item, #tb-perf-item { display: none; } }
+  @media (max-width: 420px){ #tb-info-item, #tb-theme-item { display: none; } }
 
   /* overflow:auto here is a safety-net fallback: most views already manage
      their own internal scroll regions (flex:1;min-height:0;overflow:auto
@@ -1246,7 +1326,7 @@
   .toast .toast-action { margin-left: 6px; background: var(--accent); color: #14132b; border: none; border-radius: 6px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
   /* ---- Toast notifications ---- */
-  #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
+  #toast-container { position: fixed; bottom: calc(20px + var(--tb-inset, 0px)); right: 20px; z-index: 300; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
   .toast {
     display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--accent-dim);
     border-radius: 10px; padding: 10px 16px; color: var(--text); font-size: 12.5px; max-width: 380px;
@@ -1602,8 +1682,16 @@
   }
   #add-app-icon-grid button.active { border-color: var(--accent); color: var(--accent); background: rgba(139,124,246,0.16); }
   #add-app-form textarea { width: 100%; box-sizing: border-box; min-height: 160px; resize: vertical; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-3); color: var(--text); font: 12.5px "SF Mono", Menlo, Consolas, monospace; }
-  #view-custom-app { padding: 0; }
-  #custom-app-frame { width: 100%; height: 100%; border: 0; background: #fff; }
+  #view-custom-app { padding: 0; flex-direction: column; position: relative; }
+  #custom-app-frame { width: 100%; flex: 1; min-height: 0; border: 0; background: #fff; }
+  #custom-app-bar { display: none; align-items: center; gap: 8px; padding: 5px 10px; background: var(--panel-2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  #custom-app-bar .custom-app-bar-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--text-dim); }
+  #custom-app-bar .ghost-btn { padding: 3px 10px; font-size: 12px; }
+  #custom-app-status { display: none; position: absolute; left: 0; right: 0; bottom: 0; top: 0; z-index: 2; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; padding: 24px; background: var(--panel); color: var(--text); font-size: 13px; }
+  #custom-app-status.show { display: flex; }
+  #custom-app-status .cas-detail { color: var(--text-dim); font-size: 12px; max-width: 420px; word-break: break-word; }
+  #custom-app-status.err .cas-msg { color: var(--error); font-weight: 600; }
+  .store-item-btn.store-item-dl { min-width: 0; }
 
   /* ===== Chat view ===== */
   #view-chat { flex-direction: row; }
@@ -2105,10 +2193,8 @@
   .desktop-icon-glyph { border-radius: var(--glyph-radius, 14px); }
   /* UI scale: CSS zoom on text-centric chrome (never on drag-positioned
      surfaces, so window/icon dragging math stays exact). */
-  .settings-wrap, header, #win-dock, .desktop-heading { zoom: var(--ui-scale, 1); }
+  .settings-wrap, header, #taskbar, .desktop-heading { zoom: var(--ui-scale, 1); }
   html.density-compact header { padding: 5px 12px; row-gap: 4px; gap: 10px; }
-  html.density-compact #win-dock { padding: 3px 8px; min-height: 32px; }
-  html.density-compact .dock-chip-main { padding-top: 3px; padding-bottom: 3px; }
   html.density-compact .win-titlebar { padding: 4px 6px 4px 12px; }
   html.density-compact .settings-row { padding: 5px 0; }
   html.density-compact .settings-card { padding: 11px 14px; }
@@ -2335,7 +2421,7 @@
 
 <div id="app-right">
 <header>
-  <div class="brand"><span class="dot"></span><span class="brand-text">Spacepad</span></div>
+  <div class="brand"><span class="dot"></span><span class="brand-text">SpacePad</span></div>
   <div class="dropdown">
     <button class="dropdown-toggle" id="effectsMenuBtn" type="button"><svg class="icon icon-fill"><use href="#icon-star"></use></svg> Effects ▾</button>
     <div class="dropdown-menu" id="effectsMenu">
@@ -3711,7 +3797,7 @@
     <div class="settings-wrap">
       <div>
         <h2><svg class="icon"><use href="#icon-download"></use></svg> App Store</h2>
-        <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. Everything here is self-contained and works fully offline. Use Remove to take one off your desktop again.</p>
+        <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. Almost everything here is self-contained and works offline; MyArcade.Win loads live from jsDelivr and can be downloaded. Use Remove to take one off your desktop again.</p>
       </div>
       <div class="settings-card">
         <h3><svg class="icon"><use href="#icon-plus"></use></svg> My Apps</h3>
@@ -3735,6 +3821,12 @@
        website viewer. Custom Python apps don't use this view at all; they
        route straight into the real #view-python tab (see switchAppView). -->
   <div id="view-custom-app" class="app-view">
+    <div id="custom-app-bar">
+      <span class="custom-app-bar-name" id="custom-app-bar-name"></span>
+      <button type="button" class="ghost-btn" id="custom-app-reload-btn" title="Fetch the latest copy and reload">Reload</button>
+      <button type="button" class="ghost-btn" id="custom-app-download-btn" title="Save this app's HTML file to your computer">Download</button>
+    </div>
+    <div id="custom-app-status" aria-live="polite"><div class="cas-msg"></div><div class="cas-detail"></div><button type="button" class="ghost-btn" id="custom-app-retry-btn" style="display:none;">Retry</button></div>
     <iframe id="custom-app-frame" title="Custom app" allow="autoplay; fullscreen; pointer-lock; gamepad"></iframe>
   </div>
 
@@ -3767,10 +3859,28 @@
 <div id="widgets-layer" aria-label="Desktop widgets"></div>
 </div>
 
-<!-- Open-windows dock: replaces the old left sidebar. Hidden unless a window is open. -->
-<div id="win-dock" role="toolbar" aria-label="Open windows">
-  <button type="button" id="win-dock-desktop" class="dock-desktop"><svg class="icon"><use href="#icon-monitor"></use></svg><span>Desktop</span></button>
-  <div id="win-dock-list"></div>
+<!-- Taskbar: always-visible bar at the bottom (hidden only in the Stargazing-only tab). Rendered/driven by renderTaskbar() + the tray module. -->
+<div id="taskbar" role="toolbar" aria-label="Taskbar">
+  <button type="button" class="tb-btn" id="tb-start" title="Command palette (Ctrl+K)" aria-label="Open command palette"><svg class="icon"><use href="#icon-command"></use></svg></button>
+  <button type="button" class="tb-btn" id="tb-desktop" title="Show desktop" aria-label="Show desktop"><svg class="icon"><use href="#icon-monitor"></use></svg><span class="tb-lbl">Desktop</span></button>
+  <span class="tb-sep" aria-hidden="true"></span>
+  <div id="tb-list" role="group" aria-label="Open windows"></div>
+  <div id="tb-tray" role="group" aria-label="System tray">
+    <span class="tb-item" id="tb-perf-item"><button type="button" class="tb-btn" id="tb-perf" aria-pressed="false"><svg class="icon icon-fill"><use href="#icon-rocket"></use></svg><span class="tb-fps-txt" hidden></span></button></span>
+    <span class="tb-item" id="tb-net-item"><button type="button" class="tb-btn" id="tb-net"><svg class="icon"><use href="#icon-wifi"></use></svg></button></span>
+    <span class="tb-item" id="tb-batt-item" hidden><button type="button" class="tb-btn" id="tb-batt"><svg class="icon"><use href="#icon-battery"></use></svg><span class="tb-batt-txt"></span></button></span>
+    <span class="tb-item" id="tb-info-item">
+      <button type="button" class="tb-btn" id="tb-info" aria-expanded="false" aria-haspopup="dialog" title="Session info" aria-label="Session info"><svg class="icon"><use href="#icon-info"></use></svg></button>
+      <div class="tb-pop" id="tb-info-pop" role="dialog" aria-label="Session info" hidden></div>
+    </span>
+    <span class="tb-item" id="tb-sticky-item"><button type="button" class="tb-btn" id="tb-sticky" title="New sticky note" aria-label="New sticky note"><svg class="icon"><use href="#icon-file-plus"></use></svg></button></span>
+    <span class="tb-item" id="tb-theme-item"><button type="button" class="tb-btn" id="tb-theme"><svg class="icon"><use href="#icon-sun"></use></svg></button></span>
+    <span class="tb-item" id="tb-clock-item">
+      <button type="button" class="tb-btn" id="tb-clock" aria-expanded="false" aria-haspopup="dialog"><span class="tb-time"></span><span class="tb-date tb-wide"></span></button>
+      <div class="tb-pop" id="tb-clock-pop" role="dialog" aria-label="Calendar" hidden></div>
+    </span>
+    <span class="tb-item" id="tb-corner-item"><button type="button" class="tb-btn" id="tb-corner" title="Show desktop" aria-label="Show desktop (corner)"></button></span>
+  </div>
 </div>
 </div>
 
@@ -3910,7 +4020,7 @@
 
     <label class="field-label">Tab / app title</label>
     <div class="key-row" style="margin-bottom:14px;">
-      <input type="text" id="custTitleInput" placeholder="Spacepad" maxlength="80">
+      <input type="text" id="custTitleInput" placeholder="SpacePad" maxlength="80">
     </div>
 
     <label class="field-label">Icon — type any emoji</label>
@@ -3993,6 +4103,13 @@ function flushState(){ flushHooks.forEach(f => { try { f(); } catch(e){} }); }
 // manager; everything that used to ask the (removed) sidebar which tab was
 // active asks this instead.
 let focusedView = 'desktop';
+// Taskbar state/hooks (the module itself is initTaskbar(), near the end of this script).
+const TB_KEY = 'spacepad_taskbar_v1';
+const TB_DEFAULTS = { start: true, labels: true, autohide: false, clock: true, seconds: false, h24: false, date: true, weekday: true,
+  net: true, battery: true, perf: true, fps: false, theme: true, info: true, sticky: true, corner: true };
+let tbCfg = Object.assign({}, TB_DEFAULTS);
+let taskbarRender = null, taskbarRefreshNet = null, taskbarSet = null, taskbarReset = null, taskbarNewSticky = null, tbReady = false;
+let taskbarInset = function(){ return 0; };
 function getFocusedView(){ return focusedView; }
 
 /* =========================================================================
@@ -4053,6 +4170,13 @@ const ICONS = {
   layers: { svg: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>' },
   layout: { svg: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>' },
   command: { svg: '<path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>' },
+  sun: { svg: '<circle cx="12" cy="12" r="4"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>' },
+  battery: { svg: '<rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/>' },
+  zap: { svg: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
+  info: { svg: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>' },
+  'chevron-left': { svg: '<polyline points="15 18 9 12 15 6"/>' },
+  'chevron-right': { svg: '<polyline points="9 18 15 12 9 6"/>' },
+  'wifi-off': { svg: '<line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>' },
   'git-fork': { svg: '<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M6 8.5V11a3 3 0 0 0 3 3h1.5"/><path d="M18 8.5V11a3 3 0 0 1-3 3h-1.5"/><line x1="12" y1="14" x2="12" y2="15.5"/>' }
 };
 function icon(name, cls){
@@ -5448,7 +5572,7 @@ function buildDeepLinkHtml(view, stateObj){
   // window.switchAppView somehow isn't defined yet -- rather than assuming
   // a fixed delay is always enough, which is fragile.
   const hideChrome = isStargazingOnly
-    ? 'var h=document.querySelector(\"header\"); if(h){ h.style.cssText=\"display:none !important\"; h.remove(); } var dk=document.getElementById(\"win-dock\"); if(dk){ dk.remove(); }'
+    ? 'var h=document.querySelector(\"header\"); if(h){ h.style.cssText=\"display:none !important\"; h.remove(); } var dk=document.getElementById(\"taskbar\"); if(dk){ dk.remove(); document.documentElement.style.setProperty(\"--tb-inset\",\"0px\"); }'
     : '';
   const script = '<script>(function(){' +
     'function run(){ if (window.switchAppView){ window.switchAppView(\"' + targetView + '\"); ' + hideChrome + ' } else { setTimeout(run, 20); } }' +
@@ -5542,7 +5666,7 @@ function refreshNewTabTitles(){
 }
 function pageTitleFromHtml(html){
   const m = /<title[^>]*>([^<]*)<\/title>/i.exec(html.slice(0, 4000));
-  return (m && m[1].trim()) || 'Spacepad';
+  return (m && m[1].trim()) || 'SpacePad';
 }
 function pageIconHref(){
   const l = document.querySelector('link[rel~="icon"]');
@@ -5649,7 +5773,7 @@ let hiddenViewsUnlocked = true;
 
 /* =========================================================================
    DESKTOP SHELL — app metadata shared by the desktop icon grid, the app
-   title bar, the open-windows dock and the Ctrl+K palette. Chat/GitHub are marked
+   title bar, the taskbar and the Ctrl+K palette. Chat/GitHub are marked
    `gated` purely so they grey out while offline (they need the network),
    exactly like the desktop icons' .disabled handling — this
    is no longer a password/unlock gate, just an offline-availability flag.
@@ -6108,54 +6232,16 @@ function getAppMeta(name){
   return { key: app.view, viewId: 'view-' + app.view, label: app.label, iconHtml: icon(app.icon, app.iconFill ? 'icon-fill' : '') };
 }
 
-/* ---- Open-windows dock ----
-   Replaces the old left sidebar's "which apps are open / which is focused"
-   role. A slim bar under the desktop that only exists while at least one
-   window is open: a "Desktop" button (show desktop / bring windows back) and
-   one chip per open window. Click a chip to focus it, click the focused chip
-   to minimize it, click a minimized chip to restore it; the small x closes. */
+/* ---- Window helpers for the taskbar ----
+   The taskbar (initTaskbar, near the end of the script) shows one button per
+   open window: click a minimized one to restore it, an unfocused one to
+   focus it, the focused one to minimize it. */
 function winKeyForView(name){ return name && name.indexOf('custom:') === 0 ? 'custom-app' : name; }
 function viewNameForWinKey(key){ return key === 'custom-app' ? ('custom:' + currentCustomAppId) : key; }
 function winIsMinimized(rec){ return !!(rec && rec.open && rec.el.classList.contains('win-hidden')); }
 let desktopStash = null; // window keys hidden by the last "Show desktop"
-function renderWinDock(){
-  const dock = document.getElementById('win-dock');
-  if (!dock) return;
-  const list = document.getElementById('win-dock-list');
-  const focusedKey = winKeyForView(focusedView);
-  const open = Object.keys(appWindows).filter(k => appWindows[k].open);
-  dock.classList.toggle('has-windows', open.length > 0);
-  Array.from(list.children).forEach(ch => { if (open.indexOf(ch.dataset.win) === -1) ch.remove(); });
-  open.forEach(key => {
-    const rec = appWindows[key];
-    let chip = list.querySelector('.dock-chip[data-win="' + key + '"]');
-    if (!chip){
-      chip = document.createElement('span');
-      chip.className = 'dock-chip';
-      chip.dataset.win = key;
-      chip.innerHTML = '<button type="button" class="dock-chip-main"><span class="dock-chip-icon"></span><span class="dock-chip-label"></span></button>' +
-        '<button type="button" class="dock-chip-close" aria-label="Close window">' + icon('x') + '</button>';
-      chip.querySelector('.dock-chip-main').addEventListener('click', () => dockActivate(key));
-      chip.querySelector('.dock-chip-close').addEventListener('click', (e) => { e.stopPropagation(); closeWindow(key); });
-      list.appendChild(chip);
-    }
-    const label = rec.el.querySelector('.win-title').textContent;
-    const min = winIsMinimized(rec);
-    chip.classList.toggle('focused', key === focusedKey && !min);
-    chip.classList.toggle('minimized', min);
-    chip.querySelector('.dock-chip-icon').innerHTML = rec.el.querySelector('.win-icon').innerHTML;
-    chip.querySelector('.dock-chip-label').textContent = label;
-    const main = chip.querySelector('.dock-chip-main');
-    main.title = label + (min ? ' (minimized) - click to restore' : key === focusedKey ? ' - click to minimize' : ' - click to focus');
-    main.setAttribute('aria-pressed', key === focusedKey && !min ? 'true' : 'false');
-    chip.querySelector('.dock-chip-close').title = 'Close ' + label;
-  });
-  const deskBtn = document.getElementById('win-dock-desktop');
-  const anyVisible = open.some(k => !winIsMinimized(appWindows[k]));
-  deskBtn.title = anyVisible ? 'Show desktop (minimize all windows)' : 'Bring the windows back';
-  deskBtn.querySelector('span').textContent = anyVisible ? 'Desktop' : 'Restore';
-}
-// Back-compat name: the dock re-render also refreshes the "has window" state.
+function renderWinDock(){ if (taskbarRender) taskbarRender(); }
+// Back-compat name: the taskbar re-render also refreshes the "has window" state.
 function updateHasWindowIndicators(){ renderWinDock(); }
 
 // Keeps the Editor toolbar + header status chip in line with the focused app.
@@ -6223,10 +6309,6 @@ function toggleDesktop(){
     restoreWindow(open[open.length - 1]);
   }
 }
-(function wireWinDock(){
-  const b = document.getElementById('win-dock-desktop');
-  if (b) b.addEventListener('click', toggleDesktop);
-})();
 
 function applyMaximized(rec, on){
   const el = rec.el;
@@ -6350,7 +6432,7 @@ function wireWindowChrome(rec){
       nx = startLeft + (ev.clientX - startX);
       ny = startTop + (ev.clientY - startY);
       nx = Math.max(-winW + 80, Math.min(nx, layerW - 80));
-      ny = Math.max(0, Math.min(ny, layerH - 32));
+      ny = Math.max(0, Math.min(ny, layerH - 44)); // keep the whole title bar above the taskbar
       if (!dragRaf){ el.style.willChange = 'transform'; dragRaf = requestAnimationFrame(flush); }
     }
     function onUp(){
@@ -6470,6 +6552,106 @@ function showDesktop(){
   updateHeaderNewTabBtn();
 }
 
+/* ---- 'page' apps flagged loader:'fetch' (e.g. MyArcade.Win) ----
+   The HTML is fetched (jsDelivr is CORS-enabled) and rendered through the
+   iframe's srcdoc with a <base> tag so relative assets resolve to the CDN —
+   jsDelivr can serve HTML with headers that stop a direct iframe from
+   rendering. If fetch fails for CORS reasons the iframe src is used instead.
+   Nothing is stored; the text only lives in the iframe. ---- */
+let customAppFetchSeq = 0;
+function setCustomAppStatus(state, msg, detail, onRetry){
+  const el = document.getElementById('custom-app-status');
+  if (!el) return;
+  const retry = document.getElementById('custom-app-retry-btn');
+  if (!state){ el.classList.remove('show', 'err'); return; }
+  el.classList.add('show');
+  el.classList.toggle('err', state === 'error');
+  el.querySelector('.cas-msg').textContent = msg || '';
+  el.querySelector('.cas-detail').textContent = detail || '';
+  retry.style.display = state === 'error' ? '' : 'none';
+  retry.onclick = onRetry || null;
+}
+function updateCustomAppBar(app){
+  const bar = document.getElementById('custom-app-bar');
+  if (!bar) return;
+  const on = !!(app && app.type === 'page' && app.loader === 'fetch' && app.url);
+  bar.style.display = on ? 'flex' : 'none';
+  document.getElementById('custom-app-bar-name').textContent = on ? app.name : '';
+}
+function injectBaseHref(html, url){
+  const baseTag = '<base href="' + url.replace(/[?#].*$/, '').replace(/[^\/]*$/, '').replace(/"/g, '&quot;') + '">';
+  let m = /<head(\s[^>]*)?>/i.exec(html);
+  if (m) return html.slice(0, m.index + m[0].length) + baseTag + html.slice(m.index + m[0].length);
+  m = /<html(\s[^>]*)?>/i.exec(html);
+  if (m) return html.slice(0, m.index + m[0].length) + '<head>' + baseTag + '</head>' + html.slice(m.index + m[0].length);
+  m = /^\s*<!doctype[^>]*>/i.exec(html);
+  if (m) return html.slice(0, m[0].length) + '<head>' + baseTag + '</head>' + html.slice(m[0].length);
+  return '<head>' + baseTag + '</head>' + html;
+}
+async function loadFetchedApp(app){
+  const frame = document.getElementById('custom-app-frame');
+  const seq = ++customAppFetchSeq;
+  const stale = () => seq !== customAppFetchSeq || currentCustomAppId !== app.id;
+  const retry = () => { loadFetchedApp(app); };
+  setCustomAppStatus('loading', 'Loading ' + app.name + '…', 'Fetching the latest copy from the CDN.');
+  frame.removeAttribute('src');
+  frame.srcdoc = '';
+  try {
+    let res;
+    try { res = await fetch(app.url); }
+    catch(netErr){
+      // A TypeError is either a real network failure or a CORS block; an
+      // opaque no-cors request tells them apart. If reachable, let the iframe load the URL itself.
+      if (stale()) return;
+      let reachable = false;
+      try { await fetch(app.url, { mode: 'no-cors' }); reachable = true; } catch(e2){}
+      if (stale()) return;
+      if (reachable){ frame.srcdoc = ''; frame.removeAttribute('srcdoc'); frame.src = app.url; setCustomAppStatus(null); return; }
+      throw new Error('Network error — check your connection.');
+    }
+    if (stale()) return;
+    if (!res.ok) throw new Error('The server answered HTTP ' + res.status + '.');
+    const text = await res.text();
+    if (stale()) return;
+    if (!text.trim()) throw new Error('The file was empty.');
+    frame.srcdoc = injectBaseHref(text, app.url);
+    setCustomAppStatus(null);
+  } catch(err){
+    if (stale()) return;
+    setCustomAppStatus('error', 'Could not load ' + app.name, (err && err.message) || 'Unknown error', retry);
+  }
+}
+// Saves the file exactly as served (raw bytes, no <base> injection).
+async function downloadFetchedApp(url, filename){
+  showToast('Downloading ' + filename + '…');
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const buf = await res.arrayBuffer();
+    const blob = new Blob([buf], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+    showToast('Saved ' + filename, 'success');
+  } catch(e){
+    showToast('Download failed: ' + ((e && e.message) || 'network error'), 'error');
+  }
+}
+function downloadFilenameFor(url){
+  const m = /([^\/?#]+)$/.exec(String(url).replace(/[?#].*$/, ''));
+  return m ? m[1] : 'app.html';
+}
+document.getElementById('custom-app-reload-btn').addEventListener('click', () => {
+  const app = currentCustomAppId && findCustomApp(currentCustomAppId);
+  if (app && app.loader === 'fetch') loadFetchedApp(app);
+});
+document.getElementById('custom-app-download-btn').addEventListener('click', () => {
+  const app = currentCustomAppId && findCustomApp(currentCustomAppId);
+  if (app && app.url) downloadFetchedApp(app.url, downloadFilenameFor(app.url));
+});
+
 // Opens (or, if already open, focuses) one app's window. This is the
 // window-manager's half of switchAppView(name) — see that function below,
 // which is what every other call site in this file still calls.
@@ -6491,7 +6673,15 @@ function openApp(name){
       return;
     }
     const frame = document.getElementById('custom-app-frame');
-    if (app.type === 'gh-online'){
+    customAppFetchSeq++; // invalidates any fetch still in flight for a previously-opened app
+    setCustomAppStatus(null);
+    updateCustomAppBar(app);
+    if (app.type === 'page' && app.loader === 'fetch' && app.url){
+      frame.removeAttribute('src');
+      frame.srcdoc = '';
+      currentCustomAppId = app.id;
+      loadFetchedApp(app);
+    } else if (app.type === 'gh-online'){
       // Live GitHub repo, played straight off jsDelivr every time — no
       // caching, always the latest content at that ref.
       frame.removeAttribute('srcdoc');
@@ -6639,6 +6829,11 @@ const BASE_COMMANDS = [
   { id: 'sticky-new', label: 'New sticky note', iconName: 'file-plus', def: 'Alt+N', run: () => document.getElementById('header-sticky-add-btn').click() },
   { id: 'toggle-theme', label: 'Toggle Day / Night theme', iconName: 'moon', iconFill: true, def: 'Alt+T', run: () => { applyTheme(currentTheme === 'day' ? 'night' : 'day'); settingsSet(THEME_KEY, currentTheme); studioEmit(); } },
   { id: 'toggle-perf', label: 'Toggle Performance mode', iconName: 'rocket', iconFill: true, def: 'Alt+P', run: () => { applyPerfMode(!document.documentElement.classList.contains('perf-mode'), true); studioEmit(); showToast('Performance mode ' + (document.documentElement.classList.contains('perf-mode') ? 'on' : 'off') + '.'); } },
+  { id: 'tb-seconds', label: 'Toggle taskbar clock seconds', iconName: 'clock', run: () => taskbarSet && taskbarSet('seconds') },
+  { id: 'tb-24h', label: 'Toggle taskbar 24-hour clock', iconName: 'clock', run: () => taskbarSet && taskbarSet('h24') },
+  { id: 'tb-autohide', label: 'Toggle taskbar auto-hide', iconName: 'layout', run: () => taskbarSet && taskbarSet('autohide') },
+  { id: 'tb-labels', label: 'Toggle taskbar window names', iconName: 'layout', run: () => taskbarSet && taskbarSet('labels') },
+  { id: 'tb-calendar', label: 'Open taskbar calendar', iconName: 'calendar', run: () => { const b = document.getElementById('tb-clock'); if (b && b.offsetParent !== null && b.getAttribute('aria-expanded') !== 'true') b.click(); } },
   { id: 'show-desktop', label: 'Show desktop / restore windows', iconName: 'monitor', def: 'Alt+S', run: () => toggleDesktop() },
   { id: 'next-window', label: 'Switch to next window', iconName: 'layers', def: 'Alt+W', run: () => cycleWindows() },
   { id: 'minimize-window', label: 'Minimize focused window', iconName: 'minus', def: 'Alt+J', run: () => { const k = focusedWinKey(); if (appWindows[k] && !winIsMinimized(appWindows[k])) minimizeWindow(k); } },
@@ -7149,6 +7344,7 @@ function updateNetToggleBtn(){
   btn.innerHTML = isOnlineMode ? icon('globe') + ' Online' : icon('wifi') + ' Offline';
   btn.classList.toggle('offline-state', !isOnlineMode);
   btn.title = isOnlineMode ? 'Click to switch to offline mode' : 'Click to switch to online mode';
+  if (taskbarRefreshNet) taskbarRefreshNet();
 }
 
 function applyNetStatus(online, opts){
@@ -7902,6 +8098,19 @@ safeInit(function(){
     toggleBtn.textContent = notesVisible ? 'Hide all notes' : 'Show all notes';
   }
 
+  // Drops a note near the middle of the visible desktop (above the taskbar). Used by the
+  // taskbar's sticky button and by keyboard/programmatic "clicks" on the header button.
+  function stickyAtCenter(){
+    if (!notesVisible){ notesVisible = true; layer.classList.add('active'); updateToggleBtn(); }
+    const colorName = stickyColors[stickyColorCycle % stickyColors.length];
+    const offset = (stickyNotesCreated % 5) * 18;
+    const maxY = window.innerHeight - taskbarInset() - 178;
+    const x = Math.max(4, Math.min(window.innerWidth - 178, window.innerWidth / 2 - 85 + offset));
+    const y = Math.max(4, Math.min(maxY, (window.innerHeight - taskbarInset()) / 2 - 85 + offset));
+    createStickyNote(x, y, colorName);
+    stickyColorCycle++;
+  }
+  taskbarNewSticky = stickyAtCenter;
   addBtn.addEventListener('mousedown', stickyBtnMouseDown);
   // Same creation gesture (drag to place, or a plain click to center), just
   // reachable from the always-visible header instead of being buried inside
@@ -7909,6 +8118,8 @@ safeInit(function(){
   // button exists to fix.
   const headerAddBtn = document.getElementById('header-sticky-add-btn');
   if (headerAddBtn) headerAddBtn.addEventListener('mousedown', stickyBtnMouseDown);
+  // A real mouse click is handled by the mousedown/mouseup gesture above; a keyboard or programmatic click (detail 0, e.g. Alt+N) places a note at the center.
+  if (headerAddBtn) headerAddBtn.addEventListener('click', (e) => { if (e.detail === 0) stickyAtCenter(); });
 
   function stickyBtnMouseDown(e){
     e.preventDefault();
@@ -7947,7 +8158,7 @@ safeInit(function(){
         y = window.innerHeight / 2 - 85 + offset;
       }
       x = Math.max(4, Math.min(window.innerWidth - 178, x));
-      y = Math.max(4, Math.min(window.innerHeight - 178, y));
+      y = Math.max(4, Math.min(window.innerHeight - taskbarInset() - 178, y));
 
       createStickyNote(x, y, colorName);
       stickyColorCycle++;
@@ -7997,7 +8208,7 @@ safeInit(function(){
       let nx = startLeft + (ev.clientX - startX);
       let ny = startTop + (ev.clientY - startY);
       nx = Math.max(-60, Math.min(window.innerWidth - 110, nx));
-      ny = Math.max(-60, Math.min(window.innerHeight - 110, ny));
+      ny = Math.max(-60, Math.min(window.innerHeight - taskbarInset() - 110, ny));
       note.style.left = nx + 'px';
       note.style.top = ny + 'px';
     }
@@ -10989,6 +11200,11 @@ function renderCustomizeAppList(){
    → GitHub repo, Import, or installed earlier keep opening. ---- */
 const STORE_APPS = [
   {
+    id: 'store_myarcade_win', name: 'MyArcade.Win', icon: 'play',
+    description: 'Arcade game hub, loaded live from jsDelivr (carl-lrac/MyArcade.Win). Needs internet; Download saves the HTML file.',
+    type: 'page', loader: 'fetch', url: 'https://cdn.jsdelivr.net/gh/carl-lrac/MyArcade.Win/MyArcadeWin.html', downloadName: 'MyArcadeWin.html'
+  },
+  {
     id: 'store_2048', name: '2048', icon: 'play',
     description: 'The classic sliding-tile puzzle. Arrow keys to merge tiles toward 2048. Runs fully offline.',
     type: 'html',
@@ -12347,7 +12563,7 @@ button{padding:8px 14px;border-radius:8px;border:1px solid #555;background:#4a4a
    only when the person asks for it — nothing here is in the store catalog.
    ========================================================================= */
 function ghRawUrl(repo, ref, path){
-  return 'https://cdn.jsdelivr.net/gh/' + repo + '@' + encodeURIComponent(ref) + '/' + path;
+  return 'https://cdn.jsdelivr.net/gh/' + repo + (ref ? '@' + encodeURIComponent(ref) : '') + '/' + path;
 }
 
 function isStoreAppInstalled(id){ return !!findCustomApp(id); }
@@ -12366,10 +12582,11 @@ function renderAppStore(){
   wrap.innerHTML = visible.map(item => {
     const installed = isStoreAppInstalled(item.id);
     const glyph = ICONS[item.icon] ? icon(item.icon, ICONS[item.icon].fill ? 'icon-fill' : '') : escapeHtml(item.name.charAt(0).toUpperCase());
-    const btnHtml = installed
+    let btnHtml = installed
       ? '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Open</button>' +
         '<button type="button" class="ghost-btn store-item-btn store-item-remove" data-store-remove="' + item.id + '" style="color:var(--error); border-color:var(--error);">Remove</button>'
       : '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Install</button>';
+    if (item.downloadName) btnHtml += '<button type="button" class="ghost-btn store-item-btn store-item-dl" data-store-download="' + item.id + '" title="Save ' + escapeHtml(item.downloadName) + ' to your computer">Download</button>';
     return '<div class="store-item">' +
       '<span class="store-item-glyph">' + glyph + '</span>' +
       '<div class="store-item-body">' +
@@ -12388,6 +12605,12 @@ function renderAppStore(){
   if (!wrap._storeDelegated){
     wrap._storeDelegated = true;
     wrap.addEventListener('click', (e) => {
+      const dl = e.target.closest('[data-store-download]');
+      if (dl && wrap.contains(dl)){
+        const it = STORE_APPS.find(s => s.id === dl.dataset.storeDownload);
+        if (it && it.url) downloadFetchedApp(it.url, it.downloadName || downloadFilenameFor(it.url));
+        return;
+      }
       const rm = e.target.closest('[data-store-remove]');
       if (rm && wrap.contains(rm)){ removeCustomAppWithConfirm(rm.dataset.storeRemove); return; }
       const btn = e.target.closest('[data-store-id]');
@@ -12428,7 +12651,9 @@ function onStoreItemClick(btn){
     if (label) label.textContent = pct >= 100 ? 'Done' : 'Installing…';
     if (pct >= 100){
       clearInterval(timer);
-      finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'html', content: item.content || '', url: '' });
+      finishInstall(item.type === 'page'
+        ? { id: item.id, name: item.name, icon: item.icon, type: 'page', content: '', url: item.url, loader: item.loader }
+        : { id: item.id, name: item.name, icon: item.icon, type: 'html', content: item.content || '', url: '' });
     }
   }, stepMs);
 }
@@ -12554,7 +12779,7 @@ document.getElementById('add-app-save-btn').addEventListener('click', () => {
    ========================================================================= */
 function exportableAppShape(a){
   if (a.type === 'gh-online') return { id: a.id, name: a.name, icon: a.icon, type: 'gh-online', gh: a.gh };
-  if (a.type === 'page') return { id: a.id, name: a.name, icon: a.icon, type: 'page', url: a.url };
+  if (a.type === 'page') return a.loader === 'fetch' ? { id: a.id, name: a.name, icon: a.icon, type: 'page', url: a.url, loader: 'fetch' } : { id: a.id, name: a.name, icon: a.icon, type: 'page', url: a.url };
   return { id: a.id, name: a.name, icon: a.icon, type: a.type, content: a.content || '' }; // 'html' / 'python'
 }
 function exportUserApps(){ return customApps.map(exportableAppShape); }
@@ -12596,7 +12821,9 @@ async function buildImportedApp(raw){
   }
   if (raw.type === 'page'){
     if (typeof raw.url !== 'string' || !raw.url.trim()) return null;
-    return { id: id, name: raw.name, icon: icon, type: 'page', content: '', url: raw.url };
+    const rec = { id: id, name: raw.name, icon: icon, type: 'page', content: '', url: raw.url };
+    if (raw.loader === 'fetch') rec.loader = 'fetch';
+    return rec;
   }
   if (raw.type === 'gh-online' || raw.type === 'gh-download'){
     if (!raw.gh || typeof raw.gh.repo !== 'string' || typeof raw.gh.main !== 'string') return null;
@@ -12665,7 +12892,7 @@ const DEFAULT_FAVICON_HREF = document.getElementById('default-favicon') ? docume
 // name of an icon from the ICONS table above. Copy a line, change the
 // text and icon name, and it shows up as a new button automatically.
 const CUSTOMIZE_PRESETS = [
-  { title: 'Spacepad', icon: 'monitor' },
+  { title: 'SpacePad', icon: 'monitor' },
   { title: 'Dev Playground', icon: 'rocket' },
   { title: 'Script Lab', icon: 'flask' },
   { title: 'Byte Studio', icon: 'save' },
@@ -14480,7 +14707,7 @@ function sCopy(text, okMsg){
     '<div class="settings-card"><h3>' + icon('file-text') + ' Text &amp; density</h3>' +
       '<div class="studio-row"><label class="studio-label" for="ap-font">UI font</label><select id="ap-font" class="grow">' + FONTS.map(f => '<option value="' + f[0] + '" style="font-family:' + sEsc(f[2]) + ';">' + f[1] + '</option>').join('') + '</select></div>' +
       '<div class="studio-row"><label class="studio-label" for="ap-scale">Text scale</label><input type="range" id="ap-scale" class="grow" min="85" max="130" step="5"><span class="studio-val" id="ap-scale-val"></span></div>' +
-      '<p class="studio-sub" style="margin:2px 0 6px;">Scales the header, dock, Settings-style panels and Studio apps. (Editor text size lives in Settings → Editor.)</p>' +
+      '<p class="studio-sub" style="margin:2px 0 6px;">Scales the header, taskbar, Settings-style panels and Studio apps. (Editor text size lives in Settings → Editor.)</p>' +
       '<div class="studio-row"><span class="studio-label">Density</span><button type="button" class="ghost-btn" data-density="comfortable">Comfortable</button><button type="button" class="ghost-btn" data-density="compact">Compact</button></div></div>' +
     '<div class="settings-card"><h3>' + icon('rocket', 'icon-fill') + ' Motion &amp; performance</h3>' +
       '<div class="studio-row"><span class="studio-label">Performance mode</span><label class="toggle-switch"><input type="checkbox" id="ap-perf" aria-label="Performance mode"><span class="toggle-track"></span></label><span class="studio-sub" style="margin:0;">Same switch as Settings → Appearance.</span></div>' +
@@ -14953,11 +15180,11 @@ function sCopy(text, okMsg){
     ['Glowing windows', 'Accent outline and glow around every window', '.app-window {\n  box-shadow: 0 0 0 1px var(--accent), 0 0 28px color-mix(in srgb, var(--accent) 45%, transparent) !important;\n}'],
     ['Gradient title bars', 'Accent fade across the window title bar', '.win-titlebar {\n  background: linear-gradient(90deg, var(--accent-dim), transparent) !important;\n}'],
     ['Big desktop labels', 'Larger, bolder icon names', '.desktop-icon-label {\n  font-size: 14px !important;\n  font-weight: 700 !important;\n}'],
-    ['Square everything', 'Sharp corners on windows, cards and buttons', '.app-window, .settings-card, .ghost-btn, .desktop-icon-glyph, .dock-chip {\n  border-radius: 2px !important;\n}'],
+    ['Square everything', 'Sharp corners on windows, cards and buttons', '.app-window, .settings-card, .ghost-btn, .desktop-icon-glyph, .tb-chip, .tb-btn {\n  border-radius: 2px !important;\n}'],
     ['Quiet header', 'Hide the status chip and Sticky-note button', '#status, #header-sticky-add-btn {\n  display: none !important;\n}'],
     ['Thin scrollbars', 'Slim scrollbars everywhere', '* {\n  scrollbar-width: thin;\n}'],
     ['Big window buttons', 'Easier-to-hit minimize / maximize / close', '.win-titlebar button {\n  width: 30px !important;\n  height: 30px !important;\n}'],
-    ['Transparent dock', 'See the wallpaper through the window dock', '#win-dock {\n  background: transparent !important;\n  border-top-color: transparent !important;\n}'],
+    ['Transparent taskbar', 'See the wallpaper through the taskbar', '#taskbar {\n  background: transparent !important;\n  border-top-color: transparent !important;\n}'],
     ['Monospace UI', 'Use a monospace font for the whole interface', 'html {\n  font-family: ui-monospace, Menlo, Consolas, monospace !important;\n}']
   ];
   let styleEl = null;
@@ -15181,7 +15408,7 @@ function sCopy(text, okMsg){
       persistWinRect(rec);
     });
     lay.windows.forEach(w => { const meta = getAppMeta(w.app); const rec = meta && appWindows[meta.key]; if (rec && w.min) rec.el.classList.add('win-hidden'); });
-    // Applied from this app's own button: tuck this window away so the restored arrangement is fully visible (its dock chip brings it back).
+    // Applied from this app's own button: tuck this window away so the restored arrangement is fully visible (its taskbar button brings it back).
     if (fromUi && appWindows.layouts && appWindows.layouts.open) appWindows.layouts.el.classList.add('win-hidden');
     const top = topVisibleWinKey();
     if (top){ const n = viewNameForWinKey(top); focusWindow(top); setFocusedTaskbar(n); syncChromeForView(n); } else { setFocusedTaskbar('desktop'); syncChromeForView('desktop'); }
@@ -15232,7 +15459,7 @@ function sCopy(text, okMsg){
     }
     else if (b.dataset.act === 'cascade') arrange('cascade');
     else if (b.dataset.act === 'tile') arrange('tile');
-    else if (b.dataset.act === 'minimize'){ showDesktop(); desktopStash = openKeys(); say('All windows minimized — use the dock to bring them back.'); }
+    else if (b.dataset.act === 'minimize'){ showDesktop(); desktopStash = openKeys(); say('All windows minimized — use the taskbar to bring them back.'); }
     else if (b.dataset.act === 'close'){ const n = openKeys().length; closeEverything('layouts'); say(n ? 'Closed ' + n + ' window' + (n === 1 ? '' : 's') + '.' : 'No other windows are open.'); }
   });
   $('ly-name').addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); v.querySelector('[data-act="save"]').click(); } e.stopPropagation(); });
@@ -15246,6 +15473,508 @@ function sCopy(text, okMsg){
   draw();
 })();
 
+
+/* =========================================================================
+   TASKBAR — bottom bar: window buttons (left/center) + system tray (right).
+   All options live in ONE memStore key (TB_KEY), so they ride along with
+   Export/Import, Reset and new tabs like every other setting. Nothing here
+   touches browser storage or the network. Timers are minimal on purpose:
+   the clock sleeps until the next minute (or second, only if seconds are
+   shown) boundary and stops entirely while the tab is hidden; the FPS
+   sampler and the Session-info refresh only run while their item is shown.
+   ========================================================================= */
+(function initTaskbar(){
+  const $ = (id) => document.getElementById(id);
+  const tb = $('taskbar');
+  if (!tb){ return; }
+  const html = document.documentElement;
+
+  /* ---------- Settings (memStore) ---------- */
+  function load(){
+    tbCfg = Object.assign({}, TB_DEFAULTS);
+    try {
+      const o = JSON.parse(memStore.getItem(TB_KEY) || 'null');
+      if (o && typeof o === 'object') Object.keys(TB_DEFAULTS).forEach(k => { if (typeof o[k] === 'boolean') tbCfg[k] = o[k]; });
+    } catch(e){}
+  }
+  function save(){ try { memStore.setItem(TB_KEY, JSON.stringify(tbCfg)); } catch(e){} }
+  load();
+  taskbarSet = function(key, val){
+    if (!(key in TB_DEFAULTS)) return;
+    tbCfg[key] = (val === undefined) ? !tbCfg[key] : !!val;
+    save(); apply(); studioEmit();
+  };
+  taskbarReset = function(){ tbCfg = Object.assign({}, TB_DEFAULTS); save(); apply(); studioEmit(); };
+
+  /* ---------- Insets: how much of the viewport the taskbar covers ---------- */
+  function inset(){
+    if (!tb.isConnected || html.classList.contains('tb-autohide') || tb.classList.contains('tb-gone')) return 0;
+    return Math.round(tb.getBoundingClientRect().height) || 0;
+  }
+  taskbarInset = inset;
+  function syncInset(){ html.style.setProperty('--tb-inset', inset() + 'px'); }
+  if (window.ResizeObserver) { try { new ResizeObserver(syncInset).observe(tb); } catch(e){} }
+  window.addEventListener('resize', syncInset);
+
+  /* ---------- Window buttons ---------- */
+  const list = $('tb-list');
+  let tabStopKey = null;
+  function chipFor(key){ return list.querySelector('.tb-chip[data-win="' + key + '"]'); }
+  function mains(){ return Array.from(list.querySelectorAll('.tb-chip-main')); }
+  function render(){
+    if (!tb.isConnected) return;
+    const focusedKey = winKeyForView(focusedView);
+    const open = Object.keys(appWindows).filter(k => appWindows[k].open);
+    Array.from(list.children).forEach(ch => { if (open.indexOf(ch.dataset.win) === -1) ch.remove(); });
+    open.forEach(key => {
+      const rec = appWindows[key];
+      let chip = chipFor(key);
+      if (!chip){
+        chip = document.createElement('span');
+        chip.className = 'tb-chip';
+        chip.dataset.win = key;
+        chip.innerHTML = '<button type="button" class="tb-chip-main" tabindex="-1"><span class="tb-chip-icon"></span><span class="tb-chip-label"></span></button>' +
+          '<button type="button" class="tb-chip-x" tabindex="-1">' + icon('x') + '</button>';
+        const main = chip.querySelector('.tb-chip-main');
+        main.addEventListener('click', () => dockActivate(key));
+        main.addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });
+        main.addEventListener('auxclick', (e) => { if (e.button === 1){ e.preventDefault(); closeWindow(key); } });
+        main.addEventListener('focus', () => { tabStopKey = key; mains().forEach(m => m.tabIndex = (m === main) ? 0 : -1); });
+        chip.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          const r = main.getBoundingClientRect();
+          const kb = !e.clientX && !e.clientY;
+          openMenu(key, kb ? r.left : e.clientX, kb ? r.top : e.clientY, r);
+        });
+        chip.querySelector('.tb-chip-x').addEventListener('click', (e) => { e.stopPropagation(); closeWindow(key); });
+        list.appendChild(chip);
+      }
+      const label = rec.el.querySelector('.win-title').textContent;
+      const min = winIsMinimized(rec);
+      const foc = key === focusedKey && !min;
+      chip.classList.toggle('focused', foc);
+      chip.classList.toggle('minimized', min);
+      const iconHtml = rec.el.querySelector('.win-icon').innerHTML;
+      const iconEl = chip.querySelector('.tb-chip-icon');
+      if (iconEl.innerHTML !== iconHtml) iconEl.innerHTML = iconHtml;
+      const lab = chip.querySelector('.tb-chip-label');
+      if (lab.textContent !== label) lab.textContent = label;
+      const main = chip.querySelector('.tb-chip-main');
+      main.title = label + (min ? ' (minimized) - click to restore' : foc ? ' - click to minimize' : ' - click to focus') + '. Right-click for more.';
+      main.setAttribute('aria-label', label + (min ? ', minimized' : foc ? ', active' : ''));
+      main.setAttribute('aria-pressed', foc ? 'true' : 'false');
+      chip.querySelector('.tb-chip-x').setAttribute('aria-label', 'Close ' + label);
+      chip.querySelector('.tb-chip-x').title = 'Close ' + label;
+    });
+    // roving tabindex: exactly one window button is in the Tab order
+    const ms = mains();
+    if (ms.length){
+      let stop = ms.find(m => m.parentNode.dataset.win === tabStopKey);
+      if (!stop) stop = ms.find(m => m.parentNode.classList.contains('focused')) || ms[0];
+      ms.forEach(m => m.tabIndex = (m === stop) ? 0 : -1);
+    }
+    const fchip = list.querySelector('.tb-chip.focused');
+    if (fchip && list.scrollWidth > list.clientWidth){
+      if (fchip.offsetLeft < list.scrollLeft) list.scrollLeft = fchip.offsetLeft - 4;
+      else if (fchip.offsetLeft + fchip.offsetWidth > list.scrollLeft + list.clientWidth) list.scrollLeft = fchip.offsetLeft + fchip.offsetWidth - list.clientWidth + 4;
+    }
+    const anyVisible = open.some(k => !winIsMinimized(appWindows[k]));
+    const db = $('tb-desktop');
+    db.title = anyVisible ? 'Show desktop (minimize all windows)' : (open.length ? 'Bring the windows back' : 'Show desktop');
+    db.setAttribute('aria-label', db.title);
+    const dl = db.querySelector('.tb-lbl');
+    const dtxt = (!anyVisible && open.length) ? 'Restore' : 'Desktop';
+    if (dl.textContent !== dtxt) dl.textContent = dtxt;
+    $('tb-corner').title = db.title;
+    if (infoOpen()) fillInfo();
+  }
+  taskbarRender = render;
+  list.addEventListener('keydown', (e) => {
+    const ms = mains(); const i = ms.indexOf(document.activeElement);
+    if (i < 0) return;
+    let n = -1;
+    if (e.key === 'ArrowRight') n = (i + 1) % ms.length;
+    else if (e.key === 'ArrowLeft') n = (i - 1 + ms.length) % ms.length;
+    else if (e.key === 'Home') n = 0;
+    else if (e.key === 'End') n = ms.length - 1;
+    else if (e.key === 'Delete'){ e.preventDefault(); closeWindow(ms[i].parentNode.dataset.win); return; }
+    if (n >= 0){ e.preventDefault(); ms[n].focus(); }
+  });
+  list.addEventListener('wheel', (e) => {
+    if (list.scrollWidth <= list.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    list.scrollLeft += e.deltaY; e.preventDefault();
+  }, { passive: false });
+
+  /* ---------- Window context menu ---------- */
+  let menuEl = null;
+  function closeMenu(){ if (menuEl){ menuEl.remove(); menuEl = null; } }
+  function openMenu(key, x, y, anchor){
+    closeMenu(); closePop();
+    const rec = appWindows[key]; if (!rec || !rec.open) return;
+    const min = winIsMinimized(rec), foc = winKeyForView(focusedView) === key && !min;
+    const label = rec.el.querySelector('.win-title').textContent;
+    const items = [
+      { t: min ? 'Restore' : foc ? 'Minimize' : 'Focus', run: () => dockActivate(key) },
+      { t: rec.maximized ? 'Restore size' : 'Maximize', run: () => { if (winIsMinimized(rec)) restoreWindow(key); toggleMaximize(key); } },
+      { t: 'Open in new tab (' + getNewTabMethodLabel() + ')', run: () => launchAppInNewTab(resolveNewTabKeyForWinKey(key)) },
+      { t: 'New-tab method…', keepPop: true },
+      { t: 'Close', cls: 'danger', run: () => closeWindow(key) }
+    ];
+    menuEl = document.createElement('div');
+    menuEl.id = 'tb-menu'; menuEl.setAttribute('role', 'menu'); menuEl.setAttribute('aria-label', label + ' window menu');
+    menuEl.innerHTML = '<div class="tb-menu-title">' + escapeHtml(label) + '</div>' +
+      items.map((it, i) => '<button type="button" role="menuitem" data-i="' + i + '"' + (it.cls ? ' class="' + it.cls + '"' : '') + '>' + escapeHtml(it.t) + '</button>').join('');
+    menuEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = e.target.closest('[data-i]'); if (!b) return;
+      const it = items[+b.dataset.i]; const ax = menuEl.getBoundingClientRect();
+      closeMenu();
+      if (it.keepPop) showNewTabPopover(ax.left, ax.top);
+      else it.run();
+    });
+    menuEl.addEventListener('keydown', (e) => {
+      const bs = Array.from(menuEl.querySelectorAll('button')); const i = bs.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown'){ e.preventDefault(); bs[(i + 1) % bs.length].focus(); }
+      else if (e.key === 'ArrowUp'){ e.preventDefault(); bs[(i - 1 + bs.length) % bs.length].focus(); }
+      else if (e.key === 'Escape'){ e.stopPropagation(); closeMenu(); const m = chipFor(key); if (m) m.querySelector('.tb-chip-main').focus(); }
+      else if (e.key === 'Tab'){ closeMenu(); }
+    });
+    document.body.appendChild(menuEl);
+    const r = menuEl.getBoundingClientRect();
+    const left = Math.max(4, Math.min(x, window.innerWidth - r.width - 4));
+    const above = anchor ? anchor.top - r.height - 6 : y - r.height;
+    menuEl.style.left = left + 'px';
+    menuEl.style.top = Math.max(4, Math.min(above, window.innerHeight - r.height - 4)) + 'px';
+    const first = menuEl.querySelector('button'); if (first) first.focus();
+  }
+  document.addEventListener('mousedown', (e) => { if (menuEl && !e.target.closest('#tb-menu')) closeMenu(); }, true);
+  window.addEventListener('blur', closeMenu);
+
+  /* ---------- Left-side buttons ---------- */
+  $('tb-start').addEventListener('click', () => openCmdk());
+  $('tb-desktop').addEventListener('click', toggleDesktop);
+  $('tb-corner').addEventListener('click', toggleDesktop);
+  $('tb-sticky').addEventListener('click', () => { if (taskbarNewSticky) taskbarNewSticky(); });
+
+  /* ---------- Popovers (clock calendar / session info) ---------- */
+  let openPop = null, infoTimer = 0, calY = 0, calM = 0;
+  function infoOpen(){ return openPop === 'info'; }
+  function popEl(which){ return $(which === 'clock' ? 'tb-clock-pop' : 'tb-info-pop'); }
+  function btnEl(which){ return $(which === 'clock' ? 'tb-clock' : 'tb-info'); }
+  function closePop(restoreFocus){
+    if (!openPop) return;
+    const w = openPop; openPop = null;
+    popEl(w).hidden = true; btnEl(w).setAttribute('aria-expanded', 'false');
+    clearInterval(infoTimer); infoTimer = 0;
+    if (restoreFocus) btnEl(w).focus();
+    reveal(false);
+  }
+  function togglePop(which){
+    closeMenu();
+    if (openPop === which){ closePop(); return; }
+    closePop();
+    openPop = which;
+    if (which === 'clock'){ const n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); fillCal(); }
+    else { fillInfo(); startInfoTimer(); }
+    popEl(which).hidden = false; btnEl(which).setAttribute('aria-expanded', 'true');
+    reveal(true);
+  }
+  function startInfoTimer(){
+    clearInterval(infoTimer); infoTimer = 0;
+    if (openPop !== 'info' || document.hidden) return;
+    infoTimer = setInterval(() => { if (document.hidden) { clearInterval(infoTimer); infoTimer = 0; } else fillInfo(); }, 1000);
+  }
+  $('tb-clock').addEventListener('click', () => togglePop('clock'));
+  $('tb-info').addEventListener('click', () => togglePop('info'));
+  document.addEventListener('mousedown', (e) => { if (openPop && !e.target.closest('.tb-pop, #tb-clock, #tb-info')) closePop(); }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openPop){ e.stopPropagation(); e.preventDefault(); closePop(true); }
+  }, true);
+  window.addEventListener('blur', () => closePop());
+
+  /* ---------- Clock ---------- */
+  const pad = (n) => (n < 10 ? '0' : '') + n;
+  let clockTimer = 0;
+  function renderClock(){
+    if (!tb.isConnected) return;
+    const d = new Date();
+    const h = d.getHours();
+    let t = tbCfg.h24 ? pad(h) + ':' + pad(d.getMinutes()) : ((h % 12) || 12) + ':' + pad(d.getMinutes());
+    if (tbCfg.seconds) t += ':' + pad(d.getSeconds());
+    if (!tbCfg.h24) t += ' ' + (h < 12 ? 'AM' : 'PM');
+    const te = tb.querySelector('#tb-clock .tb-time'), de = tb.querySelector('#tb-clock .tb-date');
+    if (te.textContent !== t) te.textContent = t;
+    const ds = d.toLocaleDateString(undefined, { weekday: tbCfg.weekday ? 'short' : undefined, month: 'short', day: 'numeric' });
+    if (de.textContent !== ds) de.textContent = ds;
+    de.hidden = !tbCfg.date;
+    const full = d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + ', ' + t;
+    const cb = $('tb-clock');
+    cb.title = full + ' - click for calendar';
+    cb.setAttribute('aria-label', 'Clock ' + full + '. Open calendar');
+    if (openPop === 'clock') updateCalHeader();
+  }
+  function scheduleClock(){
+    clearTimeout(clockTimer); clockTimer = 0;
+    if (!tbCfg.clock || document.hidden || !tb.isConnected) return;
+    const step = tbCfg.seconds ? 1000 : 60000;
+    const delay = step - (Date.now() % step) + 20;
+    clockTimer = setTimeout(() => { renderClock(); scheduleClock(); }, delay);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden){ clearTimeout(clockTimer); clockTimer = 0; clearInterval(infoTimer); infoTimer = 0; syncFps(); }
+    else { if (tbCfg.clock){ renderClock(); scheduleClock(); } if (openPop === 'info'){ fillInfo(); startInfoTimer(); } syncFps(); refreshNet(); }
+  });
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function isoWeek(d){
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dn = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - dn);
+    return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7);
+  }
+  function tzName(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(e){ return ''; } }
+  function tzOffset(d){ const o = -d.getTimezoneOffset(); const a = Math.abs(o); return 'UTC' + (o < 0 ? '-' : '+') + pad(Math.floor(a / 60)) + ':' + pad(a % 60); }
+  function calMetaHtml(){
+    const d = new Date();
+    const doy = Math.floor((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(d.getFullYear(), 0, 0)) / 86400000);
+    return '<div class="tb-pop-meta"><div id="tb-cal-full"><b>' + escapeHtml(d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })) + '</b></div>' +
+      '<div>Day ' + doy + ' of the year · Week ' + isoWeek(d) + '</div>' +
+      '<div>' + escapeHtml(tzName() || 'Local time') + ' (' + tzOffset(d) + ')</div></div>';
+  }
+  function updateCalHeader(){ const f = $('tb-cal-full'); if (f) f.innerHTML = '<b>' + escapeHtml(new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })) + '</b>'; }
+  function fillCal(focusAct){
+    const pop = $('tb-clock-pop');
+    const first = new Date(calY, calM, 1), startDow = first.getDay(), dim = new Date(calY, calM + 1, 0).getDate(), prevDim = new Date(calY, calM, 0).getDate();
+    const now = new Date(); let cells = '';
+    ['S','M','T','W','T','F','S'].forEach(x => { cells += '<span class="dow">' + x + '</span>'; });
+    for (let i = 0; i < 42; i++){
+      const dayN = i - startDow + 1;
+      if (dayN < 1) cells += '<span class="out">' + (prevDim + dayN) + '</span>';
+      else if (dayN > dim) cells += '<span class="out">' + (dayN - dim) + '</span>';
+      else {
+        const isToday = dayN === now.getDate() && calM === now.getMonth() && calY === now.getFullYear();
+        cells += '<span' + (isToday ? ' class="today" aria-current="date"' : '') + '>' + dayN + '</span>';
+      }
+    }
+    pop.innerHTML = '<div class="tb-cal-head"><button type="button" data-act="prev" aria-label="Previous month">' + icon('chevron-left') + '</button>' +
+      '<b aria-live="polite" id="tb-cal-title">' + MONTHS[calM] + ' ' + calY + '</b>' +
+      '<button type="button" data-act="next" aria-label="Next month">' + icon('chevron-right') + '</button>' +
+      '<button type="button" class="tb-today" data-act="today">Today</button></div>' +
+      '<div class="tb-cal" role="grid" aria-label="' + MONTHS[calM] + ' ' + calY + '">' + cells + '</div>' + calMetaHtml();
+    if (focusAct){ const b = pop.querySelector('[data-act="' + focusAct + '"]'); if (b) b.focus(); }
+  }
+  $('tb-clock-pop').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'prev'){ calM--; if (calM < 0){ calM = 11; calY--; } }
+    else if (act === 'next'){ calM++; if (calM > 11){ calM = 0; calY++; } }
+    else { const n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); }
+    fillCal(act);
+  });
+
+  /* ---------- Session info popover ---------- */
+  function fmtUp(ms){ const s = Math.floor(ms / 1000); return Math.floor(s / 3600) + 'h ' + pad(Math.floor(s % 3600 / 60)) + 'm ' + pad(s % 60) + 's'; }
+  function infoRows(){
+    const open = Object.keys(appWindows).filter(k => appWindows[k].open);
+    const minCount = open.filter(k => winIsMinimized(appWindows[k])).length;
+    const notes = document.querySelectorAll('#stickyLayer .sticky-note').length;
+    const conn = navigator.connection;
+    const rows = [
+      ['Open windows', open.length + (minCount ? ' (' + minCount + ' minimized)' : '')],
+      ['Sticky notes', String(notes)],
+      ['Session uptime', fmtUp(performance.now())],
+      ['JS heap', performance.memory ? (performance.memory.usedJSHeapSize / 1048576).toFixed(1) + ' MB of ' + Math.round(performance.memory.jsHeapSizeLimit / 1048576) + ' MB' : 'n/a'],
+      ['CPU cores', navigator.hardwareConcurrency ? String(navigator.hardwareConcurrency) : 'n/a'],
+      ['Network', netText()],
+      ['Mode', html.classList.contains('perf-mode') ? 'Performance' : 'Standard'],
+      ['Screen', window.innerWidth + ' × ' + window.innerHeight]
+    ];
+    if (conn && conn.effectiveType) rows.splice(6, 0, ['Connection', conn.effectiveType + (conn.downlink ? ', ~' + conn.downlink + ' Mbps' : '')]);
+    return rows;
+  }
+  function fillInfo(){
+    const pop = $('tb-info-pop'); if (!pop) return;
+    pop.innerHTML = '<h4>Session</h4>' + infoRows().map(r => '<div class="tb-info-row"><b>' + escapeHtml(r[0]) + '</b><span>' + escapeHtml(r[1]) + '</span></div>').join('');
+  }
+
+  /* ---------- Tray: network / battery / performance / theme ---------- */
+  function isOnline(){ return !!isOnlineMode && navigator.onLine !== false; }
+  function netText(){ return isOnline() ? 'online' : 'offline'; }
+  function refreshNet(){
+    const b = $('tb-net'); if (!b) return;
+    const on = isOnline(), conn = navigator.connection;
+    b.classList.toggle('tb-bad', !on);
+    b.innerHTML = icon(on ? 'wifi' : 'wifi-off');
+    b.dataset.state = on ? 'online' : 'offline';
+    const extra = on && conn && conn.effectiveType ? ' (' + conn.effectiveType + (conn.downlink ? ', ~' + conn.downlink + ' Mbps' : '') + ')' : '';
+    b.title = (on ? 'Online' + extra : 'Offline') + ' - click to toggle online/offline mode';
+    b.setAttribute('aria-label', b.title);
+    if (infoOpen()) fillInfo();
+  }
+  taskbarRefreshNet = refreshNet;
+  window.addEventListener('online', refreshNet); window.addEventListener('offline', refreshNet);
+  try { if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', refreshNet); } catch(e){}
+  $('tb-net').addEventListener('click', () => { const b = $('net-toggle-btn'); if (b) b.click(); });
+
+  let batt = null;
+  function refreshBatt(){
+    const item = $('tb-batt-item'), b = $('tb-batt');
+    const show = !!(batt && tbCfg.battery && typeof batt.level === 'number');
+    item.hidden = !show; if (!show) return;
+    const pct = Math.round(batt.level * 100);
+    b.innerHTML = icon(batt.charging ? 'zap' : 'battery') + '<span class="tb-batt-txt">' + pct + '%</span>';
+    b.classList.toggle('tb-bad', !batt.charging && pct <= 15);
+    b.classList.toggle('tb-good', !!batt.charging);
+    b.dataset.level = String(pct); b.dataset.charging = batt.charging ? '1' : '0';
+    b.title = 'Battery ' + pct + '%' + (batt.charging ? ', charging' : ', on battery');
+    b.setAttribute('aria-label', b.title);
+  }
+  try {
+    if (typeof navigator.getBattery === 'function'){
+      navigator.getBattery().then(bt => {
+        batt = bt;
+        ['levelchange', 'chargingchange'].forEach(ev => { try { bt.addEventListener(ev, refreshBatt); } catch(e){} });
+        refreshBatt();
+      }).catch(() => {});
+    }
+  } catch(e){}
+
+  function refreshPerf(){
+    const on = html.classList.contains('perf-mode'), b = $('tb-perf');
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.title = 'Performance mode: ' + (on ? 'on' : 'off') + ' - click to turn ' + (on ? 'off' : 'on');
+    b.setAttribute('aria-label', b.title);
+  }
+  $('tb-perf').addEventListener('click', () => { applyPerfMode(!html.classList.contains('perf-mode'), true); studioEmit(); });
+
+  function refreshTheme(){
+    const day = currentTheme === 'day', b = $('tb-theme');
+    b.innerHTML = icon(day ? 'sun' : 'moon', day ? '' : 'icon-fill');
+    b.dataset.theme = currentTheme;
+    b.title = (day ? 'Day' : 'Night') + ' theme - click for ' + (day ? 'Night' : 'Day');
+    b.setAttribute('aria-label', b.title);
+  }
+  $('tb-theme').addEventListener('click', () => { applyTheme(currentTheme === 'day' ? 'night' : 'day'); settingsSet(THEME_KEY, currentTheme); studioEmit(); });
+  // applyTheme / applyPerfMode both emit this, so the tray follows Settings, Appearance, Ctrl+K and shortcuts.
+  document.addEventListener('spacepad:settings', () => { refreshTheme(); refreshPerf(); syncInset(); if (infoOpen()) fillInfo(); });
+
+  /* ---------- Optional FPS sampler (default off; rAF only while shown + visible) ---------- */
+  let fpsRaf = 0, fpsTimer = 0, frames = 0;
+  function syncFps(){
+    const want = tbCfg.fps && tbCfg.perf && !document.hidden && tb.isConnected;
+    const t = tb.querySelector('.tb-fps-txt');
+    if (want && !fpsRaf){
+      frames = 0;
+      const loop = () => { frames++; fpsRaf = requestAnimationFrame(loop); };
+      fpsRaf = requestAnimationFrame(loop);
+      fpsTimer = setInterval(() => {
+        const f = frames; frames = 0;
+        t.textContent = f + ' fps'; t.hidden = false;
+        $('tb-perf').dataset.fps = String(f);
+        $('tb-perf').classList.toggle('tb-bad', f < 30);
+        $('tb-perf').title = 'Performance mode: ' + (html.classList.contains('perf-mode') ? 'on' : 'off') + ' - ' + f + ' fps (' + (f >= 50 ? 'smooth' : f >= 30 ? 'ok' : 'lagging') + ')';
+      }, 1000);
+    } else if (!want){
+      if (fpsRaf){ cancelAnimationFrame(fpsRaf); fpsRaf = 0; }
+      if (fpsTimer){ clearInterval(fpsTimer); fpsTimer = 0; }
+      t.hidden = true; $('tb-perf').classList.remove('tb-bad'); delete $('tb-perf').dataset.fps; refreshPerf();
+    }
+  }
+
+  /* ---------- Auto-hide ---------- */
+  let hoverCheck = null, revealed = false, forceReveal = false;
+  function reveal(on){
+    if (!html.classList.contains('tb-autohide')) return;
+    const want = on || forceReveal || openPop !== null || !!tb.querySelector(':focus-visible');
+    revealed = !!want; tb.classList.toggle('tb-reveal', revealed);
+  }
+  function onMove(e){
+    const near = e.clientY >= window.innerHeight - 6;
+    const over = revealed && e.clientY >= window.innerHeight - (tb.getBoundingClientRect().height + 8);
+    forceReveal = near || over;
+    reveal(forceReveal);
+  }
+  tb.addEventListener('focusin', () => reveal(true));
+  tb.addEventListener('focusout', () => setTimeout(() => { forceReveal = false; reveal(false); }, 0));
+  document.addEventListener('mouseleave', () => { forceReveal = false; reveal(false); });
+  function setAutohide(on){
+    const was = html.classList.contains('tb-autohide');
+    html.classList.toggle('tb-autohide', on);
+    if (on && !hoverCheck){ hoverCheck = onMove; document.addEventListener('mousemove', hoverCheck, { passive: true }); }
+    if (!on && hoverCheck){ document.removeEventListener('mousemove', hoverCheck); hoverCheck = null; forceReveal = false; }
+    tb.classList.remove('tb-reveal'); revealed = false;
+    syncInset();
+    if (was !== on) window.dispatchEvent(new Event('resize')); // windows re-clamp into the new free space
+  }
+
+  /* ---------- Apply all options ---------- */
+  const ITEM = { perf: 'tb-perf-item', net: 'tb-net-item', info: 'tb-info-item', sticky: 'tb-sticky-item', theme: 'tb-theme-item', clock: 'tb-clock-item', corner: 'tb-corner-item' };
+  function apply(){
+    tb.classList.toggle('tb-icons-only', !tbCfg.labels);
+    $('tb-start').hidden = !tbCfg.start;
+    Object.keys(ITEM).forEach(k => { $(ITEM[k]).hidden = !tbCfg[k]; });
+    refreshBatt();
+    if (!tbCfg.info || !tbCfg.clock) { if ((openPop === 'info' && !tbCfg.info) || (openPop === 'clock' && !tbCfg.clock)) closePop(); }
+    setAutohide(tbCfg.autohide);
+    refreshNet(); refreshPerf(); refreshTheme();
+    renderClock(); scheduleClock(); syncFps();
+    syncSettingsUi();
+    syncInset();
+  }
+
+  /* ---------- Settings → Taskbar group ---------- */
+  const OPTS = [
+    ['Layout', [
+      ['start', 'Launcher button', 'The command-palette button at the far left.'],
+      ['labels', 'Show window names', 'Off = icon-only window buttons (narrow screens always collapse to icons).'],
+      ['autohide', 'Auto-hide taskbar', 'Slides away until the pointer touches the bottom edge; windows then use the space.']
+    ]],
+    ['Clock', [
+      ['clock', 'Show clock', 'Click it for a calendar popover.'],
+      ['seconds', 'Show seconds', 'Updates every second instead of every minute.'],
+      ['h24', '24-hour time', 'Off = 12-hour with AM/PM.'],
+      ['date', 'Show date', 'Date beneath the time.'],
+      ['weekday', 'Show weekday', 'Include the day name in the date.']
+    ]],
+    ['System tray', [
+      ['net', 'Network status', 'Online / offline; click to toggle online mode.'],
+      ['battery', 'Battery', 'Shown only where the browser reports a battery.'],
+      ['perf', 'Performance mode button', 'Click to toggle Performance mode (same switch as Appearance).'],
+      ['fps', 'Live FPS readout', 'Next to the performance button. Costs a little: samples frames only while shown.'],
+      ['theme', 'Day / Night button', 'Sun / moon toggle.'],
+      ['info', 'Session info button', 'Windows, sticky notes, uptime, memory, CPU cores.'],
+      ['sticky', 'New sticky note button', 'Drops a sticky note in the middle of the screen.'],
+      ['corner', 'Show-desktop corner', 'The thin button at the far right edge.']
+    ]]
+  ];
+  (function buildSettings(){
+    const card = document.createElement('div');
+    card.className = 'settings-card'; card.id = 'settings-taskbar';
+    let h = '<h3>' + icon('monitor') + ' Taskbar</h3>' +
+      '<div class="settings-row-desc" style="margin-bottom:4px;">The bar at the bottom of the screen: open windows on the left, clock and tray on the right. Accent, corner roundness and density from Appearance apply to it.</div>';
+    OPTS.forEach(g => {
+      h += '<h4 style="margin:12px 0 0; font-size:12px; color:var(--text-dim);">' + g[0] + '</h4>';
+      g[1].forEach(o => {
+        h += '<div class="settings-row"><div><div class="settings-row-label">' + o[1] + '</div><div class="settings-row-desc">' + o[2] + '</div></div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="tbs-' + o[0] + '" data-tb="' + o[0] + '" aria-label="' + o[1] + '"><span class="toggle-track"></span></label></div>';
+      });
+    });
+    h += '<div class="settings-row"><div><div class="settings-row-label">Reset taskbar</div><div class="settings-row-desc">Back to the defaults. Position is fixed at the bottom.</div></div>' +
+      '<button type="button" class="ghost-btn" id="tbs-reset">Reset</button></div>';
+    card.innerHTML = h;
+    const after = $('settings-appearance');
+    after.parentNode.insertBefore(card, after.nextSibling);
+    card.addEventListener('change', (e) => { const k = e.target && e.target.dataset && e.target.dataset.tb; if (k) taskbarSet(k, e.target.checked); });
+    $('tbs-reset').addEventListener('click', () => { taskbarReset(); showToast('Taskbar settings reset.'); });
+  })();
+  function syncSettingsUi(){
+    Object.keys(TB_DEFAULTS).forEach(k => { const c = $('tbs-' + k); if (c) c.checked = !!tbCfg[k]; });
+    ['seconds', 'h24', 'date', 'weekday'].forEach(k => { const c = $('tbs-' + k); if (c) c.disabled = !tbCfg.clock; });
+    const f = $('tbs-fps'); if (f) f.disabled = !tbCfg.perf;
+  }
+
+  // Stargazing-only tabs remove #taskbar entirely; nothing else needs to be told.
+  tbReady = true;
+  apply(); render();
+})();
 
 // Apply the saved startup screen now that every view and its setup
 // exists. Defaults to the Desktop screen for anyone who hasn't picked a
