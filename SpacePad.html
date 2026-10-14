@@ -1451,7 +1451,7 @@
   .chaos-prog { height: 8px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--border); overflow: hidden; margin: 6px 0 8px; }
   .chaos-prog > div { height: 100%; width: 0; background: var(--accent); }
   /* ---- Chaos window (the Chaos app) ---- */
-  #view-chaos .cx-hero { text-align: center; }
+  #view-chaos .cx-hero { text-align: center; position: relative; }
   .cx-bigwrap { position: relative; width: 176px; height: 176px; margin: 6px auto 4px; }
   .cx-bigwrap::after { content: ''; position: absolute; inset: 14px; border-radius: 50%; border: 3px solid var(--accent); opacity: 0; pointer-events: none; animation: cxPulse 2.4s ease-out infinite; }
   @keyframes cxPulse { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(1.28); opacity: 0; } }
@@ -1473,9 +1473,66 @@
   .cx-meter { flex: 1; min-width: 110px; height: 10px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--border); overflow: hidden; }
   .cx-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent)); transition: width .4s ease; }
   .cx-meter.full i { background: linear-gradient(90deg, #ff6b6b, #ff2d55); }
-  .cx-red { border: 1px solid var(--border); background: var(--panel-2); color: var(--text-dim); border-radius: 8px; padding: 6px 12px; font: 800 12px/1 inherit; letter-spacing: .08em; cursor: not-allowed; opacity: .55; }
-  .cx-red.ready { background: #e5484d; border-color: #e5484d; color: #fff; cursor: pointer; opacity: 1; animation: cxRed 1.1s ease-in-out infinite; }
-  .cx-red:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cx-prl { margin-top: 12px; text-align: left; padding: 0 14px 2px; container-type: inline-size; }
+  .cx-prl-top { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; margin: 0 -14px; padding: 0 14px; }
+  .cx-prl-roll { font-weight: 700; color: var(--text); }
+  .cx-prl-track { position: relative; height: 18px; margin-top: 4px; }
+  .cx-prl-rail { position: absolute; left: 0; right: 0; top: 5px; height: 8px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--border); overflow: hidden; }
+  .cx-prl-fill { position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--accent-cyan), var(--accent)); transition: transform .3s ease; }
+  .cx-prl-seg { position: absolute; top: 0; bottom: 0; left: 0; width: 10%; background: color-mix(in srgb, var(--accent) 24%, transparent); }
+  .cx-prl-seg i { position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(0); background: var(--accent); opacity: .9; transition: transform .3s ease; }
+  .cx-prl-tick { position: absolute; top: 2px; width: 2px; height: 14px; margin-left: -1px; border-radius: 1px; background: var(--text-dim); opacity: .55; }
+  .cx-prl-tick.passed { background: var(--accent); opacity: 1; }
+  .cx-prl-tick.next { width: 4px; margin-left: -2px; top: 0; height: 18px; border-radius: 2px; background: var(--accent-cyan); opacity: 1; box-shadow: 0 0 0 2px var(--panel); }
+  .cx-prl-labels { position: relative; height: 14px; margin-top: 1px; }
+  .cx-prl-lbl { position: absolute; top: 0; transform: translateX(-50%); font-size: 10px; line-height: 14px; color: var(--text-dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .cx-prl-lbl.passed { color: var(--text); }
+  .cx-prl-lbl.next { color: var(--accent); font-weight: 800; }
+  .cx-prl-armed { margin-top: 6px; font-size: 11.5px; color: var(--accent); }
+  .cx-prl-track { outline: none; border-radius: 6px; }
+  .cx-prl-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .cx-prl-tick[data-at="100"] { width: 4px; margin-left: -4px; height: 16px; top: 1px; border-radius: 2px; background: var(--accent); opacity: .85; }
+  .cx-prl-tick[data-at="100"].passed { background: var(--accent-cyan); opacity: 1; }
+  .cx-prl-marker { position: absolute; top: 1px; left: 0; width: 12px; height: 16px; margin-left: -6px; border-radius: 5px; background: var(--text); border: 2px solid var(--accent); box-sizing: border-box; pointer-events: none; transition: left .3s ease; z-index: 2; }
+  .cx-prl-tip { position: absolute; bottom: calc(100% + 6px); transform: translateX(-50%); z-index: 4; background: var(--panel-3); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 5px 9px; font-size: 11.5px; line-height: 1.35; width: max-content; max-width: min(260px, 90cqw); text-align: center; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+  .cx-prl-tip[hidden] { display: none; }
+  @container (max-width: 420px) { .cx-prl-lbl[data-at="10"], .cx-prl-lbl[data-at="30"], .cx-prl-lbl[data-at="50"], .cx-prl-lbl[data-at="70"], .cx-prl-lbl[data-at="90"] { display: none; } }
+  @container (max-width: 250px) { .cx-prl-lbl[data-at="20"], .cx-prl-lbl[data-at="40"], .cx-prl-lbl[data-at="60"], .cx-prl-lbl[data-at="80"] { display: none; } .cx-prl-lbl[data-at="50"] { display: block; } }
+  .cx-banner { position: absolute; z-index: 3; left: 50%; top: 10px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 10px; border-radius: 99px; background: var(--panel-3); color: var(--text); border: 1px solid var(--accent); font: 700 13px/1 inherit; white-space: nowrap; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+  .cx-banner[hidden] { display: none; }
+  .cx-banner .icon { width: 18px; height: 18px; color: var(--accent); }
+  .cx-banner.cx-banner-in { animation: cxBannerIn .32s cubic-bezier(.16,1,.3,1); }
+  @keyframes cxBannerIn { from { opacity: 0; transform: translateX(-50%) scale(.82); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
+  html.reduce-motion .cx-banner.cx-banner-in, html.perf-mode .cx-banner.cx-banner-in, html.reduce-motion .cx-prl-marker, html.perf-mode .cx-prl-marker { animation: none; transition: none; }
+  @media (prefers-reduced-motion: reduce) { .cx-banner.cx-banner-in { animation: none; } .cx-prl-marker { transition: none; } }
+  .cx-roll-det { margin-top: 2px; } .cx-roll-det > summary { cursor: pointer; font-size: 12px; color: var(--text-dim); padding: 2px 0 6px; } .cx-roll-det > summary:hover { color: var(--text); }
+  .cx-pr { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); text-align: left; }
+  .cx-pr-head { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .cx-pr-head h4 { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); }
+  .cx-pr-state { font-size: 11.5px; color: var(--text-dim); }
+  .cx-x3 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text-dim); font: 800 13px/1 inherit; letter-spacing: .04em; cursor: not-allowed; opacity: .6; }
+  .cx-x3 .icon { width: 18px; height: 18px; }
+  .cx-x3.ready { background: #e5484d; border-color: #e5484d; color: #fff; cursor: pointer; opacity: 1; animation: cxRed 1.1s ease-in-out infinite; }
+  .cx-x3:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cx-pr-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 8px; }
+  .cx-special { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; }
+  .cx-special:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .cx-roll-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cx-roll-ico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--border); color: var(--accent); flex-shrink: 0; }
+  .cx-roll-ico .icon { width: 22px; height: 22px; }
+  .cx-roll-main { flex: 1; min-width: 150px; }
+  .cx-roll-name { font-weight: 700; font-size: 14px; }
+  .cx-roll-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .cx-roll-prog { font: 700 13px/1 inherit; font-variant-numeric: tabular-nums; padding: 6px 10px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--border); }
+  .cx-roll-bar { height: 6px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--border); overflow: hidden; margin: 10px 0 8px; }
+  .cx-roll-bar i { display: block; height: 100%; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--accent-cyan), var(--accent)); transition: transform .2s ease; }
+  .cx-roll-kids { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 5px; max-height: 118px; overflow-y: auto; }
+  .cx-roll-kids li { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 8px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--border); max-width: 100%; }
+  .cx-roll-kids li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cx-roll-kids .icon { width: 13px; height: 13px; }
+  .cx-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .cx-history .cx-h-roll summary { cursor: pointer; font-weight: 600; }
+  .cx-history .cx-h-kids { display: block; color: var(--text-dim); font-size: 11.5px; margin-top: 2px; line-height: 1.45; }
   @keyframes cxRed { 0%, 100% { box-shadow: 0 0 0 0 rgba(229,72,77,.55); } 50% { box-shadow: 0 0 0 7px rgba(229,72,77,0); } }
   .cx-result { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
   .cx-r-emoji { font-size: 38px; line-height: 1.1; }
@@ -1483,7 +1540,7 @@
   .cx-r-name { font-weight: 700; font-size: 14px; }
   .cx-r-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin-top: 2px; overflow-wrap: anywhere; white-space: pre-line; }
   .cx-r-next { font-size: 11.5px; color: var(--accent); margin-top: 6px; }
-  .cx-undos { flex-basis: 100%; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+  .cx-undos { flex-basis: 100%; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; max-height: 210px; overflow-y: auto; }
   .cx-undos li { display: flex; align-items: center; gap: 8px; font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 4px 4px 4px 10px; }
   .cx-undos li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cx-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
@@ -1501,9 +1558,10 @@
   #view-chaos select { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 12.5px; min-width: 0; }
   @media (max-width: 520px) { .studio-view#view-chaos { padding: 16px 12px 48px; } }
   /* quiet versions: Reduce motion / Performance mode */
-  html.reduce-motion .cx-bigwrap::after, html.perf-mode .cx-bigwrap::after, html.reduce-motion .cx-red.ready, html.perf-mode .cx-red.ready { animation: none; }
+  html.reduce-motion .cx-bigwrap::after, html.perf-mode .cx-bigwrap::after, html.reduce-motion .cx-x3.ready, html.perf-mode .cx-x3.ready { animation: none; }
+  html.reduce-motion .cx-prl-fill, html.perf-mode .cx-prl-fill, html.reduce-motion .cx-prl-seg i, html.perf-mode .cx-prl-seg i, html.reduce-motion .cx-roll-bar i, html.perf-mode .cx-roll-bar i { transition: none; }
   html.reduce-motion .cx-big, html.perf-mode .cx-big, html.reduce-motion .cx-meter i, html.perf-mode .cx-meter i { transition: none; }
-  @media (prefers-reduced-motion: reduce) { .cx-bigwrap::after, .cx-red.ready { animation: none; } .cx-big, .cx-meter i { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .cx-bigwrap::after, .cx-x3.ready { animation: none; } .cx-big, .cx-meter i, .cx-prl-fill, .cx-prl-seg i, .cx-roll-bar i { transition: none; } }
 
   /* ---- Chaos popup card (tips, roasts, jokes, achievements...) ---- */
   .chaos-pop {
@@ -2669,6 +2727,223 @@
   #sp-lock-btn:hover:not(:disabled) { filter: brightness(1.08); }
   #sp-lock-btn:disabled { opacity: .6; cursor: progress; }
   #sp-lock button:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+
+  /* =========================================================================
+     DAY THEME: black buttons, blue chrome.
+     Static CSS only (no animation, no filter, no backdrop-filter); Night is untouched because every rule starts with
+     html[data-theme="day"]:not(.day-plain).
+     Variables (all defined here, so the whole look is adjustable from one place):
+       --day-chrome*      the blue chrome: top bar, window title bars, taskbar, menu / popup headers, selected states
+       --day-btn-*        near-black buttons (white text and icons)
+       --day-focus*       focus rings (blue on light surfaces, white on blue chrome and black buttons over blue)
+     ACCENT DECISION: in Day the chrome stays blue and the buttons stay black whatever accent color is picked. The accent
+     (Appearance / Settings / Customize) keeps driving secondary highlights: Rainbow / accent icon colors, sticky notes,
+     brand dot glow, swatches and the accent-tinted extras (not chrome). Every blue pairs with white text at 4.5:1 or better.
+     Exceptions that stay as they were on purpose: color swatches (accent, wallpaper), wallpaper thumbnails, desktop icons,
+     menu rows, naked icon buttons (editor tab close, find bar close...), toggle tracks and text inputs. Selected
+     chips / segmented choices use blue instead of black.
+     ========================================================================= */
+  html[data-theme="day"]:not(.day-plain) {
+    --day-chrome: #1f5fd6;          /* solid blue (white text 5.7:1) */
+    --day-chrome-hi: #2a6df0;       /* gradient top (white text 4.6:1) */
+    --day-chrome-lo: #1d5bd1;       /* gradient bottom (6.0:1) */
+    --day-chrome-deep: #1a4fb8;     /* taskbar bottom, pressed (7.4:1) */
+    --day-chrome-text: #ffffff;
+    --day-chrome-muted-hi: #5b6f99; /* title bars of windows that are not focused (white 5.0:1) */
+    --day-chrome-muted-lo: #52678f; /* (5.7:1) */
+    --day-chrome-edge: #123a8c;
+    --day-chrome-bar: #2160dc;      /* taskbar gradient top */
+    --day-chrome-muted-edge: #3f5278;
+    --day-chrome-sel: #0c2f7a;      /* selected item sitting on blue chrome (dark blue + white outline) */
+    --day-tint: #e4edff;            /* light-blue hover / selected row on light surfaces (blue text on it 5.1:1) */
+    --day-link: #1f5fd6;
+    --day-btn-bg: #111218;
+    --day-btn-hover: #272a36;
+    --day-btn-active: #05060a;
+    --day-btn-text: #ffffff;
+    --day-btn-border: #3b3f50;
+    --day-btn-off-bg: #2c2e37;
+    --day-btn-off-text: #a9adbd;
+    --day-focus: #1f6feb;
+    --day-focus-on-chrome: #ffffff;
+  }
+
+  .ap-day-note, .ap-day-row { display: none; }
+  html[data-theme="day"] .ap-day-note { display: block; }
+  html[data-theme="day"] .ap-day-row { display: flex; }
+  /* ---- 1. Black buttons ---- */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(
+    .ghost-btn, label.ghost-btn, #fileMenuBtn, #pyFileMenuBtn, #setFontSizeDown, #setFontSizeUp, header > button, header > .dropdown > button, .dropdown-toggle, .tb-btn, .win-titlebar button,
+    .cx-x3, .cx-combo-btn, .cx-big, button.primary, .net-popup button:not(.cmdk-item):not(.accent-swatch), .net-cancel, .net-confirm,
+    .conv-chip, .ap-mini-btn, .sp-mini-btn, .toast-action, .chaos-pop .cp-btn, .tb-cal-head button, .tb-pop .tb-today,
+    .cust-preset-btn, .cust-custom-del, .store-item-btn, .tool-url-qdel, .tb-chip-x, #sp-lock-btn, .cfw-bar button, .chaos-modal .cm-row button, .chaos-modal .cm-card button:not(.cc-grid button)
+  ) {
+    background: var(--day-btn-bg); color: var(--day-btn-text); border-color: var(--day-btn-border);
+  }
+  /* buttons that have no border of their own get a hairline instead (no layout change) */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.cx-big, #sp-lock-btn, .net-popup button:not(.cmdk-item):not(.accent-swatch), .net-confirm, button.primary) { box-shadow: inset 0 0 0 1px var(--day-btn-border); }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(
+    .ghost-btn, label.ghost-btn, #fileMenuBtn, #pyFileMenuBtn, #setFontSizeDown, #setFontSizeUp, header > button, header > .dropdown > button, .dropdown-toggle, .tb-btn, .win-titlebar button,
+    .cx-x3.ready, .cx-combo-btn, .cx-big, button.primary, .net-popup button:not(.cmdk-item):not(.accent-swatch), .net-cancel, .net-confirm,
+    .conv-chip, .ap-mini-btn, .sp-mini-btn, .toast-action, .chaos-pop .cp-btn, .tb-cal-head button, .tb-pop .tb-today,
+    .cust-preset-btn, .cust-custom-del, .store-item-btn, .tool-url-qdel, .tb-chip-x, #sp-lock-btn, .cfw-bar button
+  ):hover:not(:disabled) { background: var(--day-btn-hover); color: var(--day-btn-text); border-color: #5b6178; filter: none; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(
+    .ghost-btn, label.ghost-btn, #fileMenuBtn, #pyFileMenuBtn, #setFontSizeDown, #setFontSizeUp, header > button, header > .dropdown > button, .dropdown-toggle, .tb-btn, .win-titlebar button,
+    .cx-x3.ready, .cx-combo-btn, .cx-big, button.primary, .net-popup button:not(.cmdk-item):not(.accent-swatch), .net-cancel, .net-confirm,
+    .conv-chip, .ap-mini-btn, .sp-mini-btn, .toast-action, .chaos-pop .cp-btn, .store-item-btn, #sp-lock-btn
+  ):active:not(:disabled) { background: var(--day-btn-active); }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.ghost-btn, header > button, header > .dropdown > button, .dropdown-toggle, .tb-btn, .cx-x3, .cx-combo-btn, .cx-big, button.primary, .net-popup button, .conv-chip, #sp-lock-btn, .win-titlebar button, .store-item-btn):disabled {
+    background: var(--day-btn-off-bg); color: var(--day-btn-off-text); border-color: var(--day-btn-off-bg); opacity: 1; box-shadow: none; cursor: not-allowed;
+  }
+  /* icons inside black buttons are white (inherit) */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.ghost-btn, header > button, .dropdown-toggle, .cx-x3, .cx-big, .win-titlebar button, .store-item-btn, #sp-lock-btn) .icon { color: inherit; }
+  html[data-theme="day"]:not(.day-plain):root header > button.chaos-btn { color: #fff; opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root .tb-btn.tb-good { color: #7ee7ff; }
+  html[data-theme="day"]:not(.day-plain):root .tb-btn.tb-bad { color: #ff9db5; }
+  html[data-theme="day"]:not(.day-plain):root #tb-start { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .tb-btn .tb-date { color: #c9d3f0; }
+  html[data-theme="day"]:not(.day-plain):root .win-titlebar .win-close:hover { background: #8c1d3a !important; border-color: #ff9db5 !important; color: #fff !important; }
+  /* inline-styled buttons (primary actions, Cancel, Reset to default) carry their colors in a style attribute: only !important can beat that */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(button.primary, .ghost-btn.primary, .net-cancel, #custReset)[style] { background: var(--day-btn-bg) !important; color: var(--day-btn-text) !important; border-color: var(--day-btn-border) !important; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(button.primary, .ghost-btn.primary, .net-cancel, #custReset)[style]:hover:not(:disabled) { background: var(--day-btn-hover) !important; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(button, label).ghost-btn[style*="--error"], html[data-theme="day"]:not(.day-plain):root .net-popup button[style*="--error"] { color: #ffb3c4 !important; border-color: #ff6b8a !important; background: var(--day-btn-bg); }
+  /* lock screen button (an id rule in the base CSS) and the taskbar clock text */
+  html[data-theme="day"]:not(.day-plain):root #sp-lock-btn { background: var(--day-btn-bg); color: var(--day-btn-text); box-shadow: inset 0 0 0 1px var(--day-btn-border); }
+  html[data-theme="day"]:not(.day-plain):root #sp-lock-btn:hover:not(:disabled) { background: var(--day-btn-hover); filter: none; }
+  html[data-theme="day"]:not(.day-plain):root #sp-lock-btn:active:not(:disabled) { background: var(--day-btn-active); }
+  html[data-theme="day"]:not(.day-plain):root #sp-lock-btn:disabled { background: var(--day-btn-off-bg); color: var(--day-btn-off-text); opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root #tb-clock, html[data-theme="day"]:not(.day-plain):root #tb-clock .tb-time { color: #fff; }
+  /* a destructive choice stays black with a red edge so it still reads as the dangerous one */
+  html[data-theme="day"]:not(.day-plain):root .ghost-btn.danger, html[data-theme="day"]:not(.day-plain):root .net-popup .danger, html[data-theme="day"]:not(.day-plain):root .net-popup button[data-danger] { border-color: #ff6b8a; color: #ffd0da; }
+
+  /* selected / on states use blue (never black) */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.cust-theme-btn.active, .ghost-btn.active, .ghost-btn[aria-pressed="true"], .conv-chip.active, .cx-chip[aria-pressed="true"]):not(:disabled) {
+    background: var(--day-chrome); color: #fff; border-color: var(--day-chrome-edge);
+  }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.cust-theme-btn.active, .ghost-btn.active, .ghost-btn[aria-pressed="true"], .conv-chip.active, .cx-chip[aria-pressed="true"]):hover:not(:disabled) { background: var(--day-chrome-hi); color: #fff; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.cx-chip[aria-pressed="true"]) small { opacity: .85; }
+  html[data-theme="day"]:not(.day-plain):not(#d) .tb-btn[aria-expanded="true"], html[data-theme="day"]:not(.day-plain):not(#d) .tb-btn.on { background: var(--day-chrome-sel); border-color: #fff; color: #fff; }
+
+  /* focus rings */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(button, a, input, select, textarea, [tabindex], summary):focus-visible { outline: 2px solid var(--day-focus); outline-offset: 2px; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(header, #taskbar, .win-titlebar) :where(button, a, [tabindex]):focus-visible { outline: 2px solid var(--day-focus-on-chrome); outline-offset: -2px; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.cx-big):focus-visible { outline: 3px solid var(--day-focus); outline-offset: 4px; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select):focus { border-color: var(--day-focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--day-focus) 22%, transparent); }
+
+  /* ---- 2. Blue chrome ---- */
+  html[data-theme="day"]:not(.day-plain):root header {
+    background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: var(--day-chrome-text);
+    border-bottom: 1px solid var(--day-chrome-edge); box-shadow: 0 2px 10px color-mix(in srgb, var(--day-chrome-edge) 30%, transparent);
+  }
+  html[data-theme="day"]:not(.day-plain):root header .brand { color: var(--day-chrome-text); }
+  html[data-theme="day"]:not(.day-plain):root header .brand .dot { background: #fff; box-shadow: 0 0 6px #fff; }
+  html[data-theme="day"]:not(.day-plain):root header .status { background: color-mix(in srgb, var(--day-chrome-sel) 55%, transparent); border-color: rgba(255,255,255,.3); color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root header .dropdown-toggle.open { background: var(--day-chrome-sel); border-color: #fff; color: #fff; }
+
+  html[data-theme="day"]:not(.day-plain):root .win-titlebar {
+    background: linear-gradient(180deg, var(--day-chrome-muted-hi), var(--day-chrome-muted-lo)); border-bottom: 1px solid var(--day-chrome-muted-edge); color: #fff;
+  }
+  html[data-theme="day"]:not(.day-plain):root .app-window.win-focused .win-titlebar {
+    background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); border-bottom-color: var(--day-chrome-edge);
+  }
+  html[data-theme="day"]:not(.day-plain):root .app-window.win-focused { border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .win-titlebar .win-title, html[data-theme="day"]:not(.day-plain):root .win-titlebar .win-icon { color: #fff; }
+
+  html[data-theme="day"]:not(.day-plain):root #taskbar {
+    background: linear-gradient(180deg, var(--day-chrome-bar), var(--day-chrome-deep)); border-top: 1px solid var(--day-chrome-edge); box-shadow: 0 -2px 10px color-mix(in srgb, var(--day-chrome-edge) 26%, transparent); color: #fff;
+  }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-sep { background: rgba(255,255,255,.4); }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip { background: var(--day-btn-bg); border-color: var(--day-btn-border); }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip:hover { background: var(--day-btn-hover); border-color: #5b6178; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip-main { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip-icon { color: #9fc3ff; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip::after { background: #b9c4e6; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip.focused { background: var(--day-chrome-sel); border-color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip.focused::after { background: #fff; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar .tb-chip.minimized::after { box-shadow: inset 0 0 0 1px #b9c4e6; }
+  html[data-theme="day"]:not(.day-plain):root #taskbar #tb-corner { border-left-color: rgba(255,255,255,.4); }
+
+  /* menu / popover / modal headers */
+  html[data-theme="day"]:not(.day-plain):root .dropdown-section-label { background: var(--day-chrome); color: #fff; border-radius: 5px; margin: 4px 0 2px; padding: 4px 10px; }
+  html[data-theme="day"]:not(.day-plain):root .dropdown-item:hover, html[data-theme="day"]:not(.day-plain):root #tb-menu button:hover, html[data-theme="day"]:not(.day-plain):root #tb-menu button:focus-visible { background: var(--day-tint); color: var(--day-link); }
+  html[data-theme="day"]:not(.day-plain):root .cmdk-item:hover, html[data-theme="day"]:not(.day-plain):root .cmdk-item.selected { background: var(--day-tint); color: var(--day-link); }
+  html[data-theme="day"]:not(.day-plain):root .cmdk-item .icon { color: var(--day-link); }
+  html[data-theme="day"]:not(.day-plain):root .net-popup { overflow: hidden; border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .net-popup h3 { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; margin: -20px -22px 14px; padding: 11px 22px; text-align: left; }
+  html[data-theme="day"]:not(.day-plain):root .tb-pop { border-color: var(--day-chrome); overflow: hidden; }
+  html[data-theme="day"]:not(.day-plain):root .tb-pop h4 { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; margin: -12px -12px 10px; padding: 7px 12px; }
+  html[data-theme="day"]:not(.day-plain):root .tb-cal .today { background: var(--day-chrome); color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-pop { border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-head { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; padding: 8px 8px 8px 14px; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-head .icon, html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-x { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-x:hover, html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-x:focus-visible { background: rgba(255,255,255,.22); color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-body { padding-top: 10px; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-pop .cp-timer i { background: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .chaos-fake-win .cfw-bar { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; border-bottom-color: var(--day-chrome-edge); }
+  html[data-theme="day"]:not(.day-plain):root .chaos-fake-win .cfw-bar .icon { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-modal .cm-card { border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .chaos-modal .cm-card h3 { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; margin: -16px -18px 10px; padding: 9px 18px; border-radius: 11px 11px 0 0; }
+  html[data-theme="day"]:not(.day-plain):root .chaos-modal .cm-card h3 .icon { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .sp-widget-bar { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; border-bottom-color: var(--day-chrome-edge); }
+  html[data-theme="day"]:not(.day-plain):root .sp-widget-bar button { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .sp-widget-bar button:hover { color: #fff; background: rgba(255,255,255,.22); }
+  html[data-theme="day"]:not(.day-plain):root .toast { border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .toast .icon { color: var(--day-chrome); }
+
+  /* links, sliders, toggles, progress */
+  html[data-theme="day"]:not(.day-plain):root a:not([class]) { color: var(--day-link); }
+  html[data-theme="day"]:not(.day-plain):root input[type="range"], html[data-theme="day"]:not(.day-plain):root input[type="checkbox"], html[data-theme="day"]:not(.day-plain):root input[type="radio"] { accent-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .toggle-switch input:checked + .toggle-track { background: color-mix(in srgb, var(--day-chrome) 30%, transparent); border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .toggle-switch input:checked + .toggle-track::before { background: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .cx-meter i, html[data-theme="day"]:not(.day-plain):root .cx-prl-fill, html[data-theme="day"]:not(.day-plain):root .cx-roll-bar i { background: linear-gradient(90deg, var(--day-chrome-hi), var(--day-chrome-deep)); }
+  html[data-theme="day"]:not(.day-plain):root .cx-meter.full i { background: linear-gradient(90deg, var(--day-chrome), var(--day-chrome-deep)); box-shadow: 0 0 0 1px var(--day-chrome-edge) inset; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-seg { background: color-mix(in srgb, var(--day-chrome) 20%, transparent); }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-seg i { background: var(--day-chrome); opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-tick { background: #6b7394; opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-tick.passed { background: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-tick.next { background: var(--day-chrome-hi); box-shadow: 0 0 0 2px #fff; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-lbl.next, html[data-theme="day"]:not(.day-plain):root .cx-prl-armed, html[data-theme="day"]:not(.day-plain):root .cx-r-next { color: var(--day-link); }
+  html[data-theme="day"]:not(.day-plain):root .cx-roll-ico { color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .cx-banner { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; border-color: var(--day-chrome-edge); }
+  html[data-theme="day"]:not(.day-plain):root .cx-banner .icon { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-marker { border-color: var(--day-chrome); background: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-tick[data-at="100"], html[data-theme="day"]:not(.day-plain):root .cx-prl-tick[data-at="100"].passed { background: var(--day-chrome-edge); opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-tip { background: var(--day-chrome-sel); color: #fff; border-color: var(--day-chrome-edge); }
+  html[data-theme="day"]:not(.day-plain):root .cx-prl-track:focus-visible { outline-color: var(--day-focus); }
+  html[data-theme="day"]:not(.day-plain):root .cx-bigwrap::after { border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .cx-big { background: radial-gradient(circle at 32% 26%, #2b2e3d, #0b0b0f 68%); color: #fff; box-shadow: 0 0 0 3px var(--day-chrome), 0 8px 24px rgba(20,40,100,.35), inset 0 3px 8px rgba(255,255,255,.12); }
+  html[data-theme="day"]:not(.day-plain):root .cx-big:hover:not(:disabled) { background: radial-gradient(circle at 32% 26%, #3a3e52, #14151d 68%); }
+  html[data-theme="day"]:not(.day-plain):root .cx-x3.ready { animation: none; box-shadow: 0 0 0 3px var(--day-chrome); border-color: var(--day-chrome-hi); }
+  html[data-theme="day"]:not(.day-plain):root .cx-x3:not(.ready) { opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root .cx-special:disabled { opacity: 1; }
+  html[data-theme="day"]:not(.day-plain):root .accent-swatch.active { border-color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .tb-chip-x { color: #fff; }
+
+  /* lock screen */
+  html[data-theme="day"]:not(.day-plain):root .sp-lock-card { border-top: 4px solid var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root #sp-lock-input:focus { border-color: var(--day-focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--day-focus) 25%, transparent); }
+  html[data-theme="day"]:not(.day-plain):root #sp-lock-eye:hover { color: var(--day-chrome); }
+  html[data-theme="day"]:not(.day-plain):root .sp-lock-sky { background-color: transparent; }
+  /* header toolbar bits that were still light, tab strips (Editor / Python) and Settings-style card headers */
+  /* text that carries an inline dim / accent color inside a black button */
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.ghost-btn, button.primary, .store-item-btn) [style*="--text-dim"] { color: #c9cfe6 !important; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(.ghost-btn, button.primary, .store-item-btn) [style*="--accent-cyan"], html[data-theme="day"]:not(.day-plain):not(#d) :where(.ghost-btn, button.primary) .studio-block-ico { color: #7ee7ff !important; }
+  html[data-theme="day"]:not(.day-plain):root .tb-cal-head { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; margin: -12px -12px 8px; padding: 7px 8px; }
+  html[data-theme="day"]:not(.day-plain):root .tb-cal-head button { border-color: rgba(255,255,255,.35); }
+  html[data-theme="day"]:not(.day-plain):root #autorun-wrap { color: #fff; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(#find-replace-btn, header .toolbar > .group > button) { background: var(--day-btn-bg); color: var(--day-btn-text); border-color: var(--day-btn-border); }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(#find-replace-btn, header .toolbar > .group > button):hover:not(:disabled) { background: var(--day-btn-hover); color: var(--day-btn-text); border-color: #5b6178; }
+  html[data-theme="day"]:not(.day-plain):not(#d) :where(#find-replace-btn, header .toolbar > .group > button) .icon { color: inherit; }
+  html[data-theme="day"]:not(.day-plain):root .tabs { background: var(--day-chrome); border-bottom-color: var(--day-chrome-edge); }
+  html[data-theme="day"]:not(.day-plain):root .tab { color: #fff; border-right-color: rgba(255,255,255,.3); }
+  html[data-theme="day"]:not(.day-plain):root .tab:hover { color: #fff; background: rgba(255,255,255,.16); }
+  html[data-theme="day"]:not(.day-plain):root .tab.active, html[data-theme="day"]:not(.day-plain):root .tab.single-tab.active:hover { color: #fff; background: var(--day-chrome-sel); border-bottom-color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .tab[data-lang="html"].active { border-bottom-color: #fff; }
+  html[data-theme="day"]:not(.day-plain):root .tab.single-tab:hover { color: #fff; background: rgba(255,255,255,.16); }
+  html[data-theme="day"]:not(.day-plain):root .settings-card > h3 { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; margin: -16px -18px 12px; padding: 9px 18px; border-radius: calc(var(--card-radius, 12px) - 1px) calc(var(--card-radius, 12px) - 1px) 0 0; }
+  html[data-theme="day"]:not(.day-plain):root .settings-card > h3 .icon { color: #fff; }
+  html.density-compact[data-theme="day"]:not(.day-plain):root .settings-card > h3 { margin: -11px -14px 10px; padding: 7px 14px; }
 </style>
 <script>
 /* SPACEPAD LOCK — early half (runs before the body is parsed, so the desktop
@@ -3942,6 +4217,13 @@
         </div>
         <div class="settings-row">
           <div>
+            <div class="settings-row-label">Day theme: blue bars &amp; black buttons</div>
+            <div class="settings-row-desc">In the Day theme the top bar, window title bars and taskbar are blue and buttons are black. With the default accent (Violet) the bars stay Day blue; pick any other accent and they follow it. Turn this off for the earlier Day look. Night is not affected.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="setDayChrome" aria-label="Day theme: blue bars and black buttons"><span class="toggle-track"></span></label>
+        </div>
+        <div class="settings-row">
+          <div>
             <div class="settings-row-label">Day scenery</div>
             <div class="settings-row-desc">In the Day theme, shows a daytime meadow with grass, flowers and clouds along the bottom of the desktop. It is not shown at night.</div>
           </div>
@@ -4857,6 +5139,14 @@ const ICONS = {
   zap: { svg: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
   lock: { svg: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>' },
   unlock: { svg: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>' },
+  'power-roll': { svg: '<rect x="3" y="3" width="18" height="18" rx="4" ry="4"/><polygon points="13 6 8 13 12 13 11 18 16 11 12 11 13 6"/>' },
+  storm: { svg: '<path d="M18 10a6 6 0 0 0-11.6-1.5A4.5 4.5 0 0 0 7 17h2"/><polyline points="13 12 10 17 14 17 11 22"/><path d="M17 17h1a4 4 0 0 0 .8-7.9"/>' },
+  overhaul: { svg: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="7" cy="18" r="2" fill="currentColor"/>' },
+  double: { svg: '<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>' },
+  surge: { svg: '<polyline points="3 17 8 9 12 14 16 6 21 12"/><line x1="3" y1="21" x2="21" y2="21"/>' },
+  echo: { svg: '<path d="M4 12a8 8 0 0 1 16 0"/><path d="M8 12a4 4 0 0 1 8 0"/><circle cx="12" cy="12" r="1" fill="currentColor"/><path d="M4 18h16"/>' },
+  burst: { svg: '<line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="5" y1="5" x2="8" y2="8"/><line x1="16" y1="16" x2="19" y2="19"/><line x1="5" y1="19" x2="8" y2="16"/><line x1="16" y1="8" x2="19" y2="5"/><circle cx="12" cy="12" r="2"/>' },
+  jackpot: { svg: '<rect x="3" y="5" width="18" height="14" rx="3" ry="3"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="5" x2="15" y2="19"/><polygon points="12 9 12.9 11 15 11.2 13.4 12.6 13.9 14.7 12 13.6 10.1 14.7 10.6 12.6 9 11.2 11.1 11"/>' },
   dice: { svg: '<rect x="3" y="3" width="18" height="18" rx="4" ry="4"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="8.5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8.5" cy="15.5" r="1"/><circle cx="15.5" cy="15.5" r="1"/>' },
   info: { svg: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>' },
   'chevron-left': { svg: '<polyline points="15 18 9 12 15 6"/>' },
@@ -7150,7 +7440,13 @@ function setFocusedTaskbar(name){
   // The richer space scene (nebula glow, planets, galaxy) only shows while
   // Stargazing is the focused app — see #starfield.scene-stargazing.
   document.getElementById('starfield').classList.toggle('scene-stargazing', name === 'stargazing');
+  markFocusedWindow();
   renderWinDock();
+}
+// .win-focused marks the focused window (the Day theme paints its title bar saturated blue, the others muted).
+function markFocusedWindow(){
+  const fk = focusedView && focusedView !== 'desktop' ? winKeyForView(focusedView) : null;
+  Object.keys(appWindows).forEach(k => { const r = appWindows[k]; if (r && r.el) r.el.classList.toggle('win-focused', k === fk); });
 }
 
 // Topmost visible (open and not minimized) window key, or null.
@@ -12221,6 +12517,55 @@ const ACCENT_PRESETS = [
   { name: 'Blue', accent: '#60a5fa', dim: '#1d4ed8', cyan: '#93c5fd' }
 ];
 const ACCENT_KEY = 'spacepad_accent_v1';
+
+/* ---- DAY CHROME: blue bars & black buttons (Day theme only) ----
+   Static CSS in the "DAY THEME" block does the painting; this just decides which blue.
+   - Setting "Day theme: blue bars & black buttons" (memStore, default on). Off adds html.day-plain, which switches the whole
+     block off (the earlier Day look).
+   - Accent rule: with the default accent (Violet) the chrome is the fixed Day blue from the CSS. With any other accent the
+     chrome follows it: the --day-chrome* variables are derived from that accent (darkened until white text on it reaches
+     4.5:1) and set inline on <html>. Choosing Violet again goes back to the Day blue. Buttons are black either way.
+   Night never reads these variables. */
+const DAY_CHROME_KEY = 'spacepad_day_chrome_v1';   // '1' (default) / '0'
+const DAY_CHROME_DEFAULT_ACCENT = 'Violet';
+const DAY_CHROME_VARS = ['--day-chrome', '--day-chrome-hi', '--day-chrome-lo', '--day-chrome-deep', '--day-chrome-bar', '--day-chrome-edge', '--day-chrome-sel',
+  '--day-chrome-muted-hi', '--day-chrome-muted-lo', '--day-chrome-muted-edge', '--day-tint', '--day-link', '--day-focus'];
+function dayChromeOn(){ return settingsGet(DAY_CHROME_KEY, '1') !== '0'; }
+function dayChromeLum(hex){
+  const c = [1, 3, 5].map(i => { const v = parseInt(hex.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+const dayChromeContrastWhite = (hex) => 1.05 / (dayChromeLum(hex) + 0.05);
+// Darkens `hex` (towards black) until white text on it reaches `min`:1.
+function dayChromeFit(hex, min){
+  let c = hex;
+  for (let t = 0; t <= 1 && dayChromeContrastWhite(c) < min; t += 0.03) c = mixHex(hex, '#000000', t);
+  return c;
+}
+function dayChromePalette(accent){
+  const chrome = dayChromeFit(accent, 5.2);
+  return {
+    '--day-chrome': chrome, '--day-link': chrome, '--day-focus': chrome,
+    '--day-chrome-hi': dayChromeFit(mixHex(chrome, '#ffffff', 0.1), 4.6), '--day-chrome-lo': mixHex(chrome, '#000000', 0.04),
+    '--day-chrome-bar': dayChromeFit(mixHex(chrome, '#ffffff', 0.05), 4.6), '--day-chrome-deep': mixHex(chrome, '#000000', 0.14),
+    '--day-chrome-edge': mixHex(chrome, '#000000', 0.42), '--day-chrome-sel': mixHex(chrome, '#000000', 0.55),
+    '--day-chrome-muted-hi': dayChromeFit(mixHex(chrome, '#6b7280', 0.62), 4.6), '--day-chrome-muted-lo': dayChromeFit(mixHex(chrome, '#6b7280', 0.72), 5),
+    '--day-chrome-muted-edge': mixHex(chrome, '#1f2937', 0.6), '--day-tint': mixHex(chrome, '#ffffff', 0.9)
+  };
+}
+function dayChromeFollowsAccent(){
+  let v = null; try { v = memStore.getItem(ACCENT_KEY); } catch(e){}
+  return !!v && v !== DAY_CHROME_DEFAULT_ACCENT;
+}
+function dayChromeSync(){
+  const root = document.documentElement, on = dayChromeOn();
+  root.classList.toggle('day-plain', !on);
+  if (on && dayChromeFollowsAccent()){
+    const a = accentFromValue(memStore.getItem(ACCENT_KEY)), pal = dayChromePalette(a.accent);
+    Object.keys(pal).forEach(k => root.style.setProperty(k, pal[k]));
+  } else DAY_CHROME_VARS.forEach(k => root.style.removeProperty(k));
+}
+function dayChromeSet(on){ settingsSet(DAY_CHROME_KEY, on ? '1' : '0'); dayChromeSync(); studioEmit(); }
 const ICON_SIZE_KEY = 'spacepad_icon_size_v1';
 const WALLPAPER_KEY = 'spacepad_wallpaper_v1';
 
@@ -12248,6 +12593,7 @@ function applyAccent(value){
   document.documentElement.style.setProperty('--accent-cyan', a.cyan);
   document.querySelectorAll('.accent-swatch').forEach(btn => btn.classList.toggle('active', btn.dataset.accentName === a.name));
   try { memStore.setItem(ACCENT_KEY, a.key); } catch(e){}
+  dayChromeSync();
   studioEmit();
 }
 (function renderAccentSwatches(){
@@ -15356,6 +15702,14 @@ bindToggle('setAmbientMeteors', AMBIENT_METEORS_KEY, true, (on) => document.docu
   document.addEventListener('spacepad:settings', ui);
   ui();
 })();
+// Day chrome switch (the Appearance app mirrors it)
+(function(){
+  const el = document.getElementById('setDayChrome');
+  function ui(){ el.checked = dayChromeOn(); }
+  el.addEventListener('change', () => dayChromeSet(el.checked));
+  document.addEventListener('spacepad:settings', ui);
+  ui();
+})();
 bindToggle('setCosmicFx', COSMIC_FX_KEY, true, (on) => { cosmicEffectsEnabled = on; });
 bindToggle('setCosmicAuto', COSMIC_AUTO_KEY, false, (on) => {
   cosmicAutoPlay = on;
@@ -15856,7 +16210,10 @@ function sCopy(text, okMsg){
       '<div class="studio-row"><span class="studio-label">Theme</span><button type="button" class="ghost-btn cust-theme-btn" data-theme="night">🌙 Night</button><button type="button" class="ghost-btn cust-theme-btn" data-theme="day">☀️ Day</button></div>' +
       iconColorsControlsHtml('studio') +
       '<div class="studio-row"><span class="studio-label">Accent presets</span><div class="accent-swatch-row" id="ap-accents"></div></div>' +
-      '<div class="studio-row"><span class="studio-label">Custom accent</span><input type="color" id="ap-accent-color" aria-label="Custom accent color"><input type="text" id="ap-accent-hex" size="9" maxlength="7" spellcheck="false" placeholder="#8b7cf6" aria-label="Accent hex"><div class="accent-swatch-row" id="ap-extra-accents"></div></div></div>' +
+      '<div class="studio-row"><span class="studio-label">Custom accent</span><input type="color" id="ap-accent-color" aria-label="Custom accent color"><input type="text" id="ap-accent-hex" size="9" maxlength="7" spellcheck="false" placeholder="#8b7cf6" aria-label="Accent hex"><div class="accent-swatch-row" id="ap-extra-accents"></div></div>' +
+      '<div class="studio-row ap-day-row" id="ap-day-chrome-row"><span class="studio-label">Day: blue bars</span><label class="toggle-switch"><input type="checkbox" id="ap-daychrome" aria-label="Day theme: blue bars and black buttons"><span class="toggle-track"></span></label><span class="studio-sub" style="margin:0;">Same switch as Settings → Appearance.</span></div>' +
+      '<p class="studio-sub ap-day-note" id="ap-day-note" style="margin:2px 0 8px;">Day theme: the top bar, window title bars and taskbar are blue and buttons are black. With the default accent (Violet) the bars stay Day blue. Pick any other accent, preset or custom, and the bars follow it (darkened where needed so white text stays readable). Buttons stay black. Night is not affected.</p>' +
+      '</div>' +
     '<div class="settings-card"><h3>' + icon('layout') + ' Windows</h3>' +
       '<div class="studio-row"><label class="studio-label" for="ap-radius">Corner radius</label><input type="range" id="ap-radius" class="grow" min="0" max="24" step="1"><span class="studio-val" id="ap-radius-val"></span></div>' +
       '<div class="studio-row"><label class="studio-label" for="ap-opacity">Window opacity</label><input type="range" id="ap-opacity" class="grow" min="50" max="100" step="1"><span class="studio-val" id="ap-opacity-val"></span></div>' +
@@ -15894,6 +16251,7 @@ function sCopy(text, okMsg){
     $('ap-accent-color').value = a.accent;
     if (document.activeElement !== $('ap-accent-hex')) $('ap-accent-hex').value = a.accent;
     $('ap-perf').checked = document.documentElement.classList.contains('perf-mode');
+    $('ap-daychrome').checked = dayChromeOn();
     $('ap-motion').checked = document.documentElement.classList.contains('reduce-motion');
     v.querySelectorAll('.cust-theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === currentTheme));
     iconColorsSyncUi();
@@ -15919,6 +16277,7 @@ function sCopy(text, okMsg){
   $('ap-accent-color').addEventListener('input', (e) => applyAccent(e.target.value));
   $('ap-accent-hex').addEventListener('input', (e) => { let h = e.target.value.trim(); if (h && h[0] !== '#') h = '#' + h; if (/^#[0-9a-f]{6}$/i.test(h)) applyAccent(h.toLowerCase()); });
   $('ap-perf').addEventListener('change', (e) => applyPerfMode(e.target.checked, true));
+  $('ap-daychrome').addEventListener('change', (e) => dayChromeSet(e.target.checked));
   $('ap-motion').addEventListener('change', (e) => applyReduceMotion(e.target.checked));
 
   function exportTheme(){
@@ -17215,35 +17574,94 @@ const CHAOS_AUTO_MIN = 5, CHAOS_AUTO_MAX = 60;
 const CHAOS_MAX_OVERLAYS = 6;    // overlays / canvases / modals alive at once; the oldest finishes early beyond this
 const CHAOS_MAX_CANVASES = 3;
 const CHAOS_MAX_RUNNING = 14;    // effects alive at once (any kind)
-const CHAOS_MAX_UNDOS = 24;      // stacked undo rows kept in the result card
+const CHAOS_MAX_UNDOS = 64;      // stacked undo rows kept in the result card
 const chaosRunning = [];         // [{ ctx, eff, res, finish }] oldest first; finish() is idempotent
-let chaosBurstTimer = 0;
 let chaosQueued = null;          // effect id locked in by the slot machine
-let chaosBurst = 0;              // effects still to fire in a BIG RED burst
-let chaosLevel = 0, chaosLevelAt = Date.now(), chaosRedLatched = false; // once full, the meter stays full until BIG RED is used
+let chaosLevel = 0, chaosLevelAt = Date.now(), chaosMeterFull = false; // once full, the meter stays full until a meter power roll is used
+
+/* ---- Power rolls ----
+   A power roll is one press that starts several effects, launched one after another (never all at once), shown as ONE
+   grouped result (name, count, the list of actions, one Undo all) with one summary toast.
+   Sources:
+   1. The Chaos level meter: when it is full, "Chaos x3 Power Roll" (and the specials Chaos Storm, Chaos Overhaul,
+      Double or Nothing) can use it up.
+   2. The roll ladder below. A "roll" is a press of the CHAOS button, the Ctrl+K command "Chaos: fire one now", or one
+      Auto-chaos tick. Rig it (a deliberate demo), the power-roll buttons and the effects inside a power roll are NOT
+      rolls. The cycle is 100 rolls long; the 101st roll is roll 1 again (the lifetime roll total keeps counting).
+      When the position in the cycle reaches a milestone, that roll becomes a power roll with the listed number of
+      effects. Edit this table to change the ladder (each `at` is a roll number within one cycle).
+      Equivalent formula for the default table: at position p (a multiple of 10) the multiplier is p / 2, so 10 gives
+      x5 ... 90 gives x45 and 100 gives x50.
+   3. Random specials (CHAOS_SPECIALS), only on rolls that are not milestones and only when "Special rolls" is on.
+   Safeguards inside one roll: at most one delete-app, one add-app, one theme/accent change, one wallpaper change and one
+   clock change; the usual concurrency caps (the registry finishes older effects early); no toasts from the children. */
+const POWER_ROLL_LADDER = [
+  { at: 10,  n: 5 },  { at: 20, n: 10 }, { at: 30, n: 15 }, { at: 40, n: 20 }, { at: 50, n: 25 },
+  { at: 60,  n: 30 }, { at: 70, n: 35 }, { at: 80, n: 40 }, { at: 90, n: 45 }, { at: 100, n: 50 }
+];
+const CHAOS_ROLL_CYCLE = POWER_ROLL_LADDER[POWER_ROLL_LADDER.length - 1].at;
+const CHAOS_X3 = { n: 3 };       // the meter power roll
+const CHAOS_STORM_COUNT = 8;
+const CHAOS_OVERHAUL_CATS = ['words', 'visual', 'silly', 'windows', 'ui'];
+// Gap between two actions of a cascade: ~140 ms for the small ones, down to ~90 ms at x20; x25 and up use 70 ms down to 40 ms (a x50 starts all of its actions in about 2 s).
+function chaosRollGap(count){
+  const n = Math.max(1, count | 0);
+  if (n >= 25) return Math.max(40, Math.round(70 - (n - 25) * 30 / 25));
+  return Math.max(90, Math.min(140, Math.round(140 - (n - 3) * 50 / 17)));
+}
+// Safeguards inside ONE roll: app-list changes (at most one delete and one add), and one change per shared setting (theme / accent, wallpaper, clock format).
+const CHAOS_ROLL_DELETE = ['delete-app'], CHAOS_ROLL_ADD = ['add-store-app', 'gen-app'];
+const CHAOS_ROLL_ONCE_RES = ['color', 'wallpaper', 'clock'];
+const CHAOS_ROLL_MAX_MODALS = 2;
+const chaosRollName = (n) => 'Chaos x' + n + ' Power Roll';
+// The ladder entry that roll number `pos` (1..cycle, the position inside the cycle) lands on, or null.
+function chaosLadderAt(pos){ return pos > 0 ? (POWER_ROLL_LADDER.find(e => e.at === pos) || null) : null; }
+// Where the ladder stands at cycle position `cycle` (0..cycle length): the next entry and how many rolls away it is.
+// After the last step (position 100) the next roll starts the cycle again.
+function chaosLadderState(cycle){
+  const pos = Math.max(0, Math.min(CHAOS_ROLL_CYCLE, cycle | 0)), base = pos >= CHAOS_ROLL_CYCLE ? 0 : pos;
+  const next = POWER_ROLL_LADDER.find(e => e.at > base);
+  return { pos, next, inRolls: next.at - base };
+}
+// The random specials: each roll that is not a milestone rolls these odds (in this order), when "Special rolls" is on.
+const CHAOS_SPECIALS = [
+  { id: 'jackpot', name: 'Jackpot', icon: 'jackpot', odds: 100, count: 10, desc: 'A cascade of ten actions and a summary card.' },
+  { id: 'burst', name: 'Category Burst', icon: 'burst', odds: 40, count: 5, desc: 'Five actions from one category.' },
+  { id: 'surge', name: 'Chaos Surge', icon: 'surge', odds: 25, count: 2, desc: 'Two actions from one category.' },
+  { id: 'echo', name: 'Echo Roll', icon: 'echo', odds: 30, count: 2, desc: 'A new action, then the previous action again.' }
+];
+const chaosRolls = [];           // power rolls that are still launching: { id, name, count, fired, step, timer, ... }
+let chaosRollSeq = 0, chaosLastRoll = null, chaosDoubleArmed = false;
 let chaosAutoOn = false, chaosNextAuto = 0, chaosClockId = 0;
 let chaosLastCtx = null;         // ctx behind the result card
+let chaosPrevEff = null;         // the effect of the previous single roll (Echo Roll repeats it)
+let chaosBannerTimer = 0;
+let chaosTipAt = 0;              // tracker tooltip: 0 = hidden, else the milestone roll number
 const chaosUndos = [];           // stacked undoable results, newest first: { ctx, u, text, timer }
 const chaosHistory = [];         // session-only: { t, id, icon, label }
 
 function chaosLoadCfg(){
   const raw = sJson(CHAOS_KEY, {});
-  const cfg = { cats: {}, safe: false, interval: 15, total: 0, counts: {} };
+  const cfg = { cats: {}, safe: false, interval: 15, total: 0, rolls: 0, cycle: 0, special: true, counts: {} };
   CHAOS_CATS.forEach(c => { cfg.cats[c.id] = !(raw.cats && raw.cats[c.id] === false); });
   if (!CHAOS_CATS.some(c => cfg.cats[c.id])) CHAOS_CATS.forEach(c => { cfg.cats[c.id] = true; });
   cfg.safe = raw.safe === true;
   cfg.interval = Math.round(sClamp(raw.interval, CHAOS_AUTO_MIN, CHAOS_AUTO_MAX, 15) / 5) * 5;
   cfg.total = Math.max(0, Math.floor(sClamp(raw.total, 0, 1e9, 0)));
+  cfg.rolls = Math.max(0, Math.floor(sClamp(raw.rolls, 0, 1e9, 0)));
+  // position inside the 100-roll cycle: 0 (fresh) .. 100 (the x50 roll was just rolled). Older saves only had `rolls`.
+  cfg.cycle = raw.cycle != null ? Math.floor(sClamp(raw.cycle, 0, CHAOS_ROLL_CYCLE, 0)) : (cfg.rolls % CHAOS_ROLL_CYCLE || (cfg.rolls > 0 ? CHAOS_ROLL_CYCLE : 0));
+  cfg.special = raw.special !== false;
   if (raw.counts && typeof raw.counts === 'object') Object.keys(raw.counts).forEach(k => { const n = Math.floor(+raw.counts[k]); if (n > 0 && /^[a-z0-9-]+$/.test(k)) cfg.counts[k] = Math.min(n, 1e9); });
   return cfg;
 }
 let chaosCfg = chaosLoadCfg();
-function chaosSaveCfg(){ sSave(CHAOS_KEY, { cats: chaosCfg.cats, safe: chaosCfg.safe, interval: chaosCfg.interval, total: chaosCfg.total, counts: chaosCfg.counts }); }
+function chaosSaveCfg(){ sSave(CHAOS_KEY, { cats: chaosCfg.cats, safe: chaosCfg.safe, interval: chaosCfg.interval, total: chaosCfg.total, rolls: chaosCfg.rolls, cycle: chaosCfg.cycle, special: chaosCfg.special, counts: chaosCfg.counts }); }
 // Puts an inline style property back exactly as it was (and drops an empty style attribute again).
 function chaosRestoreStyle(el, prop, prev){ if (prev) el.style.setProperty(prop, prev); else el.style.removeProperty(prop); if (!el.getAttribute('style')) el.removeAttribute('style'); }
 const chaosOnce = (fn) => { let done = false; return function(){ if (done) return; done = true; return fn.apply(this, arguments); }; };
-function chaosLevelNow(){ if (chaosRedLatched) return 100; return Math.max(0, Math.min(100, chaosLevel - (Date.now() - chaosLevelAt) / 1000 * CHAOS_LEVEL_DECAY)); }
-function chaosLevelAdd(n){ chaosLevel = Math.min(100, chaosLevelNow() + n); chaosLevelAt = Date.now(); if (chaosLevel >= 100) chaosRedLatched = true; }
+function chaosLevelNow(){ if (chaosMeterFull) return 100; return Math.max(0, Math.min(100, chaosLevel - (Date.now() - chaosLevelAt) / 1000 * CHAOS_LEVEL_DECAY)); }
+function chaosLevelAdd(n){ chaosLevel = Math.min(100, chaosLevelNow() + n); chaosLevelAt = Date.now(); if (chaosLevel >= 100) chaosMeterFull = true; }
 function chaosWindowOpen(){ const r = appWindows.chaos; return !!(r && r.open); }
 
 // ---- the small card used by tips / roasts / jokes / achievements (one at a time, outlives the effect's ctx) ----
@@ -17317,11 +17735,11 @@ function chaosMakeCtx(){
         if (!ctx.undo) ctx.undo = u;
         if (row) chaosUndoPush(row);
       }
-      showToast(msg, undefined, u, ms);
+      if (!ctx.roll) showToast(msg, undefined, u, ms);   // inside a power roll the roll shows one summary toast instead
       if (ctx.eff) chaosUiRenderResult();
     },
     // Reduce motion / Performance mode: just a toast. Returns true when the caller should stop.
-    calmOnly(name, msg){ if (!ctx.calm) return false; const t = msg || (name + ' was not shown because animations are reduced.'); if (!ctx.desc) ctx.desc = t; showToast(t); if (ctx.eff) chaosUiRenderResult(); return true; },
+    calmOnly(name, msg){ if (!ctx.calm) return false; const t = msg || (name + ' was not shown because animations are reduced.'); if (!ctx.desc) ctx.desc = t; if (!ctx.roll) showToast(t); if (ctx.eff) chaosUiRenderResult(); return true; },
     onCleanup(fn){ if (dead){ try { fn(); } catch(e){} return; } cleanups.push(fn); },
     later(fn, ms){ if (dead) return 0; const id = setTimeout(() => { try { fn(); } catch(e){ console.warn('chaos timer failed', e); } }, ms); cleanups.push(() => clearTimeout(id)); return id; },
     every(fn, ms){ if (dead) return 0; const id = setInterval(() => { try { fn(); } catch(e){ console.warn('chaos interval failed', e); } }, ms); cleanups.push(() => clearInterval(id)); return id; },
@@ -18042,7 +18460,7 @@ const EFFECTS = [
         if (hx && hy) corners++;
         box.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
       });
-      ctx.onCleanup(() => { if (corners) showToast('The logo hit a corner.'); });
+      ctx.onCleanup(() => { if (corners && !ctx.roll) showToast('The logo hit a corner.'); });
       ctx.hold(T + 100); ctx.say('Bouncing logo started.');
     } },
   { id: 'rocket', cat: 'visual', icon: 'rocket', weight: 3, label: 'Rocket launch', desc: 'A small rocket launched from the taskbar.', run(ctx){
@@ -18473,8 +18891,9 @@ function chaosEligible(auto){
   return EFFECTS.filter(e => chaosCfg.cats[e.cat] && !(chaosCfg.safe && e.risky) && !(auto && (e.noAuto || e.cat === 'apps')));
 }
 // Probability of each eligible effect: its category's share * (its weight / the category's weight).
-function chaosPickEffect(auto){ // consumes exactly one Math.random() call
+function chaosPickEffect(auto, filter){ // consumes exactly one Math.random() call
   let pool = chaosEligible(auto);
+  if (filter) pool = pool.filter(filter);
   if (!pool.length) pool = EFFECTS.filter(e => e.id === 'shrug');
   const catW = {}, share = {}; pool.forEach(e => { catW[e.cat] = (catW[e.cat] || 0) + e.weight; });
   let sum = 0; CHAOS_CATS.forEach(c => { if (catW[c.id]){ share[c.id] = c.share; sum += c.share; } });
@@ -18513,7 +18932,10 @@ function chaosButton(){ return document.getElementById('chaos-btn'); }
 function chaosUndoKeys(k){ return !k ? [] : (Array.isArray(k) ? k : [k]); }
 function chaosUndoPush(row){
   chaosUndos.unshift(row);
-  row.timer = setTimeout(() => chaosUndoDrop(row), row.u.ms || 8000);
+  // Rows from a power roll stay available until a while after the roll has finished launching, so "Undo all" covers every child.
+  const roll = row.ctx && row.ctx.roll;
+  const ms = roll ? Math.max(row.u.ms || 8000, roll.endsAt - Date.now() + 12000) : (row.u.ms || 8000);
+  row.timer = setTimeout(() => chaosUndoDrop(row), ms);
   while (chaosUndos.length > CHAOS_MAX_UNDOS) chaosUndoDrop(chaosUndos[chaosUndos.length - 1]);
   chaosUiRenderUndos();
 }
@@ -18550,10 +18972,14 @@ function chaosFire(o){
   if (res.length) chaosRunning.slice().forEach(r => { if (r.res.some(t => res.indexOf(t) !== -1)) r.finish(); });
   const ctx = chaosMakeCtx();
   ctx.eff = eff; ctx.auto = !!o.auto; ctx.res = res;
+  ctx.roll = o.roll || null;
   chaosCfg.total++; chaosCfg.counts[eff.id] = (chaosCfg.counts[eff.id] || 0) + 1; chaosSaveCfg();
-  chaosHistory.push({ t: new Date(), id: eff.id, icon: eff.icon, label: eff.label }); if (chaosHistory.length > 30) chaosHistory.shift();
-  if (!o.burst) chaosLevelAdd(o.auto ? 6 : CHAOS_LEVEL_STEP);
-  chaosLastCtx = ctx;
+  if (!o.roll){   // a power roll logs one history row for all its children
+    chaosHistory.push({ t: new Date(), id: eff.id, icon: eff.icon, label: eff.label }); if (chaosHistory.length > 30) chaosHistory.shift();
+    if (!o.noLevel) chaosLevelAdd(o.auto ? 6 : CHAOS_LEVEL_STEP);
+    chaosLastCtx = ctx;
+    if (!o.rig) chaosPrevEff = eff;
+  }
   let timer = 0;
   const finish = chaosOnce(() => {
     clearTimeout(timer); ctx.cleanup();
@@ -18575,28 +19001,205 @@ function chaosFire(o){
     else timer = setTimeout(finish, Math.max(700, hold));
     chaosEnforceCaps(ctx);
   }
-  // BIG RED: this press plus two more, 350 ms apart (never waiting on anything).
-  if (chaosBurst > 0 && !chaosBurstTimer && !spLocked){
-    chaosBurstTimer = setTimeout(() => { chaosBurstTimer = 0; if (chaosBurst > 0 && !spLocked){ chaosBurst--; chaosFire({ burst: true }); } }, 350);
-  }
   return true;
 }
-// "Chaos: fire one now" (Ctrl+K): fires one effect, opens nothing.
-function chaosPress(){
+/* ---- one roll = one press of the CHAOS button, Ctrl+K "Chaos: fire one now" or an Auto-chaos tick. It is counted exactly once, here.
+   Not rolls: Rig it (a deliberate demo), the power-roll buttons, and the effects a power roll starts. ----
+   chaosCfg.rolls is the lifetime count; chaosCfg.cycle is the position in the 100-roll cycle (the 101st roll is roll 1 again). */
+function chaosPressRoll(o){
+  o = o || {};
   if (spLocked) return;
-  chaosFire({});
+  const auto = !!o.auto;
+  chaosCfg.rolls++;
+  chaosCfg.cycle = chaosCfg.cycle >= CHAOS_ROLL_CYCLE ? 1 : chaosCfg.cycle + 1;
+  chaosSaveCfg();
+  const hit = chaosLadderAt(chaosCfg.cycle), dbl = chaosDoubleArmed;
+  chaosDoubleArmed = false;
+  if (hit || dbl){
+    chaosLevelAdd(auto ? 6 : CHAOS_LEVEL_STEP);
+    if (hit) chaosStartRoll({ kind: 'random', name: chaosRollName(hit.n), count: hit.n * (dbl ? 2 : 1), icon: 'power-roll', source: 'ladder', doubled: dbl, auto });
+    else chaosStartRoll({ kind: 'random', name: 'Double or Nothing', count: 2, icon: 'double', source: 'double', doubled: true, auto });
+  } else {
+    const sp = chaosCfg.special ? chaosSpecialPick() : null;
+    if (sp){ chaosLevelAdd(auto ? 6 : CHAOS_LEVEL_STEP); chaosStartSpecial(sp, auto); }
+    else chaosFire({ auto });
+  }
+  chaosUiSyncRolls();
 }
+// "Chaos: fire one now" (Ctrl+K): one roll, opens nothing.
+function chaosPress(){ chaosPressRoll(); }
+
+// Random specials (never on a milestone roll): the odds are checked in the order of CHAOS_SPECIALS. Echo needs a previous action.
+function chaosSpecialPick(){
+  for (let i = 0; i < CHAOS_SPECIALS.length; i++){
+    const sp = CHAOS_SPECIALS[i];
+    if (Math.random() >= 1 / sp.odds) continue;
+    if (sp.id === 'echo' && !chaosPrevEff) continue;
+    return sp;
+  }
+  return null;
+}
+// What a roll may not repeat or stack: app-list changes, UI tweaks and anything that changes a shared setting.
+function chaosIsPersistent(e){ return e.cat === 'apps' || e.cat === 'ui' || chaosResOf(e).some(t => CHAOS_ROLL_ONCE_RES.indexOf(t) !== -1); }
+const chaosIsModalEff = (e) => chaosResOf(e).indexOf('modal') !== -1;
+const chaosRollBase = (e) => !e.quiet && e.id !== 'slot-machine';
+// The category of a Surge / Burst: one that still has enough different actions. Apps is left out (it is capped to one delete and one add).
+function chaosSpecialCat(kind, count, auto){
+  const pool = chaosEligible(auto).filter(chaosRollBase);
+  const cats = CHAOS_CATS.filter(c => c.id !== 'apps' && pool.filter(e => e.cat === c.id).length >= count);
+  if (!cats.length) return null;
+  if (kind === 'burst') return cats[Math.min(cats.length - 1, Math.floor(Math.random() * cats.length))].id;
+  let sum = 0; cats.forEach(c => { sum += c.share; });
+  let r = Math.random() * sum;
+  for (let i = 0; i < cats.length; i++){ r -= cats[i].share; if (r < 0) return cats[i].id; }
+  return cats[cats.length - 1].id;
+}
+function chaosStartSpecial(sp, auto){
+  const spec = { kind: sp.id, name: sp.name, count: sp.count, icon: sp.icon, source: 'special', auto };
+  if (sp.id === 'surge' || sp.id === 'burst'){
+    spec.cat = chaosSpecialCat(sp.id, sp.count, auto);
+    if (!spec.cat) return chaosFire({ auto });
+  } else if (sp.id === 'echo'){
+    const prev = chaosPrevEff;
+    // the repeat only happens for actions that can be repeated safely; a persistent change is not stacked a second time
+    if (prev && chaosEligible(auto).indexOf(prev) !== -1 && !chaosIsPersistent(prev)) spec.echo = prev;
+  }
+  chaosStartRoll(spec);
+}
+
+// ---- launching a power roll: children are started one after another, never all at once ----
+// Picks the next child. Same weighted pick as a normal press, minus: no-ops, the slot machine, the previous child's id, and the
+// safeguards: at most one delete-app and one add-app, one change per shared setting (theme / accent, wallpaper, clock format),
+// no repeated persistent action, and at most CHAOS_ROLL_MAX_MODALS dialogs.
+function chaosRollPick(roll){
+  if (roll.kind === 'echo' && roll.fired === 1 && roll.echo && chaosEligible(roll.auto).indexOf(roll.echo) !== -1) return roll.echo;
+  const caps = (e) => {
+    if (CHAOS_ROLL_DELETE.indexOf(e.id) !== -1 && roll.deletes >= 1) return false;
+    if (CHAOS_ROLL_ADD.indexOf(e.id) !== -1 && roll.adds >= 1) return false;
+    const res = chaosResOf(e);
+    if (res.some(t => CHAOS_ROLL_ONCE_RES.indexOf(t) !== -1 && roll.once[t])) return false;
+    if (chaosIsPersistent(e) && roll.used[e.id]) return false;
+    if (chaosIsModalEff(e) && roll.modals >= CHAOS_ROLL_MAX_MODALS) return false;
+    return true;
+  };
+  let kindF = () => true;
+  if (roll.kind === 'storm') kindF = (e) => e.cat === 'visual' && !roll.used[e.id];
+  else if (roll.kind === 'overhaul') kindF = (e) => e.cat === roll.cats[roll.fired];
+  else if (roll.kind === 'surge' || roll.kind === 'burst') kindF = (e) => e.cat === roll.cat && !roll.used[e.id];
+  else if (roll.kind === 'echo') kindF = (e) => !chaosIsPersistent(e);
+  const tries = [
+    (e) => chaosRollBase(e) && caps(e) && kindF(e) && e.id !== roll.last,
+    (e) => chaosRollBase(e) && caps(e) && kindF(e),
+    (e) => chaosRollBase(e) && caps(e) && (roll.kind === 'random' ? true : kindF(e)),
+    (e) => chaosRollBase(e) && caps(e)
+  ];
+  for (let i = 0; i < tries.length; i++){
+    if (chaosEligible(roll.auto).some(tries[i])) return chaosPickEffect(roll.auto, tries[i]);
+  }
+  return EFFECTS.find(e => e.id === 'shrug');
+}
+// spec: { kind: 'random' | 'storm' | 'overhaul' | 'surge' | 'burst' | 'echo' | 'jackpot', name, count, icon, source, doubled, auto, cat, echo }
+function chaosStartRoll(spec){
+  if (spLocked) return null;
+  let count = Math.max(1, Math.floor(spec.count) || 1), cats = null;
+  if (spec.kind === 'overhaul'){
+    cats = CHAOS_OVERHAUL_CATS.filter(c => chaosCfg.cats[c]);
+    count = Math.max(1, cats.length);
+  }
+  const step = chaosRollGap(count), now = Date.now();
+  const roll = { id: ++chaosRollSeq, kind: spec.kind || 'random', name: spec.name, icon: spec.icon || 'power-roll', source: spec.source || 'ladder', doubled: !!spec.doubled, auto: !!spec.auto,
+    count, fired: 0, step, timer: 0, done: false, stopped: false, kids: [], undoLabel: '', last: '', used: {}, deletes: 0, adds: 0, once: {}, modals: 0, cats, cat: spec.cat || '', echo: spec.echo || null, startedAt: now, endsAt: now + step * (count - 1) };
+  chaosRolls.push(roll); chaosLastRoll = roll;
+  if (roll.source === 'special'){ const k = 'special-' + roll.kind; chaosCfg.counts[k] = (chaosCfg.counts[k] || 0) + 1; chaosSaveCfg(); }
+  roll.hist = { t: new Date(), id: 'power-roll', icon: roll.icon, label: roll.name + ': ' + count + ' effects', kids: roll.kids };
+  chaosHistory.push(roll.hist);
+  if (chaosHistory.length > 30) chaosHistory.shift();
+  chaosLastCtx = { eff: { icon: roll.icon, label: roll.name }, desc: count + ' effects, starting one after another.', roll };
+  if (chaosWindowOpen()) chaosUiBanner(roll);
+  else showToast(roll.name + ': ' + count + (count === 1 ? ' effect' : ' effects') + '.');
+  chaosRollStep(roll);
+  return roll;
+}
+function chaosRollStep(roll){
+  roll.timer = 0;
+  if (roll.done || spLocked) return;
+  try {
+    const eff = chaosRollPick(roll);
+    roll.fired++; roll.last = eff.id; roll.used[eff.id] = true;
+    if (CHAOS_ROLL_DELETE.indexOf(eff.id) !== -1) roll.deletes++;
+    if (CHAOS_ROLL_ADD.indexOf(eff.id) !== -1) roll.adds++;
+    chaosResOf(eff).forEach(t => { if (CHAOS_ROLL_ONCE_RES.indexOf(t) !== -1) roll.once[t] = true; });
+    if (chaosIsModalEff(eff)) roll.modals++;
+    roll.kids.push(eff.label);
+    chaosFire({ eff, roll });
+  } catch(e){ console.warn('chaos roll step failed', e); roll.fired = Math.max(roll.fired, 1); }
+  if (roll.fired >= roll.count){ chaosRollEnd(roll, false); }
+  else roll.timer = setTimeout(() => chaosRollStep(roll), roll.step);
+  chaosUiRenderRoll();
+}
+function chaosRollEnd(roll, stopped){
+  clearTimeout(roll.timer); roll.timer = 0; roll.done = true; roll.stopped = !!stopped;
+  const i = chaosRolls.indexOf(roll); if (i !== -1) chaosRolls.splice(i, 1);
+  roll.hist.label = roll.name + ': ' + roll.fired + (stopped && roll.fired < roll.count ? ' of ' + roll.count : '') + ' effects';
+  if (chaosLastCtx && chaosLastCtx.roll === roll) chaosLastCtx.desc = stopped ? roll.fired + ' of ' + roll.count + ' effects started before it was stopped.' : roll.fired + ' effects started.';
+  if (!stopped && !spLocked){
+    // one summary toast for the whole roll (the individual effects stay quiet), with one Undo for everything undoable
+    const n = chaosRollUndoCount(roll);
+    showToast(roll.name + ': ' + roll.fired + (roll.fired === 1 ? ' effect' : ' effects'), undefined, n ? { label: 'Undo all', ms: 9000, run: () => chaosRollUndoAll(roll) } : undefined);
+    if (roll.kind === 'jackpot'){
+      const names = roll.kids.slice(0, 10).join(', ');
+      chaosShowCard({ icon: 'jackpot', title: 'Jackpot', body: roll.fired + ' effects were started: ' + names + '.', kind: 'fact', ms: 9000,
+        actions: n ? [{ label: 'Undo all', run: () => chaosRollUndoAll(roll) }] : [] });
+    }
+  }
+  chaosUiRenderResult(); chaosUiRenderHistory(); chaosUiRenderRoll();
+}
+// Pending launches stop (lock, closing the Chaos window, Reduce motion / Performance mode switched). Effects already started finish through their own ctx.
+function chaosRollsCancel(){ chaosRolls.slice().forEach(r => chaosRollEnd(r, true)); chaosUiRenderRoll(); }
+// Undo every undoable child of a roll, newest first (each row still runs its own cascade, so the order can't re-apply stale state).
+function chaosRollUndoAll(roll){
+  chaosUndos.filter(r => r.ctx && r.ctx.roll === roll).forEach(r => { try { r.u.run(); } catch(e){ console.warn('chaos undo failed', e); } });
+  chaosUiRenderRoll();
+}
+function chaosRollUndoCount(roll){ return roll ? chaosUndos.filter(r => r.ctx && r.ctx.roll === roll).length : 0; }
 function chaosOpenWindow(){
   if (spLocked) return;
   switchAppView('chaos');
   setTimeout(() => { const b = document.getElementById('cx-big'); if (b && chaosWindowOpen()) { try { b.focus({ preventScroll: true }); } catch(e){} } }, 30);
 }
-function chaosBigRed(){
-  if (spLocked || !chaosRedLatched) return;
-  chaosRedLatched = false; chaosLevel = 0; chaosLevelAt = Date.now();
-  chaosBurst = 2; // this press + 2 more
-  chaosFire({ burst: true });
-  showToast('BIG RED: three actions started in sequence.');
+// Meter power rolls: each one needs a full Chaos level and uses it up.
+function chaosMeterUse(){
+  if (spLocked || !chaosMeterFull) return false;
+  chaosMeterFull = false; chaosLevel = 0; chaosLevelAt = Date.now();
+  return true;
+}
+function chaosX3PowerRoll(){
+  if (!chaosMeterUse()) return;
+  chaosStartRoll({ kind: 'random', name: chaosRollName(CHAOS_X3.n), count: CHAOS_X3.n, icon: 'power-roll', source: 'meter' });
+  chaosUiSyncMeter();
+}
+function chaosStormAvailable(){ return !!chaosCfg.cats.visual; }
+function chaosOverhaulAvailable(){ return CHAOS_OVERHAUL_CATS.some(c => chaosCfg.cats[c]); }
+function chaosStorm(){
+  if (!chaosStormAvailable() || !chaosMeterUse()) return;
+  chaosStartRoll({ kind: 'storm', name: 'Chaos Storm', count: CHAOS_STORM_COUNT, icon: 'storm', source: 'meter' });
+  chaosUiSyncMeter();
+}
+function chaosOverhaul(){
+  if (!chaosOverhaulAvailable() || !chaosMeterUse()) return;
+  chaosStartRoll({ kind: 'overhaul', name: 'Chaos Overhaul', count: CHAOS_OVERHAUL_CATS.length, icon: 'overhaul', source: 'meter' });
+  chaosUiSyncMeter();
+}
+// Double or Nothing: a coin flip. Heads: the next roll runs twice as many actions. Tails: nothing happens.
+function chaosDoubleOrNothing(){
+  if (!chaosMeterUse()) return;
+  const heads = Math.random() < 0.5;
+  chaosDoubleArmed = heads;
+  const msg = heads ? 'Double or Nothing: doubled. The next roll runs twice as many actions.' : 'Double or Nothing: nothing happens. The Chaos level was reset.';
+  chaosHistory.push({ t: new Date(), id: 'double', icon: 'double', label: 'Double or Nothing: ' + (heads ? 'doubled' : 'nothing') }); if (chaosHistory.length > 30) chaosHistory.shift();
+  showToast(msg);
+  chaosUiSyncMeter(); chaosUiRenderHistory(); chaosUiSyncRolls();
+  const st = cxEl('cx-status'); if (st) st.textContent = msg;
 }
 function chaosSetAuto(on){
   chaosAutoOn = !!on && chaosWindowOpen() && !spLocked;
@@ -18609,7 +19212,7 @@ function chaosTick(){
   if (chaosAutoOn){
     const now = Date.now();
     if (document.visibilityState !== 'visible'){ chaosNextAuto = Math.max(chaosNextAuto, now + 1000); }
-    else if (now >= chaosNextAuto){ chaosNextAuto = now + chaosCfg.interval * 1000; chaosFire({ auto: true }); }
+    else if (now >= chaosNextAuto){ chaosNextAuto = now + chaosCfg.interval * 1000; chaosPressRoll({ auto: true }); }
     chaosUiSyncAutoLabel();
   }
 }
@@ -18618,9 +19221,9 @@ function chaosClockStop(){
   if (chaosClockId){ clearInterval(chaosClockId); chaosClockId = 0; }
   if (chaosAutoOn){ chaosAutoOn = false; chaosUiSyncControls(); }
 }
-function chaosOnClose(){ chaosClockStop(); }
+function chaosOnClose(){ chaosClockStop(); chaosRollsCancel(); chaosUiBannerHide(); }
 function chaosOnLock(){
-  chaosClockStop(); chaosBurst = 0; clearTimeout(chaosBurstTimer); chaosBurstTimer = 0;
+  chaosClockStop(); chaosRollsCancel(); chaosDoubleArmed = false; chaosUiBannerHide();
   chaosCardHide(); chaosUndoClearAll();
   chaosFinishAll();      // before the queue is cleared: the slot machine locks its pick while it finishes
   chaosQueued = null;
@@ -18630,7 +19233,7 @@ function chaosOnLock(){
 (function chaosWatchCalm(){
   let was = chaosIsCalm();
   try {
-    new MutationObserver(() => { const now = chaosIsCalm(); if (now && !was && chaosRunning.length) chaosFinishAll(); was = now; })
+    new MutationObserver(() => { const now = chaosIsCalm(); if (now !== was) chaosRollsCancel(); if (now && !was && chaosRunning.length) chaosFinishAll(); was = now; })
       .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   } catch(e){}
 })();
@@ -18648,12 +19251,42 @@ function chaosTimeText(d){ return d.toLocaleTimeString([], { hour: '2-digit', mi
   const chips = CHAOS_CATS.map(c => '<button type="button" class="ghost-btn cx-chip" data-cat="' + c.id + '" aria-pressed="true" title="' + sEsc(c.hint || c.label) + '">' + icon(c.icon) + ' ' + c.label + ' <small></small></button>').join('');
   const body =
     '<div class="settings-card cx-hero">' +
+      '<div class="cx-banner" id="cx-banner" role="status" aria-live="polite" hidden></div>' +
       '<div class="cx-bigwrap">' +
         '<button type="button" id="cx-big" class="cx-big" aria-describedby="cx-status"><span class="cx-big-in">' + icon('zap', 'icon-fill') + '<b>CHAOS</b></span></button></div>' +
       '<div class="cx-status" id="cx-status" role="status" aria-live="polite">Ready.</div>' +
       '<div class="cx-levelrow"><span class="cx-levellabel" id="cx-levellabel">Chaos level 0%</span>' +
-        '<div class="cx-meter" id="cx-meter" role="progressbar" aria-label="Chaos level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="cx-meter-fill"></i></div>' +
-        '<button type="button" id="cx-red" class="cx-red" disabled title="Available when the Chaos level is full: runs three actions in a row">BIG RED</button></div>' +
+        '<div class="cx-meter" id="cx-meter" role="progressbar" aria-label="Chaos level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="cx-meter-fill"></i></div></div>' +
+      // the power-roll progress line: directly below the Chaos level meter
+      '<div class="cx-prl" id="cx-prl">' +
+        '<div class="cx-prl-top"><span class="cx-prl-roll" id="cx-prl-roll">Roll 0 / ' + CHAOS_ROLL_CYCLE + '</span><span class="cx-prl-next" id="cx-prl-next"></span></div>' +
+        '<div class="cx-prl-track" id="cx-prl-bar" role="progressbar" tabindex="0" aria-label="Power roll progress" aria-describedby="cx-prl-tip" aria-valuemin="0" aria-valuemax="' + CHAOS_ROLL_CYCLE + '" aria-valuenow="0">' +
+          '<span class="cx-prl-rail"><i class="cx-prl-fill" id="cx-prl-fill"></i><i class="cx-prl-seg" id="cx-prl-seg"><i></i></i></span>' +
+          POWER_ROLL_LADDER.map(e => '<b class="cx-prl-tick" data-at="' + e.at + '" style="left:' + (e.at / CHAOS_ROLL_CYCLE * 100) + '%"></b>').join('') +
+          '<i class="cx-prl-marker" id="cx-prl-marker" aria-hidden="true"></i>' +
+          '<div class="cx-prl-tip" id="cx-prl-tip" role="tooltip" hidden></div>' +
+        '</div>' +
+        '<div class="cx-prl-labels" aria-hidden="true">' + POWER_ROLL_LADDER.map(e => '<span class="cx-prl-lbl" data-at="' + e.at + '" style="left:' + (e.at / CHAOS_ROLL_CYCLE * 100) + '%">x' + e.n + '</span>').join('') + '</div>' +
+        '<div class="cx-prl-armed" id="cx-prl-armed" hidden>Double or Nothing: the next roll runs twice as many actions.</div>' +
+      '</div>' +
+      '<div class="cx-pr" id="cx-pr">' +
+        '<div class="cx-pr-head"><h4>' + icon('power-roll') + ' Power rolls</h4><span class="cx-pr-state" id="cx-pr-state">Needs a full Chaos level</span></div>' +
+        '<button type="button" id="cx-x3" class="cx-x3" disabled title="Available when the Chaos level is full: runs three actions in a row">' + icon('power-roll') + '<span>' + chaosRollName(CHAOS_X3.n) + '</span></button>' +
+        '<div class="cx-pr-row">' +
+          '<button type="button" id="cx-storm" class="ghost-btn cx-special" disabled title="Runs eight Visual effects in a row">' + icon('storm') + ' Chaos Storm</button>' +
+          '<button type="button" id="cx-overhaul" class="ghost-btn cx-special" disabled title="Runs one action from each of Words, Visual, Other, Windows and UI tweaks">' + icon('overhaul') + ' Chaos Overhaul</button>' +
+          '<button type="button" id="cx-double" class="ghost-btn cx-special" disabled title="A coin flip: the next roll runs twice as many actions, or nothing happens">' + icon('double') + ' Double or Nothing</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="settings-card cx-roll" id="cx-roll" hidden>' +
+      '<div class="cx-roll-head"><span class="cx-roll-ico" id="cx-roll-ico" aria-hidden="true"></span>' +
+        '<div class="cx-roll-main"><div class="cx-roll-name" id="cx-roll-name"></div><div class="cx-roll-sub" id="cx-roll-sub"></div></div>' +
+        '<span class="cx-roll-prog" id="cx-roll-prog">0/0</span>' +
+        '<button type="button" id="cx-roll-undo" class="ghost-btn cx-undo-all" disabled>Undo all</button></div>' +
+      '<div class="cx-roll-bar" id="cx-roll-bar" role="progressbar" aria-label="Power roll launch progress" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0"><i id="cx-roll-fill"></i></div>' +
+      '<details class="cx-roll-det" id="cx-roll-det"><summary id="cx-roll-sum">Show the actions</summary><ol class="cx-roll-kids" id="cx-roll-kids" aria-label="Actions in this roll"></ol></details>' +
+      '<div class="cx-sr" id="cx-roll-live" role="status" aria-live="polite"></div>' +
     '</div>' +
     '<div class="settings-card cx-result" id="cx-result" aria-live="polite">' +
       '<div class="cx-r-ico" id="cx-r-ico" aria-hidden="true">' + icon('dice') + '</div>' +
@@ -18662,7 +19295,9 @@ function chaosTimeText(d){ return d.toLocaleTimeString([], { hour: '2-digit', mi
       '<ul class="cx-undos" id="cx-undos" aria-label="Undo recent changes" hidden></ul>' +
     '</div>' +
     '<div class="settings-card"><div class="cx-stats">' +
+      '<div class="cx-stat"><span>Total rolls</span><b id="cx-s-rolls">0</b></div>' +
       '<div class="cx-stat"><span>Presses</span><b id="cx-s-total">0</b></div>' +
+      '<div class="cx-stat"><span>Special rolls</span><b id="cx-s-spec">0</b></div>' +
       '<div class="cx-stat"><span>Favorite</span><b id="cx-s-fav">-</b></div>' +
       '<div class="cx-stat"><span>Effects</span><b id="cx-s-count">0</b></div>' +
     '</div></div>' +
@@ -18673,6 +19308,10 @@ function chaosTimeText(d){ return d.toLocaleTimeString([], { hour: '2-digit', mi
       '<p class="studio-sub" style="margin:2px 0 8px;">Auto-chaos only runs while this window is open and the tab is visible, and never touches your apps.</p>' +
       '<div class="studio-row"><span class="studio-label">Safe mode</span><label class="toggle-switch"><input type="checkbox" id="cx-safe" aria-label="Safe mode"><span class="toggle-track"></span></label>' +
         '<span class="studio-sub" style="margin:0;flex:1;min-width:150px;">Skips deleting or adding apps and anything that moves windows or icons.</span></div>' +
+      '<div class="studio-row"><span class="studio-label">Special rolls</span><label class="toggle-switch"><input type="checkbox" id="cx-special" aria-label="Special rolls"><span class="toggle-track"></span></label>' +
+        '<span class="studio-sub" style="margin:0;flex:1;min-width:150px;">Now and then a roll becomes Chaos Surge, Echo Roll, Category Burst or Jackpot.</span></div>' +
+      '<div class="studio-row"><span class="studio-label">Roll cycle</span><button type="button" class="ghost-btn" id="cx-reset-cycle">Reset cycle</button><span class="studio-sub" style="margin:0;flex:1;min-width:150px;" id="cx-cycle-note"></span></div>' +
+      '<p class="studio-sub cx-help" style="margin:10px 0 2px;"><b>Power rolls.</b> Every 10th roll of a 100-roll cycle is a Power Roll that starts several actions one after another: Chaos x5 at roll 10, x10 at roll 20, and so on up to Chaos x50 at roll 100; roll 101 is roll 1 of the next cycle. A roll is a press of the CHAOS button, Ctrl+K "Chaos: fire one now" or one Auto-chaos tick. Rig it, the power-roll buttons and the actions inside a power roll are not counted. A power roll starts at most one delete-app, one add-app, one theme or accent change, one wallpaper change and one clock change, and shows one grouped result with one Undo all. Specials, each a random chance on a roll that is not a milestone: Chaos Surge (1 in 25) two actions from one category, Echo Roll (1 in 30) a new action and then the previous one again, Category Burst (1 in 40) five actions from one category, Jackpot (1 in 100) ten actions and a summary card. A full Chaos level also unlocks Chaos x3 Power Roll, Chaos Storm (eight Visual effects), Chaos Overhaul (one action from five categories) and Double or Nothing (a coin flip: the next roll runs twice as many actions, or nothing happens). Safe mode and the category switches apply to all of them.</p>' +
       '<div class="studio-row" style="margin-top:12px;"><span class="studio-label" style="min-width:0;width:100%;">Categories <small class="meta">(at least one stays on)</small></span></div>' +
       '<div class="cx-chips" id="cx-chips">' + chips + '</div>' +
       '<div class="studio-row" style="margin-top:12px;"><span class="studio-label" id="cx-rig-label">Rig it</span><div class="cx-combo grow" id="cx-rig-wrap"><button type="button" id="cx-rig" class="cx-combo-btn" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="cx-rig-list" aria-labelledby="cx-rig-label cx-rig"></button><div id="cx-rig-list" class="cx-combo-list" role="listbox" aria-label="Choose a specific action" hidden></div></div><button type="button" class="ghost-btn" id="cx-rig-go">Run</button></div>' +
@@ -18747,9 +19386,30 @@ function chaosTimeText(d){ return d.toLocaleTimeString([], { hour: '2-digit', mi
   big.addEventListener('pointerdown', (e) => ripple(e));
   big.addEventListener('click', (e) => {
     if (e.detail === 0) ripple(null); // keyboard activation: ripple from the centre
-    chaosFire({});
+    chaosPressRoll();
   });
-  cxEl('cx-red').addEventListener('click', chaosBigRed);
+  cxEl('cx-x3').addEventListener('click', chaosX3PowerRoll);
+  cxEl('cx-storm').addEventListener('click', chaosStorm);
+  cxEl('cx-overhaul').addEventListener('click', chaosOverhaul);
+  cxEl('cx-double').addEventListener('click', chaosDoubleOrNothing);
+  cxEl('cx-roll-det').addEventListener('toggle', () => chaosUiRenderRoll());
+  (function trackerTips(){
+    const bar = cxEl('cx-prl-bar'); let kb = 0;
+    const nearest = (x) => { const r = bar.getBoundingClientRect(), f = Math.max(0, Math.min(1, (x - r.left) / Math.max(1, r.width))); return POWER_ROLL_LADDER.reduce((b, e) => Math.abs(e.at / CHAOS_ROLL_CYCLE - f) < Math.abs(b.at / CHAOS_ROLL_CYCLE - f) ? e : b).at; };
+    bar.addEventListener('pointermove', (e) => chaosUiTipShow(nearest(e.clientX)));
+    bar.addEventListener('pointerleave', () => { if (document.activeElement !== bar) chaosUiTipShow(0); });
+    bar.addEventListener('focus', () => { const st = chaosLadderState(chaosCfg.cycle); kb = chaosCfg.cycle >= CHAOS_ROLL_CYCLE ? CHAOS_ROLL_CYCLE : st.next.at; chaosUiTipShow(kb); });
+    bar.addEventListener('blur', () => chaosUiTipShow(0));
+    bar.addEventListener('keydown', (e) => {
+      const i = POWER_ROLL_LADDER.findIndex(x => x.at === kb);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp'){ e.preventDefault(); kb = POWER_ROLL_LADDER[Math.min(POWER_ROLL_LADDER.length - 1, i + 1)].at; chaosUiTipShow(kb); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ e.preventDefault(); kb = POWER_ROLL_LADDER[Math.max(0, i - 1)].at; chaosUiTipShow(kb); }
+      else if (e.key === 'Home'){ e.preventDefault(); kb = POWER_ROLL_LADDER[0].at; chaosUiTipShow(kb); }
+      else if (e.key === 'End'){ e.preventDefault(); kb = CHAOS_ROLL_CYCLE; chaosUiTipShow(kb); }
+      else if (e.key === 'Escape' && chaosTipAt){ e.preventDefault(); e.stopPropagation(); chaosUiTipShow(0); }
+    });
+  })();
+  cxEl('cx-roll-undo').addEventListener('click', () => { if (chaosLastRoll) chaosRollUndoAll(chaosLastRoll); });
   cxEl('cx-undos').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-undo]'); if (!b) return;
     const row = chaosUndos[+b.dataset.undo]; if (row){ try { row.u.run(); } catch(err){ console.warn('chaos undo failed', err); } }
@@ -18760,6 +19420,12 @@ function chaosTimeText(d){ return d.toLocaleTimeString([], { hour: '2-digit', mi
     chaosCfg.interval = Math.round(sClamp(e.target.value, CHAOS_AUTO_MIN, CHAOS_AUTO_MAX, 15) / 5) * 5;
     if (chaosAutoOn) chaosNextAuto = Date.now() + chaosCfg.interval * 1000;
     chaosSaveCfg(); chaosUiSyncControls();
+  });
+  cxEl('cx-special').addEventListener('change', (e) => { chaosCfg.special = e.target.checked; chaosSaveCfg(); chaosUiSyncControls(); });
+  cxEl('cx-reset-cycle').addEventListener('click', async () => {
+    const ok = await appConfirm('Reset the roll cycle?', 'The roll counter goes back to 0 of ' + CHAOS_ROLL_CYCLE + '. The lifetime roll total is kept.', 'Reset cycle');
+    if (!ok) return;
+    chaosCfg.cycle = 0; chaosSaveCfg(); chaosUiSyncRolls(); chaosUiSyncControls(); showToast('Roll cycle reset to 0 of ' + CHAOS_ROLL_CYCLE + '.');
   });
   cxEl('cx-safe').addEventListener('change', (e) => { chaosCfg.safe = e.target.checked; chaosSaveCfg(); chaosUiSyncControls(); });
   cxEl('cx-chips').addEventListener('click', (e) => {
@@ -18786,9 +19452,64 @@ function chaosUiSyncMeter(){
   fill.style.width = lv + '%';
   cxEl('cx-meter').setAttribute('aria-valuenow', String(pct)); cxEl('cx-meter').classList.toggle('full', full);
   cxEl('cx-levellabel').textContent = full ? 'Chaos level MAX' : 'Chaos level ' + pct + '%';
-  const red = cxEl('cx-red'); red.disabled = !full; red.classList.toggle('ready', full);
-  red.title = full ? 'BIG RED: three actions in a row' : 'Available when the Chaos level is full: runs three actions in a row';
+  const x3 = cxEl('cx-x3'); x3.disabled = !full; x3.classList.toggle('ready', full);
+  x3.title = full ? chaosRollName(CHAOS_X3.n) + ': three actions in a row' : 'Available when the Chaos level is full: runs three actions in a row';
+  const sp = [['cx-storm', chaosStormAvailable(), 'Turn on the Visual category to use Chaos Storm'], ['cx-overhaul', chaosOverhaulAvailable(), 'Turn on at least one of Words, Visual, Other, Windows or UI tweaks'], ['cx-double', true, '']];
+  sp.forEach(a => { const b = cxEl(a[0]); b.disabled = !(full && a[1]); if (!a[1]) b.title = a[2]; });
+  cxEl('cx-pr-state').textContent = full ? 'Chaos level is full' : 'Needs a full Chaos level';
+  cxEl('cx-pr').classList.toggle('is-ready', full);
 }
+// The power-roll progress line below the Chaos level meter.
+function chaosUiSyncRolls(){
+  const bar = cxEl('cx-prl-bar'); if (!bar) return;
+  const rolls = chaosCfg.rolls, st = chaosLadderState(chaosCfg.cycle), cyc = CHAOS_ROLL_CYCLE;
+  const nextName = chaosRollName(st.next.n), inTxt = st.inRolls === 1 ? 'next roll' : 'in ' + st.inRolls + ' rolls';
+  cxEl('cx-prl-roll').textContent = 'Roll ' + st.pos + ' / ' + cyc;
+  cxEl('cx-prl-next').textContent = 'Next: ' + nextName + ' ' + inTxt;
+  bar.setAttribute('aria-valuenow', String(st.pos));
+  bar.setAttribute('aria-valuetext', 'Roll ' + st.pos + ' of ' + cyc + '. Next: ' + nextName + ' ' + inTxt + '.');
+  cxEl('cx-prl-fill').style.transform = 'scaleX(' + (st.pos / cyc) + ')';
+  cxEl('cx-prl-marker').style.left = (st.pos / cyc * 100) + '%';
+  // the current stretch (between two milestones) is drawn brighter, filled from 0 to its end
+  const seg = cxEl('cx-prl-seg'), bounds = [0].concat(POWER_ROLL_LADDER.map(e => e.at));
+  let from = 0; bounds.forEach((v, i) => { if (v <= st.pos && !(st.pos === cyc && i === bounds.length - 1)) from = v; });
+  const to = bounds.find(v => v > from) || cyc;
+  seg.style.left = (from / cyc * 100) + '%'; seg.style.width = ((to - from) / cyc * 100) + '%';
+  seg.firstChild.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (st.pos - from) / Math.max(1, to - from))) + ')';
+  const nextAt = st.pos === cyc ? POWER_ROLL_LADDER[0].at : st.next.at;
+  document.querySelectorAll('#cx-prl .cx-prl-tick, #cx-prl .cx-prl-lbl').forEach(el => {
+    const at = +el.dataset.at;
+    el.classList.toggle('passed', at <= st.pos);
+    el.classList.toggle('next', st.pos < cyc && at === nextAt);
+  });
+  const armed = cxEl('cx-prl-armed'); if (armed) armed.hidden = !chaosDoubleArmed;
+  const rl = cxEl('cx-s-rolls'); if (rl) rl.textContent = String(rolls);
+  const sp = cxEl('cx-s-spec'); if (sp) sp.textContent = String(Object.keys(chaosCfg.counts).reduce((a, k) => a + (k.indexOf('special-') === 0 ? chaosCfg.counts[k] : 0), 0));
+  const note = cxEl('cx-cycle-note'); if (note) note.textContent = 'Roll ' + st.pos + ' of ' + cyc + ' in this cycle.';
+  chaosUiTipSync();
+}
+// Tooltip of the tracker line: the milestone under the pointer, or (keyboard) the one picked with the arrow keys.
+function chaosUiTipSync(){
+  const tip = cxEl('cx-prl-tip'); if (!tip) return;
+  if (!chaosTipAt){ tip.hidden = true; return; }
+  const e = chaosLadderAt(chaosTipAt) || POWER_ROLL_LADDER[0], pos = chaosCfg.cycle;
+  const state = pos >= e.at ? 'reached' : (e.at - (pos >= CHAOS_ROLL_CYCLE ? 0 : pos)) + (e.at - pos === 1 ? ' roll away' : ' rolls away');
+  tip.textContent = 'Roll ' + e.at + ': ' + chaosRollName(e.n) + ' (' + e.n + ' actions), ' + state;
+  tip.hidden = false;
+  // keep the tip inside the Chaos card: centered on the milestone, pushed in at the edges
+  const bar = cxEl('cx-prl-bar'), bw = bar.offsetWidth, tw = tip.offsetWidth, x = e.at / CHAOS_ROLL_CYCLE * bw, pad = 12;
+  tip.style.left = Math.max(tw / 2 - pad, Math.min(bw - tw / 2 + pad, x)) + 'px';
+}
+function chaosUiTipShow(at){ chaosTipAt = at; chaosUiTipSync(); }
+// Power-roll announcement ribbon in the Chaos window (a toast is used instead when the window is closed).
+function chaosUiBanner(roll){
+  const b = cxEl('cx-banner'); if (!b) return;
+  clearTimeout(chaosBannerTimer);
+  b.innerHTML = icon(roll.icon) + '<span></span>'; b.lastChild.textContent = roll.name;
+  b.hidden = false; b.classList.remove('cx-banner-in'); void b.offsetWidth; b.classList.add('cx-banner-in');
+  chaosBannerTimer = setTimeout(() => { chaosBannerTimer = 0; b.hidden = true; }, 2600);
+}
+function chaosUiBannerHide(){ clearTimeout(chaosBannerTimer); chaosBannerTimer = 0; const b = cxEl('cx-banner'); if (b) b.hidden = true; }
 function chaosUiSyncStats(){
   if (!cxEl('cx-s-total')) return;
   cxEl('cx-s-total').textContent = String(chaosCfg.total);
@@ -18805,6 +19526,8 @@ function chaosUiSyncControls(){
   cxEl('cx-auto').checked = chaosAutoOn;
   cxEl('cx-interval').value = String(chaosCfg.interval); cxEl('cx-interval-val').textContent = chaosCfg.interval + ' s';
   cxEl('cx-safe').checked = chaosCfg.safe;
+  cxEl('cx-special').checked = chaosCfg.special;
+  cxEl('cx-cycle-note').textContent = 'Roll ' + chaosCfg.cycle + ' of ' + CHAOS_ROLL_CYCLE + ' in this cycle.';
   document.querySelectorAll('#cx-chips .cx-chip').forEach(b => {
     const id = b.dataset.cat;
     b.setAttribute('aria-pressed', String(!!chaosCfg.cats[id]));
@@ -18815,8 +19538,10 @@ function chaosUiSyncControls(){
 }
 function chaosUiRenderHistory(){
   const ol = cxEl('cx-history'); if (!ol) return;
-  ol.innerHTML = chaosHistory.length ? chaosHistory.slice().reverse().map(h =>
-    '<li><time>' + chaosTimeText(h.t) + '</time><span class="cx-h-e" aria-hidden="true">' + icon(h.icon) + '</span><span class="cx-h-l">' + sEsc(h.label) + '</span></li>').join('')
+  ol.innerHTML = chaosHistory.length ? chaosHistory.slice().reverse().map(h => {
+    if (h.kids) return '<li class="cx-h-roll"><time>' + chaosTimeText(h.t) + '</time><span class="cx-h-e" aria-hidden="true">' + icon(h.icon) + '</span><details class="cx-h-l"><summary>' + sEsc(h.label) + '</summary><span class="cx-h-kids">' + (h.kids.length ? h.kids.map(k => sEsc(k)).join(', ') : 'No actions started yet.') + '</span></details></li>';
+    return '<li><time>' + chaosTimeText(h.t) + '</time><span class="cx-h-e" aria-hidden="true">' + icon(h.icon) + '</span><span class="cx-h-l">' + sEsc(h.label) + '</span></li>';
+  }).join('')
     : '<li class="cx-h-empty">No actions yet.</li>';
 }
 function chaosUiRenderResult(){
@@ -18829,15 +19554,45 @@ function chaosUiRenderResult(){
 // One row per undoable result that is still fresh (newest first). Undo restores exactly that change.
 function chaosUiRenderUndos(){
   const ul = cxEl('cx-undos'); if (!ul) return;
-  ul.hidden = !chaosUndos.length;
-  ul.innerHTML = chaosUndos.map((r, i) => '<li><span title="' + sEsc(r.text) + '">' + sEsc(r.text) + '</span><button type="button" class="ghost-btn cx-undo"' + (i === 0 ? ' id="cx-undo"' : '') + ' data-undo="' + i + '">' + sEsc(r.u.label || 'Undo') + '</button></li>').join('');
+  const rows = chaosUndos.map((r, i) => ({ r, i })).filter(x => !(x.r.ctx && x.r.ctx.roll));   // a power roll's changes are undone together from its own card
+  ul.hidden = !rows.length;
+  try { chaosUiRenderRoll(); } catch(e){}
+  ul.innerHTML = rows.map((x, n) => { const r = x.r, i = x.i; return '<li><span title="' + sEsc(r.text) + '">' + sEsc(r.text) + '</span><button type="button" class="ghost-btn cx-undo"' + (n === 0 ? ' id="cx-undo"' : '') + ' data-undo="' + i + '">' + sEsc(r.u.label || 'Undo') + '</button></li>'; }).join('');
 }
 function chaosUiAfterFire(ctx){
   if (!cxEl('cx-big')) return;
   chaosUiRenderResult(); chaosUiRenderHistory(); chaosUiSyncStats(); chaosUiSyncMeter();
-  cxEl('cx-status').textContent = ctx.auto ? 'Auto-chaos: ' + ctx.eff.label : 'Ready.';
+  const r = ctx.roll;
+  cxEl('cx-status').textContent = r ? r.name + ' ' + r.fired + '/' + r.count : ctx.auto ? 'Auto-chaos: ' + ctx.eff.label : 'Ready.';
 }
-function chaosUiSyncAll(){ chaosUiSyncControls(); chaosUiRenderHistory(); chaosUiSyncStats(); chaosUiSyncMeter(); chaosUiRenderResult(); chaosUiRenderUndos(); }
+// The power-roll result card: name, progress "4/10", the actions started so far, and Undo all.
+let chaosRollLiveAt = '';
+function chaosUiRenderRoll(){
+  const card = cxEl('cx-roll'); if (!card) return;
+  const r = chaosLastRoll;
+  card.hidden = !r; if (!r) return;
+  const active = !r.done, undoable = chaosRollUndoCount(r);
+  cxEl('cx-roll-ico').innerHTML = icon(r.icon);
+  cxEl('cx-roll-name').textContent = r.name;
+  cxEl('cx-roll-sub').textContent = (r.doubled && r.source === 'ladder' ? 'Doubled by Double or Nothing. ' : '') + (r.source === 'special' ? (CHAOS_SPECIALS.find(x => x.id === r.kind) || {}).desc + ' ' : '') + (active ? 'Starting actions one after another.' : r.stopped ? 'Stopped before all actions started.' : 'All actions started.');
+  cxEl('cx-roll-prog').textContent = r.fired + '/' + r.count;
+  const bar = cxEl('cx-roll-bar'); bar.setAttribute('aria-valuemax', String(r.count)); bar.setAttribute('aria-valuenow', String(r.fired));
+  cxEl('cx-roll-fill').style.transform = 'scaleX(' + (r.fired / r.count) + ')';
+  card.classList.toggle('is-active', active);
+  cxEl('cx-roll-sum').textContent = (cxEl('cx-roll-det').open ? 'Hide the actions' : 'Show the actions') + ' (' + r.kids.length + ')';
+  const kids = cxEl('cx-roll-kids');
+  if (kids.dataset.roll !== String(r.id)){ kids.dataset.roll = String(r.id); kids.innerHTML = ''; }
+  while (kids.children.length < r.kids.length){
+    const li = document.createElement('li'), name = r.kids[kids.children.length];
+    const e = EFFECTS.find(x => x.label === name);
+    li.innerHTML = (e ? icon(e.icon) : '') + '<span>' + sEsc(name) + '</span>'; kids.appendChild(li);
+  }
+  const u = cxEl('cx-roll-undo'); u.disabled = !undoable; u.textContent = undoable ? 'Undo all (' + undoable + ')' : 'Undo all';
+  u.title = undoable ? 'Undo every undoable change this roll made' : 'Nothing in this roll can be undone right now';
+  const live = r.id + ':' + (r.done ? (r.stopped ? 's' : 'd') : 'a');
+  if (live !== chaosRollLiveAt){ chaosRollLiveAt = live; cxEl('cx-roll-live').textContent = r.name + (r.done ? (r.stopped ? ' stopped at ' + r.fired + ' of ' + r.count + '.' : ' finished: ' + r.count + ' actions started.') : ' started: ' + r.count + ' actions.'); }
+}
+function chaosUiSyncAll(){ chaosUiSyncControls(); chaosUiRenderHistory(); chaosUiSyncStats(); chaosUiSyncMeter(); chaosUiSyncRolls(); chaosUiRenderRoll(); chaosUiRenderResult(); chaosUiRenderUndos(); }
 
 (function chaosInit(){
   try {
