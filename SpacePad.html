@@ -2646,6 +2646,171 @@
   .studio-item .ghost-btn { padding: 3px 9px; }
   .studio-item input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; }
 
+
+  /* =========================================================================
+     BORDERS & EFFECTS (Studio app "Borders & Effects" + Settings -> Appearance).
+     All values come from ONE setting (see the BORDERS & EFFECTS section of the
+     script). Rainbow border = a ring-shaped pseudo-element (conic-gradient
+     masked to a ring), so it never changes layout or hit-testing. The only
+     animated thing is the registered angle --bd-angle on the focused window's
+     ::after, the screen frame's ::before, a hovered desktop icon, or the
+     slide of the taskbar / header line, all stepped (about 15 fps) and only
+     while html.bd-anim is set. Variables you can override from Custom CSS
+     (use !important, they are set on <html>): --bd-w (ring width),
+     --bd-stops (color list), --bd-period (seconds per turn), --bd-steps
+     (frames per turn), --fx-shadow (window shadow).
+     ===================================================================== */
+  @property --bd-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  @property --bd-hue { syntax: '<number>'; inherits: false; initial-value: 0; }
+  @keyframes bd-spin { from { --bd-angle: 0deg; --bd-hue: 0; } to { --bd-angle: 360deg; --bd-hue: 360; } }
+  @keyframes bd-slide { from { background-position: 0 0; } to { background-position: 200% 0; } }
+  html {
+    --bd-w: 3px; --bd-s: 85%; --bd-l: 60%; --bd-period: 6s; --bd-steps: 90; --bd-dir: normal;
+    --bd-stops: hsl(0 85% 60%), hsl(60 85% 60%), hsl(120 85% 60%), hsl(180 85% 60%), hsl(240 85% 60%), hsl(300 85% 60%), hsl(360 85% 60%);
+  }
+  #fx-frame { position: fixed; inset: 0; z-index: 280; pointer-events: none; display: none; }
+  html.fx-live[data-bd-frame] #fx-frame { display: block; box-shadow: var(--bd-glow-in, none); }
+  /* The screen frame is four thin strips (a full-screen masked layer cost about 3x frame time while animating); each strip slides the same color list along its edge. */
+  #fx-frame i { position: absolute; pointer-events: none; }
+  #fx-frame i:nth-child(1) { left: 0; right: 0; top: 0; height: var(--bd-w); }
+  #fx-frame i:nth-child(2) { left: 0; right: 0; bottom: 0; height: var(--bd-w); }
+  #fx-frame i:nth-child(3) { top: 0; bottom: 0; left: 0; width: var(--bd-w); }
+  #fx-frame i:nth-child(4) { top: 0; bottom: 0; right: 0; width: var(--bd-w); }
+  #fx-frame i:nth-child(-n+2) { background: linear-gradient(90deg, var(--bd-stops)) 0 0 / 50% 100% repeat-x; }
+  #fx-frame i:nth-child(n+3) { background: linear-gradient(180deg, var(--bd-stops)) 0 0 / 100% 50% repeat-y; }
+  html[data-bd-style="solid"] #fx-frame i { background: var(--accent); }
+  html[data-bd-line="dashed"] #fx-frame i:nth-child(-n+2) { -webkit-mask: repeating-linear-gradient(90deg, #000 0 12px, transparent 12px 20px); mask: repeating-linear-gradient(90deg, #000 0 12px, transparent 12px 20px); }
+  html[data-bd-line="dashed"] #fx-frame i:nth-child(n+3) { -webkit-mask: repeating-linear-gradient(180deg, #000 0 12px, transparent 12px 20px); mask: repeating-linear-gradient(180deg, #000 0 12px, transparent 12px 20px); }
+  html[data-bd-line="dotted"] #fx-frame i:nth-child(-n+2) { -webkit-mask: repeating-linear-gradient(90deg, #000 0 var(--bd-w), transparent var(--bd-w) calc(var(--bd-w) * 2.4)); mask: repeating-linear-gradient(90deg, #000 0 var(--bd-w), transparent var(--bd-w) calc(var(--bd-w) * 2.4)); }
+  html[data-bd-line="dotted"] #fx-frame i:nth-child(n+3) { -webkit-mask: repeating-linear-gradient(180deg, #000 0 var(--bd-w), transparent var(--bd-w) calc(var(--bd-w) * 2.4)); mask: repeating-linear-gradient(180deg, #000 0 var(--bd-w), transparent var(--bd-w) calc(var(--bd-w) * 2.4)); }
+  @keyframes bd-slide-y { from { background-position: 0 0; } to { background-position: 0 200%; } }
+  html.bd-anim #fx-frame i:nth-child(1), html.bd-anim #fx-frame i:nth-child(2) { will-change: transform; animation: bd-slide var(--bd-period) steps(var(--bd-steps)) infinite var(--bd-dir); }
+  html.bd-anim #fx-frame i:nth-child(3), html.bd-anim #fx-frame i:nth-child(4) { animation: bd-slide-y var(--bd-period) steps(var(--bd-steps)) infinite var(--bd-dir); }
+  html.bd-anim #fx-frame i:nth-child(2), html.bd-anim #fx-frame i:nth-child(3) { animation-direction: var(--bd-dir-rev); }
+  html[data-bd-win] .app-window { --bd-i: -1px; }
+  html[data-bd-nt] .sticky-note { --bd-i: -2px; }
+  html[data-bd-nt] .sp-widget, html[data-bd-ic] .desktop-icon { --bd-i: -1px; }
+  html[data-bd-ic] .desktop-icon:not(.positioned) { position: relative; }
+  .fx-prev { --bd-i: -1px; }
+  html[data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-win="all"] .app-window::after,html[data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-nt] .sticky-note::after, html[data-bd-nt] .sp-widget::after, .fx-prev.on::after {
+    content: ''; position: absolute; inset: var(--bd-i, 0px); box-sizing: border-box; padding: var(--bd-w);
+    border-radius: inherit; pointer-events: none; z-index: 2;
+    background: conic-gradient(from var(--bd-angle), var(--bd-stops));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  html[data-bd-style="solid"][data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-style="solid"][data-bd-win="all"] .app-window::after,html[data-bd-style="solid"][data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-style="solid"][data-bd-nt] .sticky-note::after, html[data-bd-style="solid"][data-bd-nt] .sp-widget::after, html[data-bd-style="solid"] .fx-prev.on::after { background: var(--accent); }
+  html[data-bd-win="all"] .app-window:not(.win-focused)::after { opacity: .38; }
+  html.bd-anim[data-bd-win] .app-window.win-focused::after,html.bd-anim[data-bd-ic] .desktop-icon:not(.disabled):is(:hover, .icon-dragging)::after, html.bd-anim .fx-prev.on::after { animation: bd-spin var(--bd-period) steps(var(--bd-steps)) infinite var(--bd-dir); will-change: transform; }
+  /* dashed / dotted: a real border, colored per side (rainbow styles: four hues that rotate with --bd-hue) */
+  html[data-bd-line="dashed"][data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-line="dashed"][data-bd-win="all"] .app-window::after,html[data-bd-line="dashed"][data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-line="dashed"][data-bd-nt] .sticky-note::after, html[data-bd-line="dashed"][data-bd-nt] .sp-widget::after, html[data-bd-line="dashed"] .fx-prev.on::after, html[data-bd-line="dotted"][data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-line="dotted"][data-bd-win="all"] .app-window::after,html[data-bd-line="dotted"][data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-line="dotted"][data-bd-nt] .sticky-note::after, html[data-bd-line="dotted"][data-bd-nt] .sp-widget::after, html[data-bd-line="dotted"] .fx-prev.on::after {
+    padding: 0; background: none; -webkit-mask: none; mask: none; border-image: none; border-style: dashed; border-width: var(--bd-w); border-color: var(--bd-dc, var(--accent));
+  }
+  html[data-bd-line="dotted"][data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-line="dotted"][data-bd-win="all"] .app-window::after,html[data-bd-line="dotted"][data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-line="dotted"][data-bd-nt] .sticky-note::after, html[data-bd-line="dotted"][data-bd-nt] .sp-widget::after, html[data-bd-line="dotted"] .fx-prev.on::after { border-style: dotted; }
+  html[data-bd-line][data-bd-style="rainbow"][data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-line][data-bd-style="rainbow"][data-bd-win="all"] .app-window::after,html[data-bd-line][data-bd-style="rainbow"][data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-line][data-bd-style="rainbow"][data-bd-nt] .sticky-note::after, html[data-bd-line][data-bd-style="rainbow"][data-bd-nt] .sp-widget::after, html[data-bd-line][data-bd-style="rainbow"] .fx-prev.on::after, html[data-bd-line][data-bd-style="flow"][data-bd-win="focused"] .app-window.win-focused::after, html[data-bd-line][data-bd-style="flow"][data-bd-win="all"] .app-window::after,html[data-bd-line][data-bd-style="flow"][data-bd-ic] .desktop-icon:not(.disabled):is(:hover, :focus-visible, .icon-dragging)::after, html[data-bd-line][data-bd-style="flow"][data-bd-nt] .sticky-note::after, html[data-bd-line][data-bd-style="flow"][data-bd-nt] .sp-widget::after, html[data-bd-line][data-bd-style="flow"] .fx-prev.on::after {
+    border-color: hsl(calc(var(--bd-hue) + 0) var(--bd-s) var(--bd-l)) hsl(calc(var(--bd-hue) + 90) var(--bd-s) var(--bd-l)) hsl(calc(var(--bd-hue) + 180) var(--bd-s) var(--bd-l)) hsl(calc(var(--bd-hue) + 270) var(--bd-s) var(--bd-l));
+  }
+  /* glow: outer on the window itself, inner as an inset shadow on ::before (never a filter) */
+  html[data-bd-glow][data-bd-win] .app-window.win-focused { box-shadow: var(--bd-glow-out), var(--fx-shadow, 0 20px 60px rgba(0,0,0,0.45)); }
+  html[data-bd-glow][data-bd-win="focused"] .app-window.win-focused::before, html[data-bd-glow][data-bd-win="all"] .app-window.win-focused::before, html[data-bd-glow] .fx-prev.on::before {
+    content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: 1; box-shadow: var(--bd-glow-in);
+  }
+  html[data-bd-glow] .fx-prev.on { box-shadow: var(--bd-glow-out), var(--fx-shadow, 0 12px 30px rgba(0,0,0,0.4)); }
+  /* taskbar top line and header bottom line */
+  html.fx-live[data-bd-tb] #taskbar::before, html.fx-live[data-bd-hd] header::after {
+    content: ''; position: absolute; left: 0; right: 0; height: var(--bd-w); pointer-events: none; z-index: 2;
+    background: linear-gradient(90deg, var(--bd-stops)) 0 0 / 50% 100% repeat-x;
+    box-shadow: 0 0 var(--bd-lg, 0px) var(--bd-glow-c, transparent);
+  }
+  html.fx-live[data-bd-tb] #taskbar::before { top: -1px; }
+  html.fx-live[data-bd-hd] header::after { bottom: -1px; }
+  html[data-bd-style="solid"].fx-live[data-bd-tb] #taskbar::before, html[data-bd-style="solid"].fx-live[data-bd-hd] header::after { background: var(--accent); }
+  html[data-bd-line="dashed"].fx-live[data-bd-tb] #taskbar::before, html[data-bd-line="dashed"].fx-live[data-bd-hd] header::after {
+    -webkit-mask: repeating-linear-gradient(90deg, #000 0 12px, transparent 12px 20px); mask: repeating-linear-gradient(90deg, #000 0 12px, transparent 12px 20px);
+  }
+  html[data-bd-line="dotted"].fx-live[data-bd-tb] #taskbar::before, html[data-bd-line="dotted"].fx-live[data-bd-hd] header::after {
+    -webkit-mask: repeating-linear-gradient(90deg, #000 0 var(--bd-w), transparent var(--bd-w) calc(var(--bd-w) * 2.4)); mask: repeating-linear-gradient(90deg, #000 0 var(--bd-w), transparent var(--bd-w) calc(var(--bd-w) * 2.4));
+  }
+  html.bd-anim.fx-live[data-bd-tb] #taskbar::before, html.bd-anim.fx-live[data-bd-hd] header::after { animation: bd-slide var(--bd-period) steps(var(--bd-steps)) infinite var(--bd-dir); }
+
+  /* window shadow presets */
+  html[data-fx-shadow] .app-window { box-shadow: var(--fx-shadow); }
+  /* title bar: density, alignment, button side, gradient */
+  html[data-fx-tbd="compact"] .win-titlebar { padding: 4px 6px 4px 12px; gap: 8px; }
+  html[data-fx-tbd="compact"] .win-titlebar button { width: 20px; height: 20px; }
+  html[data-fx-tbd="roomy"] .win-titlebar { padding: 12px 10px 12px 16px; gap: 12px; }
+  html[data-fx-tbd="roomy"] .win-titlebar button { width: 28px; height: 28px; }
+  html[data-fx-tbd="roomy"] .win-title { font-size: 13.5px; }
+  html[data-fx-tba="center"] .win-title { text-align: center; }
+  html[data-fx-tbb="left"] .win-titlebar .win-close, html[data-fx-tbb="dots"] .win-titlebar .win-close { order: -4; }
+  html[data-fx-tbb="left"] .win-titlebar .win-min, html[data-fx-tbb="dots"] .win-titlebar .win-min { order: -3; }
+  html[data-fx-tbb="left"] .win-titlebar .win-max, html[data-fx-tbb="dots"] .win-titlebar .win-max { order: -2; }
+  html[data-fx-tbb="left"] .win-titlebar .win-newtab, html[data-fx-tbb="dots"] .win-titlebar .win-newtab { order: 9; }
+  html[data-fx-tbb="dots"] .win-titlebar :is(.win-close, .win-min, .win-max) {
+    width: 16px !important; height: 16px !important; border-radius: 50% !important; border: 1px solid rgba(0,0,0,0.3) !important; color: transparent !important;
+  }
+  html[data-fx-tbb="dots"] .win-titlebar button svg { width: 10px; height: 10px; }
+  html[data-fx-tbb="dots"] .win-titlebar .win-close { background: #ff5f57 !important; }
+  html[data-fx-tbb="dots"] .win-titlebar .win-min { background: #febc2e !important; }
+  html[data-fx-tbb="dots"] .win-titlebar .win-max { background: #28c840 !important; }
+  html[data-fx-tbb="dots"] .win-titlebar :is(.win-close, .win-min, .win-max):is(:hover, :focus-visible) { color: rgba(0,0,0,0.7) !important; transform: none; }
+  html[data-fx-tbg="sweep"] .win-titlebar { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, var(--panel-3)), var(--panel-2) 78%); }
+  html[data-fx-tbg="flat"] .win-titlebar { background: var(--panel-3); }
+  html[data-fx-tbg="sweep"][data-theme="day"]:not(.day-plain):root .win-titlebar { background: linear-gradient(90deg, var(--day-chrome-muted-hi), var(--day-chrome-muted-lo) 55%, color-mix(in srgb, var(--accent) 45%, var(--day-chrome-muted-lo))); }
+  html[data-fx-tbg="sweep"][data-theme="day"]:not(.day-plain):root .app-window.win-focused .win-titlebar { background: linear-gradient(90deg, var(--day-chrome-hi), var(--day-chrome-lo) 55%, color-mix(in srgb, var(--accent) 50%, var(--day-chrome-lo))); }
+  html[data-fx-tbg="flat"][data-theme="day"]:not(.day-plain):root .win-titlebar { background: var(--day-chrome-muted-lo); }
+  html[data-fx-tbg="flat"][data-theme="day"]:not(.day-plain):root .app-window.win-focused .win-titlebar { background: var(--day-chrome); }
+  /* cursors */
+  html[data-fx-cur] { cursor: var(--fx-cur-a); }
+  html[data-fx-cur] :is(a[href], button:not(:disabled), [role="button"], summary, select, label, input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"], .desktop-icon:not(.disabled), .tb-chip-main, .accent-swatch, .wp-thumb) { cursor: var(--fx-cur-p); }
+  #fx-trail { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 284; pointer-events: none; }
+  #fx-ripple { position: fixed; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; border: 2px solid var(--accent); box-sizing: border-box; z-index: 285; pointer-events: none; opacity: 0; }
+  /* scrollbars (WebKit pseudo-elements; Firefox gets scrollbar-color below) */
+  html[data-fx-sb] ::-webkit-scrollbar { width: var(--fx-sbw, 10px); height: var(--fx-sbw, 10px); }
+  html[data-fx-sb] ::-webkit-scrollbar-track { background: transparent; }
+  html[data-fx-sb] ::-webkit-scrollbar-corner { background: transparent; }
+  html[data-fx-sb] ::-webkit-scrollbar-thumb { background-color: var(--fx-sbc, var(--accent)); border: var(--fx-sbb, 2px) solid transparent; background-clip: padding-box; border-radius: 99px; min-height: 28px; min-width: 28px; }
+  html[data-fx-sb] ::-webkit-scrollbar-thumb:hover { background-color: var(--accent-cyan); }
+  html[data-fx-sb="rainbow"] ::-webkit-scrollbar-thumb:vertical { background-image: linear-gradient(180deg, var(--bd-stops-sb, var(--bd-stops))); }
+  html[data-fx-sb="rainbow"] ::-webkit-scrollbar-thumb:horizontal { background-image: linear-gradient(90deg, var(--bd-stops-sb, var(--bd-stops))); }
+  html[data-fx-sb] #tb-list::-webkit-scrollbar { display: none; }
+  @supports (scrollbar-color: auto) and (not selector(::-webkit-scrollbar)) {
+    html[data-fx-sb] * { scrollbar-color: var(--accent) transparent; scrollbar-width: var(--fx-sbf, auto); }
+  }
+  /* selection and focus */
+  html[data-fx-sel] ::selection { background: var(--fx-sel, color-mix(in srgb, var(--accent) 55%, transparent)); }
+  html[data-fx-focus] :focus-visible { outline: var(--fx-fw, 2px) solid var(--fx-fc, var(--accent)) !important; outline-offset: var(--fx-fo, 2px) !important; }
+  html[data-fx-focus="high"] :focus-visible { outline-color: #fff !important; box-shadow: 0 0 0 calc(var(--fx-fo, 2px) + var(--fx-fw, 2px) + 2px) #000 !important; }
+  html[data-fx-focus="high"][data-theme="day"] :focus-visible { outline-color: #000 !important; box-shadow: 0 0 0 calc(var(--fx-fo, 2px) + var(--fx-fw, 2px) + 2px) #fff !important; }
+
+  /* Borders & Effects app */
+  .fx-stage { padding: 20px 16px; border-radius: 10px; border: 1px solid var(--border); background: linear-gradient(135deg, var(--panel-2), var(--panel-3)); }
+  .fx-prev { position: relative; max-width: 380px; margin: 0 auto; border: 1px solid var(--border); border-radius: var(--win-radius, 10px); background: var(--panel); overflow: hidden; box-shadow: var(--fx-shadow, 0 12px 30px rgba(0,0,0,0.4)); }
+  .fx-prev-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(18, 20, 42, 0.82); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text); }
+  html[data-theme="day"]:not(.day-plain):root .fx-prev-bar { background: linear-gradient(180deg, var(--day-chrome-hi), var(--day-chrome-lo)); color: #fff; }
+  .fx-prev-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .fx-prev-body { padding: 14px 14px 16px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .fx-prev-body b { color: var(--text); }
+  .fx-status { font-size: 11.5px; color: var(--text-dim); margin: 8px 0 0; text-align: center; }
+  .fx-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fx-seg .ghost-btn { padding: 4px 10px; font-size: 12px; }
+  .fx-group { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  [data-fx-if][hidden] { display: none !important; }
+  .fx-wrap .settings-card > [data-fx-if] { margin-top: 8px; }
+  .fx-group > .studio-sub { margin: 0 0 6px; font-weight: 600; color: var(--text); }
+  .studio-row .fx-range { flex: 1 1 140px; min-width: 110px; }
+  .studio-wrap input[type="color"].fx-color { width: 34px; height: 26px; }
+  .fx-looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 8px; }
+  .fx-look { position: relative; text-align: left; padding: 0; border: 2px solid var(--border); border-radius: 10px; background: var(--panel-2); overflow: hidden; cursor: pointer; color: var(--text); font: inherit; }
+  .fx-look:hover { border-color: var(--accent-dim); transform: translateY(-1px); }
+  .fx-look[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139,124,246,0.35); }
+  .fx-look-sw { display: block; height: 58px; position: relative; background-size: cover; background-position: center; }
+  .fx-look-sw i { position: absolute; inset: 9px 14px 7px; border-radius: 6px; border: 3px solid transparent; background: linear-gradient(var(--panel), var(--panel)) padding-box, var(--ring, linear-gradient(90deg, var(--accent), var(--accent))) border-box; }
+  .fx-look-name { display: block; padding: 6px 8px 7px; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fx-look-name small { display: block; font-weight: 400; font-size: 10.5px; color: var(--text-dim); white-space: normal; }
+  .fx-saved .studio-item .name { font-weight: 600; }
+  @media (max-width: 520px) { .fx-looks { grid-template-columns: repeat(2, 1fr); } .fx-wrap .studio-label { min-width: 0; flex: 1 1 100%; } }
+
   /* Custom CSS editor */
   .ccss-bar { position: sticky; top: -22px; z-index: 5; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-radius: 10px; background: var(--panel-3); border: 1px solid var(--accent-dim); }
   .ccss-editor { display: flex; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); overflow: hidden; height: 300px; }
@@ -4165,6 +4330,7 @@
             <option value="customcss">Custom CSS</option>
             <option value="shortcuts">Shortcuts</option>
             <option value="layouts">Window Layouts</option>
+            <option value="borders">Borders &amp; Effects</option>
             <option value="chaos">Chaos</option>
             <option value="settings">Settings</option>
           </select>
@@ -4282,6 +4448,7 @@
           </select>
         </div>
         <div id="settings-icon-colors"></div>
+        <div id="settings-fx"></div>
         <div class="settings-row">
           <div>
             <div class="settings-row-label">Title &amp; icon</div>
@@ -4535,6 +4702,7 @@
   <div id="view-customcss" class="app-view studio-view"></div>
   <div id="view-shortcuts" class="app-view studio-view"></div>
   <div id="view-layouts" class="app-view studio-view"></div>
+  <div id="view-borders" class="app-view studio-view"></div>
   <div id="view-chaos" class="app-view studio-view"></div>
 
 </main>
@@ -4584,6 +4752,7 @@
 </div>
 
 <div id="toast-container" aria-live="polite"></div>
+<div id="fx-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
 <div id="stickyLayer"></div>
 
@@ -4962,6 +5131,7 @@ function spUnlock(){
   if (!spLocked) return;
   spLocked = false;
   try { iconColorsFlowSync(); } catch(e){}
+  try { fxApply(); fxGateSync(); } catch(e){}
   const root = document.documentElement;
   const instant = root.classList.contains('reduce-motion') || root.classList.contains('perf-mode') ||
     (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -4978,6 +5148,7 @@ function spLock(){
   if (spLocked) return;
   spLocked = true;
   try { iconColorsFlowSync(); } catch(e){}
+  try { fxApply(); fxGateSync(); } catch(e){}
   clearTimeout(spLeaveTimer);
   spLockEl.classList.remove('sp-leaving');
   document.documentElement.classList.remove('sp-unlocked');
@@ -6816,6 +6987,7 @@ const DESKTOP_APPS = [
   { view: 'customcss', icon: 'code', label: 'Custom CSS' },
   { view: 'shortcuts', icon: 'command', label: 'Shortcuts' },
   { view: 'layouts', icon: 'layers', label: 'Window Layouts' },
+  { view: 'borders', icon: 'rainbow', label: 'Borders & Effects' },
   { view: 'chaos', icon: 'zap', label: 'Chaos' },
   { view: 'appstore', icon: 'download', label: 'App Store' },
   { view: 'settings', icon: 'settings', label: 'Settings' }
@@ -7376,7 +7548,7 @@ const DEFAULT_WIN_SIZE = {
   stargazing: { w: 720, h: 480 }, game: { w: 640, h: 480 }, settings: { w: 580, h: 540 },
   customize: { w: 580, h: 580 }, appstore: { w: 680, h: 640 }, 'custom-app': { w: 680, h: 540 },
   wallpapers: { w: 700, h: 600 }, appearance: { w: 720, h: 620 }, widgets: { w: 600, h: 560 }, iconlayout: { w: 640, h: 600 },
-  customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, chaos: { w: 560, h: 700 }
+  customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, borders: { w: 740, h: 640 }, chaos: { w: 560, h: 700 }
 };
 
 function defaultWinRect(key){
@@ -8028,6 +8200,10 @@ const BASE_COMMANDS = [
   { id: 'toggle-theme', label: 'Toggle Day / Night theme', iconName: 'moon', iconFill: true, def: 'Alt+T', run: () => { applyTheme(currentTheme === 'day' ? 'night' : 'day'); settingsSet(THEME_KEY, currentTheme); studioEmit(); } },
   { id: 'toggle-perf', label: 'Toggle Performance mode', iconName: 'rocket', iconFill: true, def: 'Alt+P', run: () => { applyPerfMode(!document.documentElement.classList.contains('perf-mode'), true); studioEmit(); showToast('Performance mode ' + (document.documentElement.classList.contains('perf-mode') ? 'on' : 'off') + '.'); } },
   { id: 'icon-colors', label: 'Cycle icon colors (Default / Rainbow)', iconName: 'palette', iconFill: true, run: () => iconColorsCycle() },
+  { id: 'fx-border', label: 'Toggle rainbow border', iconName: 'rainbow', run: () => fxToggleBorder() },
+  { id: 'fx-next-look', label: 'Next look', iconName: 'palette', iconFill: true, run: () => fxNextLook() },
+  { id: 'fx-random-look', label: 'Random look', iconName: 'shuffle', run: () => fxRandomLook() },
+  { id: 'fx-trail', label: 'Toggle cursor trail', iconName: 'cursor', run: () => fxToggleTrail() },
   { id: 'tb-seconds', label: 'Toggle taskbar clock seconds', iconName: 'clock', run: () => taskbarSet && taskbarSet('seconds') },
   { id: 'tb-24h', label: 'Toggle taskbar 24-hour clock', iconName: 'clock', run: () => taskbarSet && taskbarSet('h24') },
   { id: 'tb-autohide', label: 'Toggle taskbar auto-hide', iconName: 'layout', run: () => taskbarSet && taskbarSet('autohide') },
@@ -15633,6 +15809,7 @@ document.getElementById('setPerfMode').addEventListener('change', (e) => applyPe
     root.classList.toggle('bg-covered', maxed);
     root.classList.toggle('sg-open', sg);
     iconColorsFlowSync();
+    try { fxGateSync(); } catch(e){}
   }
   function queue(){ if (!queued){ queued = true; requestAnimationFrame(update); } }
   // Only window-level changes matter (class flips on .app-window itself, or a
@@ -15849,7 +16026,8 @@ document.getElementById('settings-lock-btn').addEventListener('click', () => spL
 /* =========================================================================
    SPACEPAD STUDIO — built-in apps that customize Spacepad itself:
      1. Wallpapers      2. Appearance      3. Widgets      4. Icon Layout
-     5. Custom CSS      6. Shortcuts       7. Window Layouts      8. Chaos (its
+     5. Custom CSS      6. Shortcuts       7. Window Layouts      8. Borders & Effects
+     (after Window Layouts)      9. Chaos (its
      code lives in the "CHAOS" section near the end of the script)
    Each app is a self-contained section below. They register in DESKTOP_APPS
    (desktop icon, Ctrl+K, window, per-window new-tab button, deep link) and keep
@@ -16256,7 +16434,7 @@ function sCopy(text, okMsg){
     v.querySelectorAll('.cust-theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === currentTheme));
     iconColorsSyncUi();
   }
-  function change(patch){ Object.assign(st, patch); applyAll(); persist(); sync(); }
+  function change(patch){ Object.assign(st, patch); applyAll(); persist(); sync(); studioEmit(); }
 
   v.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
@@ -16308,7 +16486,10 @@ function sCopy(text, okMsg){
     showToast('Appearance reset.');
   }
   document.addEventListener('spacepad:settings', sync);
-  studioApps.appearance = { refresh: sync, reset: resetAll, getRadius: () => st.radius, setRadius: (n) => change({ radius: sClamp(n, 0, 24, DEFAULTS.radius) }) };
+  studioApps.appearance = { refresh: sync, reset: resetAll, getRadius: () => st.radius, setRadius: (n) => change({ radius: sClamp(n, 0, 24, DEFAULTS.radius) }),
+    getState: () => Object.assign({}, st),
+    setState: (p) => { p = p || {}; const n = {}; if ('radius' in p) n.radius = sClamp(p.radius, 0, 24, st.radius); if ('opacity' in p) n.opacity = sClamp(p.opacity, 50, 100, st.opacity); if ('scale' in p) n.scale = sClamp(p.scale, 85, 130, st.scale);
+      if ('font' in p && FONTS.some(f => f[0] === p.font)) n.font = p.font; if ('density' in p) n.density = p.density === 'compact' ? 'compact' : 'comfortable'; change(n); } };
   sync();
 })();
 
@@ -16722,7 +16903,10 @@ function sCopy(text, okMsg){
     ['Thin scrollbars', 'Slim scrollbars everywhere', '* {\n  scrollbar-width: thin;\n}'],
     ['Big window buttons', 'Easier-to-hit minimize / maximize / close', '.win-titlebar button {\n  width: 30px !important;\n  height: 30px !important;\n}'],
     ['Transparent taskbar', 'See the wallpaper through the taskbar', '#taskbar {\n  background: transparent !important;\n  border-top-color: transparent !important;\n}'],
-    ['Monospace UI', 'Use a monospace font for the whole interface', 'html {\n  font-family: ui-monospace, Menlo, Consolas, monospace !important;\n}']
+    ['Monospace UI', 'Use a monospace font for the whole interface', 'html {\n  font-family: ui-monospace, Menlo, Consolas, monospace !important;\n}'],
+    ['Thicker border, custom colors', 'Rainbow border ring width and colors (turn Rainbow border on first)', 'html {\n  --bd-w: 5px !important;\n  --bd-stops: #ff0080, #ffcc00, #00e5ff, #ff0080 !important;\n}'],
+    ['Slow border spin', 'One turn every 30 seconds, 10 steps per second', 'html {\n  --bd-period: 30s !important;\n  --bd-steps: 300 !important;\n}'],
+    ['Your own window shadow', 'Set --fx-shadow and use it on every window', 'html {\n  --fx-shadow: 0 0 0 2px var(--accent), 0 18px 50px rgba(0, 0, 0, 0.5) !important;\n}\n.app-window {\n  box-shadow: var(--fx-shadow) !important;\n}']
   ];
   let styleEl = null;
   function ensureStyle(){ if (!styleEl){ styleEl = document.createElement('style'); styleEl.id = 'spacepad-custom-css'; document.head.appendChild(styleEl); } return styleEl; }
@@ -16738,7 +16922,7 @@ function sCopy(text, okMsg){
     '<div class="settings-card"><h3>' + icon('code') + ' Stylesheet</h3>' +
       '<div class="ccss-editor"><pre class="ccss-gutter" id="cc-gutter" aria-hidden="true">1</pre><textarea id="cc-text" spellcheck="false" aria-label="Custom CSS" placeholder="/* Write CSS here. It applies live while the switch above is on. */\n.app-window { border-width: 2px; }"></textarea></div>' +
       '<div class="studio-row" style="margin-top:8px;"><span class="studio-sub" style="margin:0; flex:1;" id="cc-count"></span><button type="button" class="ghost-btn" data-act="copy">Copy</button><button type="button" class="ghost-btn" data-act="clear" style="color:var(--error); border-color:var(--error);">Clear…</button></div></div>' +
-    '<div class="settings-card"><h3>' + icon('plus') + ' Example snippets</h3><p class="studio-sub">Click to add one to the end of your CSS.</p><div class="ccss-snippets" id="cc-snips"></div></div>' +
+    '<div class="settings-card"><h3>' + icon('plus') + ' Example snippets</h3><p class="studio-sub">Click to add one to the end of your CSS. Border and effect variables you can set on <code>html</code> (with !important): <code>--bd-w</code> ring width, <code>--bd-stops</code> ring colors, <code>--bd-period</code> and <code>--bd-steps</code> spin speed, <code>--fx-shadow</code> window shadow, plus <code>--accent</code>, <code>--win-radius</code>.</p><div class="ccss-snippets" id="cc-snips"></div></div>' +
     '<div class="settings-card"><h3>' + icon('alert-triangle') + ' If something goes wrong</h3><p class="studio-sub" style="margin:0;">The switch and the reset button above always stay visible. You can also press <span id="cc-hint"></span> or run “Disable custom CSS” from the Ctrl+K palette. Your CSS is kept only in this session’s memory and is part of Export everything.</p></div>';
   const v = studioMount('customcss', 'code', 'Custom CSS', 'Restyle any part of Spacepad with your own CSS. Changes apply live; nothing is sent anywhere.', body);
   const host = document.getElementById('cc-bar-host');
@@ -17008,6 +17192,773 @@ function sCopy(text, okMsg){
     _state: () => st
   };
   draw();
+})();
+
+
+/* =========================================================================
+   BORDERS & EFFECTS — the "Borders & Effects" Studio app, its mirror in
+   Settings -> Appearance, the Looks gallery and every effect behind them
+   (rainbow border, window shadows, title bar style, cursor, scrollbars,
+   selection and focus ring). ONE setting object `fx`, kept in memStore under
+   spacepad_fx_v1 (saved looks: spacepad_fx_looks_v1), so Export everything,
+   Import and new tabs carry it, and every control (Settings, the app, the
+   palette commands) edits it through fxSet() and re-syncs through the
+   'spacepad:settings' event, exactly like Icon colors.
+   RAINBOW BORDER — how it is drawn and animated:
+   - Each target gets a ring-shaped pseudo-element: a conic-gradient masked to
+     a ring (mask-composite), border-radius inherited from the window, inset by
+     the window border. It is pointer-events:none and absolutely positioned, so
+     layout, drag, the 8 resize handles and hit-testing are untouched.
+   - Targets: focused window (or every window, the others dimmed and still),
+     a fixed screen frame (#fx-frame), a taskbar top line, a header bottom line,
+     the hovered / focused / dragged desktop icon, sticky notes and widgets.
+   - Animation = ONE CSS keyframe that steps a registered, non-inheriting
+     property (--bd-angle) on the pseudo-element itself, about 15 steps per
+     second (steps()), so style recalculation never reaches window contents
+     and nothing runs on <html>. The lines slide their background position the
+     same way. It only exists while html.bd-anim is set; fxGateSync() removes
+     that class (so there are 0 animations and 0 timers) whenever the tab is
+     hidden, the app is locked, Performance mode / Reduce motion / the OS
+     reduced-motion preference is on, no animated target is on screen, or
+     "Pause when idle" has paused it. Static styles (Rainbow, Solid, paused)
+     are plain CSS with no animation at all.
+   Chosen over a JS timer because a timer has to write a variable that
+   inherits through the whole window; the stepped CSS animation touches only
+   the one pseudo-element (measured in the report).
+   ========================================================================= */
+const FX_KEY = 'spacepad_fx_v1', FX_LOOKS_KEY = 'spacepad_fx_looks_v1';
+const FX_DEF = {
+  bdOn: { t: 'b', d: false }, bdStyle: { t: 'e', d: 'flow', o: ['rainbow', 'flow', 'gradient', 'solid', 'neon'] },
+  bdLine: { t: 'e', d: 'solid', o: ['solid', 'dashed', 'dotted'] },
+  bdWidth: { t: 'i', d: 3, lo: 1, hi: 8 }, bdGlow: { t: 'i', d: 6, lo: 0, hi: 20 },
+  bdSat: { t: 'i', d: 85, lo: 30, hi: 100 }, bdLight: { t: 'i', d: 60, lo: 40, hi: 85 },
+  bdSpeed: { t: 'i', d: 4, lo: 1, hi: 10 }, bdDir: { t: 'e', d: 'cw', o: ['cw', 'ccw'] }, bdSpin: { t: 'b', d: true },
+  bdG1: { t: 'c', d: '#ff4fd8' }, bdG2: { t: 'c', d: '#4fd8ff' }, bdG3: { t: 'c', d: '#ffd84f' }, bdG3On: { t: 'b', d: false },
+  bdIdle: { t: 'b', d: false },
+  bdWin: { t: 'e', d: 'focused', o: ['off', 'focused', 'all'] },
+  bdFrame: { t: 'b', d: false }, bdTaskbar: { t: 'b', d: false }, bdHeader: { t: 'b', d: false }, bdIcons: { t: 'b', d: false }, bdNotes: { t: 'b', d: false },
+  shadow: { t: 'e', d: 'default', o: ['default', 'none', 'soft', 'deep', 'neon', 'rainbow'] },
+  tbDensity: { t: 'e', d: 'normal', o: ['compact', 'normal', 'roomy'] }, tbAlign: { t: 'e', d: 'left', o: ['left', 'center'] },
+  tbBtns: { t: 'e', d: 'right', o: ['right', 'left', 'dots'] }, tbGrad: { t: 'e', d: 'default', o: ['default', 'sweep', 'flat'] },
+  curColor: { t: 'e', d: 'default', o: ['default', 'accent', 'rainbow'] }, curTrail: { t: 'b', d: false }, curRipple: { t: 'b', d: false },
+  sbMode: { t: 'e', d: 'default', o: ['default', 'accent', 'rainbow'] }, sbSize: { t: 'e', d: 'normal', o: ['thin', 'normal', 'wide'] },
+  selMode: { t: 'e', d: 'default', o: ['default', 'accent', 'rainbow'] },
+  focusMode: { t: 'e', d: 'default', o: ['default', 'accent', 'rainbow'] }, focusW: { t: 'i', d: 2, lo: 1, hi: 6 }, focusO: { t: 'i', d: 2, lo: 0, hi: 6 }, focusHigh: { t: 'b', d: false },
+  look: { t: 's', d: '' }
+};
+function fxDefaults(){ const o = {}; Object.keys(FX_DEF).forEach(k => { o[k] = FX_DEF[k].d; }); return o; }
+function fxCoerce(d, v, fb){
+  switch (d.t){
+    case 'b': return typeof v === 'boolean' ? v : (v === 'true' ? true : (v === 'false' ? false : fb));
+    case 'e': return d.o.indexOf(v) > -1 ? v : fb;
+    case 'i': { if (v === null || v === '' || typeof v === 'boolean' || (typeof v === 'object' && v)) return fb; v = Math.round(+v); return isFinite(v) ? Math.max(d.lo, Math.min(d.hi, v)) : fb; }
+    case 'c': return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : fb;
+    default: return typeof v === 'string' ? v.slice(0, 40) : fb;
+  }
+}
+// Unknown keys are ignored; bad values fall back to `base` (or the default).
+function fxNormalize(raw, base){
+  raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}; const o = {};
+  Object.keys(FX_DEF).forEach(k => {
+    const fb = base && k in base ? base[k] : FX_DEF[k].d;
+    o[k] = Object.prototype.hasOwnProperty.call(raw, k) ? fxCoerce(FX_DEF[k], raw[k], fb) : fb;
+  });
+  return o;
+}
+let fx = fxNormalize(sJson(FX_KEY, {}));
+let fxLast = {};                 // what is currently on <html>, so a re-apply only touches what changed
+let fxUndoSnap = null;           // the state before the last Look / reset (one level; the toast and the app button use it)
+function fxAttr(name, val){
+  if (fxLast['a' + name] === val) return; fxLast['a' + name] = val;
+  const r = document.documentElement;
+  if (val === null || val === undefined || val === false) r.removeAttribute(name); else r.setAttribute(name, val === true ? '' : String(val));
+}
+function fxVar(name, val){
+  if (fxLast['v' + name] === val) return; fxLast['v' + name] = val;
+  const s = document.documentElement.style;
+  if (val === null || val === undefined || val === '') s.removeProperty(name); else s.setProperty(name, val);
+}
+function fxHsl(h, s, l, a){ return 'hsl(' + h + ' ' + s + '% ' + l + '%' + (a == null ? '' : ' / ' + a) + ')'; }
+function fxAccentHex(){ try { return accentFromValue(memStore.getItem(ACCENT_KEY) || 'Violet').accent; } catch(e){ return '#8b7cf6'; } }
+function fxMotionOk(){
+  if (spLocked || document.hidden) return false;
+  const root = document.documentElement;
+  if (root.classList.contains('perf-mode') || root.classList.contains('reduce-motion')) return false;
+  try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false; } catch(e){}
+  return true;
+}
+function fxAnimated(f){ f = f || fx; return !!(f.bdOn && (f.bdStyle === 'flow' || ((f.bdStyle === 'gradient' || f.bdStyle === 'neon') && f.bdSpin))); }
+// The color list the ring is painted with (also the scrollbar / line gradients).
+function fxStops(f, day){
+  const L = day ? Math.max(32, f.bdLight - 16) : f.bdLight;
+  if (f.bdStyle === 'rainbow' || f.bdStyle === 'flow'){
+    const a = []; for (let h = 0; h <= 360; h += 30) a.push(fxHsl(h, f.bdSat, L)); return a.join(', ');
+  }
+  if (f.bdStyle === 'gradient'){ const c = [f.bdG1, f.bdG2]; if (f.bdG3On) c.push(f.bdG3); c.push(f.bdG1); return c.join(', '); }
+  if (f.bdStyle === 'neon'){
+    const hi = 'color-mix(in srgb, var(--accent) 30%, #fff)';
+    return 'var(--accent) 0%, ' + hi + ' 25%, var(--accent) 50%, ' + hi + ' 75%, var(--accent) 100%';
+  }
+  return 'var(--accent), var(--accent)';
+}
+// Window glow as tinted box-shadow layers (outer for the window, inset for the inner edge). No blur filters.
+function fxGlowLayers(f, G, inset, day){
+  const pre = inset ? 'inset ' : '', L = day ? Math.max(32, f.bdLight - 12) : f.bdLight, o = Math.max(1, Math.round(G / 3)), B = Math.round(G * 1.5), out = [];
+  if (f.bdStyle === 'rainbow' || f.bdStyle === 'flow'){
+    [[-o, -o, 0], [o, -o, 90], [o, o, 200], [-o, o, 290]].forEach(c => out.push(pre + c[0] + 'px ' + c[1] + 'px ' + B + 'px ' + fxHsl(c[2], f.bdSat, L, 0.6)));
+  } else if (f.bdStyle === 'gradient'){
+    const c = [f.bdG1, f.bdG2].concat(f.bdG3On ? [f.bdG3] : []), pos = [[-o, -o], [o, o], [o, -o]];
+    c.forEach((col, i) => out.push(pre + pos[i][0] + 'px ' + pos[i][1] + 'px ' + B + 'px ' + col + '99'));
+  } else {
+    out.push(pre + '0 0 ' + B + 'px color-mix(in srgb, var(--accent) 70%, transparent)');
+    if (f.bdStyle === 'neon') out.push(pre + '0 0 ' + (B * 2) + 'px color-mix(in srgb, var(--accent) 38%, transparent)');
+  }
+  return out.join(', ');
+}
+function fxGlowColor(f, day){
+  if (f.bdStyle === 'rainbow' || f.bdStyle === 'flow') return fxHsl(190, f.bdSat, day ? Math.max(32, f.bdLight - 12) : f.bdLight, 0.7);
+  if (f.bdStyle === 'gradient') return f.bdG1 + 'cc';
+  return 'color-mix(in srgb, var(--accent) 75%, transparent)';
+}
+const FX_SHADOWS = {
+  none: 'none', soft: '0 8px 24px rgba(0,0,0,0.28)', deep: '0 30px 80px rgba(0,0,0,0.65), 0 8px 20px rgba(0,0,0,0.45)',
+  neon: '0 0 0 1px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 46px color-mix(in srgb, var(--accent) 28%, transparent), 0 14px 40px rgba(0,0,0,0.4)',
+  rainbow: '-10px -8px 28px hsl(0 90% 60% / 0.35), 10px -8px 28px hsl(120 90% 50% / 0.3), 10px 10px 28px hsl(220 90% 62% / 0.35), -10px 10px 28px hsl(300 90% 62% / 0.35), 0 18px 44px rgba(0,0,0,0.4)'
+};
+// Cursor artwork: inline SVG data-URIs (arrow + pointing hand) in the accent color or a rainbow gradient.
+function fxCursorUrls(kind, accent){
+  const fill = kind === 'rainbow' ? 'url(%23g)' : accent.replace('#', '%23');
+  const defs = kind === 'rainbow' ? "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23ff4d6d'/><stop offset='.25' stop-color='%23ffd23f'/><stop offset='.5' stop-color='%2339e07a'/><stop offset='.75' stop-color='%2339b8ff'/><stop offset='1' stop-color='%23b04bff'/></linearGradient></defs>" : '';
+  const head = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>" + defs;
+  const arrow = head + "<path d='M4 3v18l4.8-4.4 3.3 7.4 3.6-1.6-3.3-7.2 6.6-.2z' fill='" + fill + "' stroke='%23101226' stroke-width='1.6' stroke-linejoin='round'/></svg>";
+  const hand = head + "<path d='M10 3.5a1.8 1.8 0 0 1 3.6 0v7.6l.9-.3a1.7 1.7 0 0 1 2.1.8 1.8 1.8 0 0 1 2.2 1 1.7 1.7 0 0 1 2.2 1.6v5.2c0 3.2-2.1 5.6-5.4 5.6h-1.8c-1.9 0-3.1-.7-4.2-1.9L6.2 17a1.7 1.7 0 0 1 2.5-2.3l1.3 1.4z' fill='" + fill + "' stroke='%23101226' stroke-width='1.5' stroke-linejoin='round'/></svg>";
+  return { a: 'url("' + arrow + '") 4 3, auto', p: 'url("' + hand + '") 11 3, pointer' };
+}
+
+function fxApply(){
+  const f = fx, day = (typeof currentTheme !== 'undefined' && currentTheme === 'day'), on = f.bdOn;
+  // ---- rainbow border ----
+  fxAttr('data-bd-win', on && f.bdWin !== 'off' ? f.bdWin : null);
+  fxAttr('data-bd-frame', on && f.bdFrame ? '' : null);
+  fxAttr('data-bd-tb', on && f.bdTaskbar ? '' : null);
+  fxAttr('data-bd-hd', on && f.bdHeader ? '' : null);
+  fxAttr('data-bd-ic', on && f.bdIcons ? '' : null);
+  fxAttr('data-bd-nt', on && f.bdNotes ? '' : null);
+  fxAttr('data-bd-style', on ? f.bdStyle : null);
+  fxAttr('data-bd-line', on && f.bdLine !== 'solid' ? f.bdLine : null);
+  const G = on ? (f.bdStyle === 'neon' ? Math.max(f.bdGlow, 10) : f.bdGlow) : 0;
+  fxAttr('data-bd-glow', G > 0 ? '' : null);
+  if (on){
+    const period = 20 / f.bdSpeed, L = day ? Math.max(32, f.bdLight - 16) : f.bdLight;
+    fxVar('--bd-w', f.bdWidth + 'px'); fxVar('--bd-stops', fxStops(f, day));
+    fxVar('--bd-s', f.bdSat + '%'); fxVar('--bd-l', L + '%');
+    fxVar('--bd-period', (Math.round(period * 100) / 100) + 's'); fxVar('--bd-steps', String(Math.max(8, Math.round(period * 15))));
+    fxVar('--bd-dir', f.bdDir === 'ccw' ? 'reverse' : 'normal');
+    fxVar('--bd-dir-rev', f.bdDir === 'ccw' ? 'normal' : 'reverse');
+    if (f.bdLine !== 'solid'){
+      const c = f.bdStyle === 'gradient' ? [f.bdG1, f.bdG2, f.bdG3On ? f.bdG3 : f.bdG1, f.bdG2].join(' ') : 'var(--accent)';
+      fxVar('--bd-dc', c);
+    } else fxVar('--bd-dc', null);
+    if (G > 0){
+      fxVar('--bd-glow-out', fxGlowLayers(f, G, false, day)); fxVar('--bd-glow-in', fxGlowLayers(f, Math.max(4, Math.round(G * 0.7)), true, day));
+      fxVar('--bd-glow-c', fxGlowColor(f, day)); fxVar('--bd-lg', Math.round(G * 0.8) + 'px');
+    } else { fxVar('--bd-glow-out', null); fxVar('--bd-glow-in', null); fxVar('--bd-glow-c', null); fxVar('--bd-lg', null); }
+  } else ['--bd-w', '--bd-stops', '--bd-s', '--bd-l', '--bd-period', '--bd-steps', '--bd-dir', '--bd-dir-rev', '--bd-dc', '--bd-glow-out', '--bd-glow-in', '--bd-glow-c', '--bd-lg'].forEach(n => fxVar(n, null));
+  // ---- window shadow ----
+  fxAttr('data-fx-shadow', f.shadow !== 'default' ? f.shadow : null);
+  fxVar('--fx-shadow', f.shadow !== 'default' ? FX_SHADOWS[f.shadow] : null);
+  // ---- title bar ----
+  fxAttr('data-fx-tbd', f.tbDensity !== 'normal' ? f.tbDensity : null);
+  fxAttr('data-fx-tba', f.tbAlign !== 'left' ? f.tbAlign : null);
+  fxAttr('data-fx-tbb', f.tbBtns !== 'right' ? f.tbBtns : null);
+  fxAttr('data-fx-tbg', f.tbGrad !== 'default' ? f.tbGrad : null);
+  // ---- cursor ----
+  if (f.curColor !== 'default'){
+    const acc = fxAccentHex(), key = f.curColor + acc;
+    if (fxLast.curKey !== key){ fxLast.curKey = key; const u = fxCursorUrls(f.curColor, acc); fxVar('--fx-cur-a', u.a); fxVar('--fx-cur-p', u.p); }
+    fxAttr('data-fx-cur', f.curColor);
+  } else { fxAttr('data-fx-cur', null); fxVar('--fx-cur-a', null); fxVar('--fx-cur-p', null); fxLast.curKey = ''; }
+  // ---- scrollbars ----
+  if (f.sbMode !== 'default' || f.sbSize !== 'normal'){
+    const w = { thin: 6, normal: 10, wide: 15 }[f.sbSize], b = { thin: 1, normal: 2, wide: 3 }[f.sbSize];
+    fxAttr('data-fx-sb', f.sbMode === 'default' ? 'plain' : f.sbMode);
+    fxVar('--fx-sbw', w + 'px'); fxVar('--fx-sbb', b + 'px'); fxVar('--fx-sbf', f.sbSize === 'thin' ? 'thin' : 'auto');
+    fxVar('--fx-sbc', f.sbMode === 'default' ? '#4a5263' : null);
+    if (f.sbMode === 'rainbow') fxVar('--bd-stops-sb', fxStops(Object.assign({}, f, { bdStyle: 'rainbow' }), day)); else fxVar('--bd-stops-sb', null);
+  } else { fxAttr('data-fx-sb', null); ['--fx-sbw', '--fx-sbb', '--fx-sbf', '--fx-sbc', '--bd-stops-sb'].forEach(n => fxVar(n, null)); }
+  // ---- selection ----
+  fxAttr('data-fx-sel', f.selMode !== 'default' ? f.selMode : null);
+  if (f.selMode !== 'rainbow') fxVar('--fx-sel', null); else if (!fxLast['v--fx-sel']) fxVar('--fx-sel', fxHsl(300, 90, day ? 55 : 60, 0.55));
+  // ---- focus ring ----
+  const focusOn = f.focusMode !== 'default' || f.focusW !== 2 || f.focusO !== 2 || f.focusHigh;
+  fxAttr('data-fx-focus', focusOn ? (f.focusHigh ? 'high' : (f.focusMode === 'default' ? 'accent' : f.focusMode)) : null);
+  if (focusOn){
+    fxVar('--fx-fw', f.focusW + 'px'); fxVar('--fx-fo', f.focusO + 'px');
+    if (f.focusMode === 'rainbow') { if (!fxLast['v--fx-fc'] || fxLast['v--fx-fc'] === 'var(--accent)') fxVar('--fx-fc', fxHsl(200, 90, day ? 42 : 62)); }
+    else fxVar('--fx-fc', 'var(--accent)');
+  } else { fxVar('--fx-fw', null); fxVar('--fx-fo', null); fxVar('--fx-fc', null); }
+  document.documentElement.classList.toggle('fx-live', !spLocked);
+}
+
+/* ---- Animation gate: runs the stepped CSS animation only when it can be seen and is allowed ---- */
+const FX_IDLE_MS = 12000;
+const fxIdle = { on: false, paused: false, last: 0, timer: 0 };
+function fxTargetsVisible(){
+  if (fx.bdFrame || fx.bdTaskbar || fx.bdHeader || fx.bdIcons) return true;
+  if (fx.bdWin !== 'off') return !!document.querySelector('#windows-layer .app-window.win-focused:not(.win-hidden)');
+  return false;
+}
+function fxIdleAct(){
+  const n = performance.now(); if (!fxIdle.paused && n - fxIdle.last < 250) return;
+  fxIdle.last = n;
+  if (fxIdle.paused){ fxIdle.paused = false; fxGateSync(); fxIdleArm(FX_IDLE_MS); }
+}
+function fxIdleArm(ms){
+  clearTimeout(fxIdle.timer);
+  fxIdle.timer = setTimeout(() => {
+    fxIdle.timer = 0; if (!fxIdle.on || fxIdle.paused) return;
+    const rem = FX_IDLE_MS - (performance.now() - fxIdle.last);
+    if (rem > 60) fxIdleArm(rem); else { fxIdle.paused = true; fxGateSync(); }
+  }, ms);
+}
+function fxIdleBlur(){ if (fxIdle.on && !fxIdle.paused){ fxIdle.paused = true; fxGateSync(); } }
+function fxIdleSync(){
+  const want = !!(fx.bdOn && fx.bdIdle && fxAnimated() && fxMotionOk());
+  if (want && !fxIdle.on){
+    fxIdle.on = true; fxIdle.paused = false; fxIdle.last = performance.now();
+    ['pointermove', 'pointerdown', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, fxIdleAct, { capture: true, passive: true }));
+    window.addEventListener('blur', fxIdleBlur); window.addEventListener('focus', fxIdleAct);
+    fxIdleArm(FX_IDLE_MS);
+  } else if (!want && fxIdle.on){
+    fxIdle.on = false; fxIdle.paused = false; clearTimeout(fxIdle.timer); fxIdle.timer = 0;
+    ['pointermove', 'pointerdown', 'keydown', 'wheel'].forEach(t => document.removeEventListener(t, fxIdleAct, { capture: true }));
+    window.removeEventListener('blur', fxIdleBlur); window.removeEventListener('focus', fxIdleAct);
+  }
+}
+function fxAnimReason(){
+  if (!fx.bdOn) return 'Rainbow border is off.';
+  if (!fxAnimated()) return 'This style is static: nothing animates.';
+  const root = document.documentElement;
+  if (spLocked) return 'Paused: locked.';
+  if (document.hidden) return 'Paused: tab hidden.';
+  if (root.classList.contains('perf-mode')) return 'Paused: Performance mode (showing a static border).';
+  if (root.classList.contains('reduce-motion')) return 'Paused: Reduce motion (showing a static border).';
+  if (fxIdle.paused) return 'Paused: idle (move the mouse or press a key to resume).';
+  if (!fxMotionOk()) return 'Paused: your system asks for reduced motion.';
+  if (!fxTargetsVisible()) return 'Nothing to animate: no focused window or other target is on screen.';
+  return 'Animating about 15 steps per second.';
+}
+function fxGateSync(){
+  const root = document.documentElement;
+  fxIdleSync();
+  root.classList.toggle('bd-anim', fxAnimated() && fxMotionOk() && !fxIdle.paused && fxTargetsVisible());
+  root.classList.toggle('fx-live', !spLocked);
+  fxTrailSync(); fxRippleSync();
+  const st = document.getElementById('fx-status'); if (st) st.textContent = fxAnimReason();
+}
+
+/* ---- Cursor trail: ONE canvas, ~30 points per second, only draws while dots are fading ---- */
+const fxTrail = { on: false, cv: null, cx: null, pts: [], raf: 0, last: 0 };
+function fxTrailResize(){ if (fxTrail.cv){ fxTrail.cv.width = window.innerWidth; fxTrail.cv.height = window.innerHeight; } }
+function fxTrailMove(e){
+  const n = performance.now(); if (n - fxTrail.last < 30) return; fxTrail.last = n;
+  fxTrail.pts.push({ x: e.clientX, y: e.clientY, t: n, h: (n / 8) % 360 });
+  if (fxTrail.pts.length > 36) fxTrail.pts.shift();
+  if (!fxTrail.raf) fxTrail.raf = requestAnimationFrame(fxTrailDraw);
+}
+function fxTrailDraw(now){
+  fxTrail.raf = 0; const cx = fxTrail.cx, life = 650; if (!cx) return;
+  cx.clearRect(0, 0, fxTrail.cv.width, fxTrail.cv.height);
+  const pts = fxTrail.pts = fxTrail.pts.filter(p => now - p.t < life), rb = fx.curColor === 'rainbow', acc = fxAccentHex();
+  pts.forEach(p => {
+    const a = 1 - Math.max(0, now - p.t) / life;
+    cx.globalAlpha = a * 0.85; cx.fillStyle = rb ? 'hsl(' + Math.round(p.h) + ',90%,62%)' : acc;
+    cx.beginPath(); cx.arc(p.x, p.y, 1.5 + 4.5 * a, 0, 6.2832); cx.fill();
+  });
+  if (pts.length) fxTrail.raf = requestAnimationFrame(fxTrailDraw);
+}
+function fxTrailSync(){
+  const want = !!(fx.curTrail && fxMotionOk());
+  if (want && !fxTrail.on){
+    fxTrail.on = true;
+    const cv = document.createElement('canvas'); cv.id = 'fx-trail'; cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
+    fxTrail.cv = cv; fxTrail.cx = cv.getContext('2d'); fxTrailResize();
+    document.addEventListener('pointermove', fxTrailMove, { passive: true }); window.addEventListener('resize', fxTrailResize);
+  } else if (!want && fxTrail.on){
+    fxTrail.on = false; document.removeEventListener('pointermove', fxTrailMove); window.removeEventListener('resize', fxTrailResize);
+    if (fxTrail.raf){ cancelAnimationFrame(fxTrail.raf); fxTrail.raf = 0; }
+    fxTrail.pts = []; if (fxTrail.cv) fxTrail.cv.remove(); fxTrail.cv = fxTrail.cx = null;
+  }
+}
+/* ---- Click ripple: one reusable element, one short Web Animation per click ---- */
+const fxRipple = { on: false, el: null, anim: null };
+function fxRippleDown(e){
+  if (!fxRipple.el){ fxRipple.el = document.createElement('div'); fxRipple.el.id = 'fx-ripple'; fxRipple.el.setAttribute('aria-hidden', 'true'); document.body.appendChild(fxRipple.el); }
+  const el = fxRipple.el; el.style.left = e.clientX + 'px'; el.style.top = e.clientY + 'px';
+  el.style.borderColor = fx.curColor === 'rainbow' ? 'hsl(' + Math.round((performance.now() / 6) % 360) + ' 90% 62%)' : '';
+  if (fxRipple.anim) fxRipple.anim.cancel();
+  fxRipple.anim = el.animate([{ transform: 'scale(0.25)', opacity: 0.8 }, { transform: 'scale(1.7)', opacity: 0 }], { duration: 480, easing: 'cubic-bezier(0.2,0.7,0.3,1)' });
+}
+function fxRippleSync(){
+  const want = !!(fx.curRipple && fxMotionOk());
+  if (want && !fxRipple.on){ fxRipple.on = true; document.addEventListener('pointerdown', fxRippleDown, { capture: true, passive: true }); }
+  else if (!want && fxRipple.on){ fxRipple.on = false; document.removeEventListener('pointerdown', fxRippleDown, { capture: true }); if (fxRipple.anim){ fxRipple.anim.cancel(); fxRipple.anim = null; } }
+}
+/* Rainbow selection / focus ring: each new selection or focus move takes the next hue. */
+let fxHue = 0;
+document.addEventListener('selectstart', () => { if (fx.selMode !== 'rainbow') return; fxHue = (fxHue + 47) % 360; fxVar('--fx-sel', fxHsl(fxHue, 90, currentTheme === 'day' ? 55 : 60, 0.55)); }, true);
+document.addEventListener('focusin', () => { if (fx.focusMode !== 'rainbow') return; fxHue = (fxHue + 47) % 360; fxVar('--fx-fc', fxHsl(fxHue, 90, currentTheme === 'day' ? 42 : 62)); }, true);
+
+/* ---- The one setter every control uses ---- */
+function fxPersist(){ try { memStore.setItem(FX_KEY, JSON.stringify(fx)); } catch(e){} }
+function fxSet(patch, opts){
+  opts = opts || {};
+  fx = fxNormalize(Object.assign({}, fx, patch), fx);
+  fxPersist(); fxApply(); fxGateSync(); fxSyncUi();
+  if (!opts.quiet) studioEmit();
+}
+function fxCond(expr){
+  return String(expr).split('&').every(part => {
+    part = part.trim(); const neg = part[0] === '!'; if (neg) part = part.slice(1);
+    const i = part.indexOf(':'); let ok;
+    if (i < 0) ok = !!fx[part]; else ok = part.slice(i + 1).split('|').indexOf(String(fx[part.slice(0, i)])) > -1;
+    return neg ? !ok : ok;
+  });
+}
+const FX_UNITS = { bdWidth: 'px', focusW: 'px', focusO: 'px', bdSat: '%', bdLight: '%' };
+function fxSyncUi(){
+  document.querySelectorAll('[data-fx]').forEach(el => {
+    const k = el.dataset.fx, v = fx[k]; if (v === undefined) return;
+    if (el.tagName === 'INPUT'){
+      if (el.type === 'checkbox') el.checked = !!v;
+      else if (el.value !== String(v)) el.value = String(v);
+      if (el.type === 'range'){ const o = el.parentNode.querySelector('[data-fx-val="' + k + '"]'); if (o) o.textContent = v + (FX_UNITS[k] || ''); }
+    } else if (el.tagName === 'SELECT'){ if (el.value !== String(v)) el.value = String(v); }
+    else if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(String(v) === el.dataset.v));
+  });
+  document.querySelectorAll('[data-fx-if]').forEach(el => { el.hidden = !fxCond(el.dataset.fxIf); });
+  document.querySelectorAll('.fx-prev').forEach(el => el.classList.toggle('on', !!fx.bdOn));
+  document.querySelectorAll('[data-fx-look]').forEach(el => { if (el.tagName === 'SELECT') { fxFillLookSelect(el); el.value = fx.look || ''; } });
+  document.querySelectorAll('[data-fx-undo]').forEach(el => { el.disabled = !fxUndoSnap; });
+  const st = document.getElementById('fx-status'); if (st) st.textContent = fxAnimReason();
+  try { fxMarkLooks(); } catch(e){}
+}
+
+/* ---- Looks: one-click presets (theme + accent + wallpaper + icon colors + radius + all of the above) ---- */
+const FX_FONT_IDS = ['system', 'humanist', 'classic', 'rounded', 'geometric', 'serif', 'mono'];
+const FX_SCENE_SW = {
+  aurora: 'linear-gradient(135deg,#0b3b3a,#2b2f7a)', nebula: 'linear-gradient(135deg,#3a1259,#7a2a6a)', sunset: 'linear-gradient(180deg,#1b1038,#d9578a 70%,#ffd9a0)',
+  ocean: 'linear-gradient(180deg,#021b3a,#0e7490)', mountains: 'linear-gradient(180deg,#1c1f4d,#0a0d28)', dunes: 'linear-gradient(180deg,#0d0a24,#8a3f62)',
+  synthwave: 'linear-gradient(180deg,#120a2e,#ff46c8)', dots: 'linear-gradient(135deg,#0d1020,#1a1f3a)', ember: 'linear-gradient(180deg,#0c0508,#c2410c)', forest: 'linear-gradient(180deg,#06140c,#1f5b36)'
+};
+const FX_LOOKS = [
+  { id: 'neon-rainbow', name: 'Neon Rainbow', note: 'Flowing ring, glow, frame and rainbow pointer', theme: 'night', accent: '#d946ef', radius: 14, font: 'system',
+    iconColors: { mode: 'flow', sat: 85, light: 66, speed: 4, scope: true }, wp: { kind: 'scene', id: 'synthwave' },
+    fx: { bdOn: true, bdStyle: 'flow', bdWidth: 3, bdGlow: 12, bdSat: 90, bdLight: 62, bdSpeed: 4, bdWin: 'focused', bdFrame: true, bdTaskbar: true, bdIcons: true, shadow: 'rainbow', curColor: 'rainbow', curRipple: true, sbMode: 'rainbow', selMode: 'rainbow', focusMode: 'rainbow' } },
+  { id: 'minimal-mono', name: 'Minimal Mono', note: 'Quiet grays, hairline ring, sharp corners', theme: 'night', accent: '#9ca3af', radius: 4, font: 'system',
+    iconColors: { mode: 'mono', sat: 80, light: 66, speed: 4, scope: true }, wp: { kind: 'solid', color: '#0b0b0d' },
+    fx: { bdOn: true, bdStyle: 'solid', bdWidth: 1, bdGlow: 0, bdWin: 'focused', shadow: 'soft', tbDensity: 'compact', tbGrad: 'flat', sbMode: 'accent', sbSize: 'thin' } },
+  { id: 'midnight-glow', name: 'Midnight Glow', note: 'Indigo neon ring over a deep ocean', theme: 'night', accent: '#6366f1', radius: 12, font: 'system',
+    iconColors: { mode: 'accent', sat: 80, light: 66, speed: 4, scope: true }, wp: { kind: 'scene', id: 'ocean' },
+    fx: { bdOn: true, bdStyle: 'neon', bdWidth: 2, bdGlow: 14, bdSpin: true, bdSpeed: 3, bdWin: 'focused', shadow: 'neon', curColor: 'accent', sbMode: 'accent', selMode: 'accent', focusMode: 'accent', focusW: 2 } },
+  { id: 'daylight-clean', name: 'Daylight Clean', note: 'Bright, soft shadows, one thin blue ring', theme: 'day', accent: 'Blue', radius: 10, font: 'system',
+    iconColors: { mode: 'default', sat: 80, light: 66, speed: 4, scope: true }, wp: { kind: 'starfield' },
+    fx: { bdOn: true, bdStyle: 'solid', bdWidth: 2, bdGlow: 0, bdWin: 'focused', shadow: 'soft', sbMode: 'accent', sbSize: 'thin', selMode: 'accent' } },
+  { id: 'retro-terminal', name: 'Retro Terminal', note: 'Monospace, green phosphor, dashed frame', theme: 'night', accent: 'Green', radius: 0, font: 'mono',
+    iconColors: { mode: 'accent', sat: 80, light: 66, speed: 4, scope: true }, wp: { kind: 'solid', color: '#020a04' },
+    fx: { bdOn: true, bdStyle: 'solid', bdLine: 'dashed', bdWidth: 2, bdGlow: 6, bdWin: 'focused', bdFrame: true, shadow: 'none', tbDensity: 'compact', tbBtns: 'left', tbGrad: 'flat', curColor: 'accent', sbMode: 'accent', sbSize: 'thin', selMode: 'accent', focusMode: 'accent', focusW: 3 } },
+  { id: 'pastel-dream', name: 'Pastel Dream', note: 'Candy gradient ring, round corners, dots', theme: 'day', accent: '#f472b6', radius: 18, font: 'rounded',
+    iconColors: { mode: 'rainbow', sat: 55, light: 78, speed: 4, scope: true }, wp: { kind: 'gradient', g: { a: '#ffd6ec', b: '#cfe3ff', angle: 160, type: 'linear' } },
+    fx: { bdOn: true, bdStyle: 'gradient', bdG1: '#ff9ac8', bdG2: '#9ad0ff', bdG3: '#c9ffd9', bdG3On: true, bdWidth: 3, bdGlow: 8, bdSpin: true, bdWin: 'focused', shadow: 'soft', tbAlign: 'center', tbBtns: 'dots', sbMode: 'accent', selMode: 'accent' } },
+  { id: 'sunset-gradient', name: 'Sunset Gradient', note: 'Orange to magenta to violet, deep shadows', theme: 'night', accent: 'Orange', radius: 12, font: 'system',
+    iconColors: { mode: 'accent', sat: 80, light: 66, speed: 4, scope: true }, wp: { kind: 'scene', id: 'sunset' },
+    fx: { bdOn: true, bdStyle: 'gradient', bdG1: '#ff7a18', bdG2: '#ff2d95', bdG3: '#7a3bff', bdG3On: true, bdWidth: 3, bdGlow: 10, bdSpin: true, bdWin: 'focused', bdFrame: true, shadow: 'deep', tbGrad: 'sweep', sbMode: 'accent' } },
+  { id: 'aurora-frost', name: 'Aurora Frost', note: 'Cool rainbow ring on every window and the header', theme: 'night', accent: 'Cyan', radius: 8, font: 'system',
+    iconColors: { mode: 'rainbow', sat: 60, light: 75, speed: 4, scope: true }, wp: { kind: 'scene', id: 'aurora' },
+    fx: { bdOn: true, bdStyle: 'rainbow', bdWidth: 2, bdGlow: 8, bdSat: 70, bdLight: 70, bdWin: 'all', bdHeader: true, shadow: 'soft', sbMode: 'accent', sbSize: 'thin' } },
+  { id: 'high-contrast', name: 'High Contrast', note: 'Yellow on black, thick ring, strong focus rings', theme: 'night', accent: '#facc15', radius: 4, font: 'system',
+    iconColors: { mode: 'accent', sat: 80, light: 66, speed: 4, scope: true }, wp: { kind: 'solid', color: '#000000' },
+    fx: { bdOn: true, bdStyle: 'solid', bdWidth: 4, bdGlow: 0, bdWin: 'focused', shadow: 'none', tbDensity: 'roomy', sbMode: 'accent', sbSize: 'wide', selMode: 'accent', focusHigh: true, focusW: 3, focusO: 2 } }
+];
+function fxIsHex(v){ return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v); }
+// Validates a look from JSON (import / saved). Returns { look } or { error }. Unknown keys are ignored.
+function fxNormalizeLook(raw, needMarker){
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { error: 'That JSON is not a look: it should be an object like {"spacepad-look":1,"name":"…"}.' };
+  if (needMarker && raw['spacepad-look'] !== 1) return { error: 'That JSON is not a Spacepad look (missing "spacepad-look": 1).' };
+  const L = {};
+  if ('name' in raw && typeof raw.name !== 'string') return { error: '"name" must be text.' };
+  L.name = String(raw.name || '').trim().slice(0, 40) || 'Imported look';
+  if ('theme' in raw){ if (raw.theme !== 'day' && raw.theme !== 'night') return { error: '"theme" must be "day" or "night".' }; L.theme = raw.theme; }
+  if ('accent' in raw){
+    if (!(ACCENT_PRESETS.some(p => p.name === raw.accent) || fxIsHex(raw.accent))) return { error: '"accent" must be a preset name (Violet, Cyan, Pink, Green, Orange, Red, Blue) or a #rrggbb color.' };
+    L.accent = raw.accent;
+  }
+  if ('radius' in raw){ const r = Math.round(+raw.radius); if (raw.radius === null || raw.radius === '' || typeof raw.radius === 'boolean' || !isFinite(r)) return { error: '"radius" must be a number from 0 to 24.' }; L.radius = Math.max(0, Math.min(24, r)); }
+  if ('font' in raw){ if (FX_FONT_IDS.indexOf(raw.font) < 0) return { error: '"font" must be one of: ' + FX_FONT_IDS.join(', ') + '.' }; L.font = raw.font; }
+  if ('iconColors' in raw){
+    if (!raw.iconColors || typeof raw.iconColors !== 'object' || Array.isArray(raw.iconColors)) return { error: '"iconColors" must be an object like {"mode":"rainbow"}.' };
+    L.iconColors = iconColorsNormalize(Object.assign({}, ICON_COLOR_DEFAULTS, raw.iconColors));
+  }
+  if ('wp' in raw){
+    const w = raw.wp;
+    if (!w || typeof w !== 'object' || Array.isArray(w)) return { error: '"wp" (wallpaper) must be an object like {"kind":"scene","id":"sunset"}.' };
+    if (w.kind === 'starfield') L.wp = { kind: 'starfield' };
+    else if (w.kind === 'scene' && w.id in FX_SCENE_SW) L.wp = { kind: 'scene', id: w.id };
+    else if (w.kind === 'solid' && fxIsHex(w.color)) L.wp = { kind: 'solid', color: w.color.toLowerCase() };
+    else if (w.kind === 'gradient' && w.g && fxIsHex(w.g.a) && fxIsHex(w.g.b)) L.wp = { kind: 'gradient', g: { a: w.g.a.toLowerCase(), b: w.g.b.toLowerCase(), angle: sClamp(w.g.angle, 0, 360, 160), type: w.g.type === 'radial' ? 'radial' : 'linear' } };
+    else return { error: '"wp" must be {"kind":"starfield"}, a scene (' + Object.keys(FX_SCENE_SW).join(', ') + '), a solid color, or a gradient with #rrggbb colors "a" and "b".' };
+  }
+  if ('fx' in raw){
+    if (!raw.fx || typeof raw.fx !== 'object' || Array.isArray(raw.fx)) return { error: '"fx" (borders & effects) must be an object like {"bdOn":true,"bdStyle":"flow"}.' };
+    const o = {}, d = fxDefaults();
+    Object.keys(FX_DEF).forEach(k => { if (k !== 'look' && Object.prototype.hasOwnProperty.call(raw.fx, k)) o[k] = fxCoerce(FX_DEF[k], raw.fx[k], d[k]); });
+    L.fx = o;
+  }
+  if (!['theme', 'accent', 'radius', 'font', 'iconColors', 'wp', 'fx'].some(k => k in L)) return { error: 'The look has nothing to apply: add at least one of theme, accent, radius, font, iconColors, wp or fx.' };
+  return { look: L };
+}
+let fxSaved = (function(){
+  const a = sJson(FX_LOOKS_KEY, []), out = [];
+  if (Array.isArray(a)) a.forEach(x => { const r = x && typeof x === 'object' ? fxNormalizeLook(x, false) : null; if (r && r.look && typeof x.id === 'string') { r.look.id = x.id.slice(0, 24); out.push(r.look); } });
+  return out.slice(0, 40);
+})();
+function fxSaveSaved(){ sSave(FX_LOOKS_KEY, fxSaved); }
+function fxAllLooks(){ return FX_LOOKS.concat(fxSaved.map(l => Object.assign({ saved: true }, l))); }
+function fxFindLook(id){ return fxAllLooks().find(l => l.id === id) || null; }
+function fxWpPatch(w, snap){
+  if (!w) return null;
+  if (w.kind === 'starfield') return { kind: 'starfield' };
+  if (w.kind === 'scene') return { kind: 'scene', id: w.id };
+  if (w.kind === 'solid') return { kind: 'solid', color: w.color };
+  if (w.kind === 'gradient') return { kind: 'gradient', g: Object.assign({}, w.g) };
+  return null;
+}
+function fxCaptureAll(){
+  const ap = studioApps.appearance && studioApps.appearance.getState ? studioApps.appearance.getState() : null;
+  return { theme: currentTheme, accent: memStore.getItem(ACCENT_KEY) || 'Violet', icon: Object.assign({}, iconColors), wp: studioCall('wallpapers', 'snapshot'), ap: ap, fx: Object.assign({}, fx) };
+}
+function fxRestoreAll(s){
+  if (!s) return;
+  applyTheme(s.theme); settingsSet(THEME_KEY, currentTheme); applyAccent(s.accent);
+  iconColorsSet(s.icon, true);
+  if (s.wp) studioCall('wallpapers', 'restore', s.wp);
+  if (s.ap) studioCall('appearance', 'setState', s.ap);
+  fxSet(s.fx, { quiet: true }); studioEmit();
+}
+// Turns the current session into a look (the wallpaper is kept only when it is a scene / color / gradient, never a picture).
+function fxCaptureLook(name){
+  const ap = studioApps.appearance && studioApps.appearance.getState ? studioApps.appearance.getState() : {};
+  const snap = studioCall('wallpapers', 'snapshot') || {}, L = { name: name };
+  L.theme = currentTheme; L.accent = accentFromValue(memStore.getItem(ACCENT_KEY) || 'Violet').key;
+  if (ap.radius != null) L.radius = ap.radius; if (ap.font) L.font = ap.font;
+  L.iconColors = Object.assign({}, iconColors);
+  if (snap.kind === 'starfield') L.wp = { kind: 'starfield' };
+  else if (snap.kind === 'scene') L.wp = { kind: 'scene', id: snap.id };
+  else if (snap.kind === 'solid') L.wp = { kind: 'solid', color: snap.color };
+  else if (snap.kind === 'gradient') L.wp = { kind: 'gradient', g: Object.assign({}, snap.g) };
+  const f = Object.assign({}, fx); delete f.look; L.fx = f;
+  return L;
+}
+function fxApplyLookData(look){
+  if (look.theme){ applyTheme(look.theme); settingsSet(THEME_KEY, currentTheme); }
+  if (look.accent) applyAccent(look.accent);
+  const ap = {}; if (look.radius != null) ap.radius = look.radius; if (look.font) ap.font = look.font;
+  if (Object.keys(ap).length) studioCall('appearance', 'setState', ap);
+  if (look.iconColors) iconColorsSet(Object.assign({}, ICON_COLOR_DEFAULTS, look.iconColors), true);
+  if (look.wp){ const snap = studioCall('wallpapers', 'snapshot'), p = fxWpPatch(look.wp); if (snap && p) studioCall('wallpapers', 'restore', Object.assign(snap, p)); }
+  if (look.fx) fxSet(Object.assign({}, fxDefaults(), look.fx, { look: look.id || '' }), { quiet: true });
+  else fxSet({ look: look.id || '' }, { quiet: true });
+  studioEmit();
+}
+function fxUndo(){
+  if (!fxUndoSnap) return false;
+  const s = fxUndoSnap; fxUndoSnap = null; fxRestoreAll(s); showToast('Undone.'); return true;
+}
+function fxApplyLook(look, label){
+  const snap = fxCaptureAll();
+  fxApplyLookData(look);
+  fxUndoSnap = snap; fxSyncUi();
+  showToast((label || 'Look applied') + ': ' + look.name + '.', null, { label: 'Undo', ms: 9000, run: () => { if (fxUndoSnap === snap) fxUndo(); else { fxUndoSnap = null; fxRestoreAll(snap); } } });
+}
+function fxNextLook(){
+  const all = fxAllLooks(); if (!all.length) return;
+  const i = all.findIndex(l => l.id === fx.look);
+  fxApplyLook(all[(i + 1) % all.length], 'Look');
+}
+function fxRandomLook(){
+  const rnd = (a) => a[Math.floor(Math.random() * a.length)], ri = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+  const day = currentTheme === 'day', h = ri(0, 359);
+  const hsl2hex = (hh, s, l) => { s /= 100; l /= 100; const k = n => (n + hh / 30) % 12, a = s * Math.min(l, 1 - l), f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return '#' + [f(0), f(8), f(4)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
+  const style = rnd(['flow', 'rainbow', 'gradient', 'neon', 'solid', 'flow']);
+  const L = {
+    name: 'Random look', id: '', accent: hsl2hex(h, 75, day ? 48 : 62), radius: ri(2, 20),
+    iconColors: { mode: rnd(['rainbow', 'flow', 'accent', 'default']), sat: ri(55, 90), light: ri(55, 78), speed: ri(2, 7), scope: true },
+    fx: { bdOn: true, bdStyle: style, bdLine: rnd(['solid', 'solid', 'solid', 'dashed']), bdWidth: ri(2, 5), bdGlow: ri(0, 14), bdSpeed: ri(2, 7), bdSpin: true, bdDir: rnd(['cw', 'ccw']),
+      bdG1: hsl2hex(h, 85, 62), bdG2: hsl2hex((h + 140) % 360, 85, 62), bdG3: hsl2hex((h + 250) % 360, 85, 62), bdG3On: Math.random() < 0.5,
+      bdWin: rnd(['focused', 'focused', 'all']), bdFrame: Math.random() < 0.4, bdTaskbar: Math.random() < 0.4, bdHeader: Math.random() < 0.25, bdIcons: Math.random() < 0.4, bdNotes: Math.random() < 0.4,
+      shadow: rnd(['default', 'soft', 'deep', 'neon', 'rainbow']), tbDensity: rnd(['normal', 'compact', 'roomy']), tbAlign: rnd(['left', 'center']), tbBtns: rnd(['right', 'left', 'dots']), tbGrad: rnd(['default', 'sweep', 'flat']),
+      curColor: rnd(['default', 'accent', 'rainbow']), curRipple: Math.random() < 0.5, sbMode: rnd(['default', 'accent', 'rainbow']), sbSize: rnd(['thin', 'normal']), selMode: rnd(['default', 'accent', 'rainbow']), focusMode: rnd(['default', 'accent', 'rainbow']) }
+  };
+  const snap = fxCaptureAll();
+  fxApplyLookData(L);
+  studioCall('wallpapers', 'shuffle', true);
+  fxUndoSnap = snap; fxSyncUi();
+  showToast('Random look applied.', null, { label: 'Undo', ms: 9000, run: () => { if (fxUndoSnap === snap) fxUndo(); else fxRestoreAll(snap); } });
+}
+function fxResetAll(){
+  const snap = fxCaptureAll();
+  fxSet(fxDefaults()); fxUndoSnap = snap; fxSyncUi();
+  showToast('Borders & effects reset.', null, { label: 'Undo', ms: 9000, run: () => { if (fxUndoSnap === snap) fxUndo(); else fxRestoreAll(snap); } });
+}
+function fxToggleBorder(){ fxSet({ bdOn: !fx.bdOn }); showToast('Rainbow border ' + (fx.bdOn ? 'on' : 'off') + '.'); }
+function fxToggleTrail(){
+  fxSet({ curTrail: !fx.curTrail });
+  const root = document.documentElement, blocked = fx.curTrail && (root.classList.contains('perf-mode') || root.classList.contains('reduce-motion'));
+  showToast('Cursor trail ' + (fx.curTrail ? 'on' : 'off') + (blocked ? ' (paused while Performance mode or Reduce motion is on).' : '.'));
+}
+function fxLookSwatchStyle(l){
+  const acc = accentFromValue(l.accent || 'Violet').accent, w = l.wp || {};
+  let bg = l.theme === 'day' ? 'linear-gradient(135deg,#dbe8ff,#f3f6ff)' : 'linear-gradient(135deg,#0d1020,#1a1f3a)';
+  if (w.kind === 'scene' && FX_SCENE_SW[w.id]) bg = FX_SCENE_SW[w.id];
+  else if (w.kind === 'solid') bg = w.color;
+  else if (w.kind === 'gradient') bg = 'linear-gradient(' + Math.round(w.g.angle) + 'deg,' + w.g.a + ',' + w.g.b + ')';
+  const f = l.fx || {}; let ring;
+  if (f.bdOn === false || (l.fx && !f.bdOn)) ring = 'linear-gradient(90deg,' + acc + ',' + acc + ')';
+  else if (f.bdStyle === 'gradient') ring = 'linear-gradient(90deg,' + (f.bdG1 || '#ff4fd8') + ',' + (f.bdG2 || '#4fd8ff') + (f.bdG3On ? ',' + (f.bdG3 || '#ffd84f') : '') + ')';
+  else if (f.bdStyle === 'solid' || f.bdStyle === 'neon') ring = 'linear-gradient(90deg,' + acc + ',' + acc + ')';
+  else ring = 'linear-gradient(90deg,#ff4d6d,#ffd23f,#39e07a,#39b8ff,#b04bff)';
+  return { bg: bg, ring: ring, acc: acc };
+}
+function fxLookCard(l){
+  const s = fxLookSwatchStyle(l);
+  return '<button type="button" class="fx-look" ' + (l.saved ? 'data-slook="' : 'data-look="') + sEsc(l.id) + '" aria-pressed="false" title="Apply ' + sEsc(l.name) + '">' +
+    '<span class="fx-look-sw" style="background:' + s.bg + ';"><i style="--ring:' + s.ring + ';"></i></span>' +
+    '<span class="fx-look-name">' + sEsc(l.name) + (l.note ? '<small>' + sEsc(l.note) + '</small>' : '<small>Your saved look</small>') + '</span></button>';
+}
+function fxFillLookSelect(sel){
+  const all = fxAllLooks(), key = all.map(l => l.id + l.name).join('|');
+  if (sel.dataset.key === key) return; sel.dataset.key = key;
+  sel.innerHTML = '<option value="">Custom (no preset)</option>' + all.map(l => '<option value="' + sEsc(l.id) + '">' + sEsc(l.name) + (l.saved ? ' (saved)' : '') + '</option>').join('');
+}
+function fxMarkLooks(){
+  document.querySelectorAll('.fx-look').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.look || b.dataset.slook) === fx.look && !!fx.look)));
+}
+// A text prompt as an in-app modal (never the browser's prompt()).
+function fxPrompt(title, label, value, okLabel){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.className = 'net-popup-overlay'; ov.style.zIndex = '1300'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', title);
+    ov.innerHTML = '<div class="net-popup" style="max-width:360px; text-align:left;"><h3>' + escapeHtml(title) + '</h3>' +
+      '<label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px;">' + escapeHtml(label) + '</label>' +
+      '<input type="text" maxlength="40" spellcheck="false" autocomplete="off" style="width:100%; box-sizing:border-box;" aria-label="' + escapeAttr(label) + '">' +
+      '<p class="studio-note err" role="alert" style="min-height:16px;"></p>' +
+      '<div class="conv-btn-row" style="justify-content:flex-end;"><button type="button" class="ghost-btn net-cancel" data-ac="no">Cancel</button><button type="button" class="ghost-btn" data-ac="yes">' + escapeHtml(okLabel || 'OK') + '</button></div></div>';
+    const inp = ov.querySelector('input'), err = ov.querySelector('.err'); inp.value = value || '';
+    let done = false;
+    function finish(v){ if (done) return; done = true; document.removeEventListener('keydown', onKey, true); ov.remove(); resolve(v); }
+    function submit(){ const v = inp.value.trim(); if (!v){ err.textContent = 'Please enter a name.'; inp.focus(); return; } finish(v.slice(0, 40)); }
+    function onKey(e){
+      if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); finish(null); }
+      else if (e.key === 'Enter' && ov.contains(e.target)){ e.preventDefault(); e.stopPropagation(); submit(); }
+      else if (e.key === 'Tab'){ const f = Array.from(ov.querySelectorAll('input,button')); const i = f.indexOf(document.activeElement); if (i < 0 || (e.shiftKey && i === 0) || (!e.shiftKey && i === f.length - 1)){ e.preventDefault(); f[e.shiftKey ? f.length - 1 : 0].focus(); } }
+    }
+    ov.addEventListener('click', (e) => { const b = e.target.closest('[data-ac]'); if (b){ if (b.dataset.ac === 'yes') submit(); else finish(null); } else if (e.target === ov) finish(null); });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(ov); inp.focus(); inp.select();
+  });
+}
+
+/* ---- Controls (one markup helper per kind; every control carries data-fx="<key>") ---- */
+function fxSwitchH(key, aria){ return '<label class="toggle-switch"><input type="checkbox" data-fx="' + key + '" aria-label="' + aria + '"><span class="toggle-track"></span></label>'; }
+function fxRangeH(key, lo, hi, aria){ return '<input type="range" class="grow fx-range" min="' + lo + '" max="' + hi + '" step="1" data-fx="' + key + '" aria-label="' + aria + '"><span class="studio-val" data-fx-val="' + key + '"></span>'; }
+function fxSegH(key, opts, aria){ return '<div class="fx-seg" role="group" aria-label="' + aria + '">' + opts.map(o => '<button type="button" class="ghost-btn" data-fx="' + key + '" data-v="' + o[0] + '" aria-pressed="false">' + o[1] + '</button>').join('') + '</div>'; }
+function fxColorH(key, aria){ return '<input type="color" class="fx-color" data-fx="' + key + '" aria-label="' + aria + '">'; }
+function fxSelH(key, opts, aria){ return '<select data-fx="' + key + '" aria-label="' + aria + '" style="width:auto;">' + opts.map(o => '<option value="' + o[0] + '">' + o[1] + '</option>').join('') + '</select>'; }
+function fxRow(label, inner, cond, hint){
+  return '<div class="studio-row"' + (cond ? ' data-fx-if="' + cond + '"' : '') + '><span class="studio-label">' + label + '</span>' + inner + (hint ? '<span class="studio-sub" style="margin:0;flex:1 1 150px;">' + hint + '</span>' : '') + '</div>';
+}
+const FX_STYLES = [['rainbow', 'Rainbow'], ['flow', 'Rainbow flow'], ['gradient', 'Gradient'], ['solid', 'Solid accent'], ['neon', 'Neon glow']];
+const FX_ANIMATED_COND = 'bdStyle:flow|gradient|neon';
+
+(function bordersEffectsApp(){
+  const body =
+    '<div class="settings-card"><h3>' + icon('eye') + ' Live preview</h3><div class="fx-stage"><div class="fx-prev"><div class="fx-prev-bar"><span class="dot"></span>Preview window</div>' +
+      '<div class="fx-prev-body"><b>Your border, shadow and accent.</b><br>Everything below applies to the real windows immediately.</div></div></div>' +
+      '<p class="fx-status" id="fx-status" role="status" aria-live="polite"></p></div>' +
+    '<div class="settings-card"><h3>' + icon('rainbow') + ' Rainbow border</h3>' +
+      fxRow('Rainbow border', fxSwitchH('bdOn', 'Rainbow border'), '', 'A ring around the places you pick below. It never changes layout or blocks clicks.') +
+      '<div data-fx-if="bdOn">' +
+        fxRow('Style', fxSegH('bdStyle', FX_STYLES, 'Border style')) +
+        fxRow('Line', fxSegH('bdLine', [['solid', 'Solid'], ['dashed', 'Dashed'], ['dotted', 'Dotted']], 'Border line')) +
+        fxRow('Width', fxRangeH('bdWidth', 1, 8, 'Border width in pixels')) +
+        fxRow('Glow', fxRangeH('bdGlow', 0, 20, 'Glow strength'), '', '') +
+        fxRow('Saturation', fxRangeH('bdSat', 30, 100, 'Rainbow saturation'), 'bdStyle:rainbow|flow') +
+        fxRow('Lightness', fxRangeH('bdLight', 40, 85, 'Rainbow lightness'), 'bdStyle:rainbow|flow', 'Day theme is darkened automatically.') +
+        fxRow('Gradient colors', fxColorH('bdG1', 'Gradient color 1') + fxColorH('bdG2', 'Gradient color 2') + '<label class="studio-sub" style="margin:0; display:flex; align-items:center; gap:6px;"><input type="checkbox" data-fx="bdG3On" aria-label="Use a third gradient color"> third</label>' + fxColorH('bdG3', 'Gradient color 3'), 'bdStyle:gradient') +
+        fxRow('Rotate', fxSwitchH('bdSpin', 'Rotate the gradient or neon ring'), 'bdStyle:gradient|neon') +
+        fxRow('Speed', fxRangeH('bdSpeed', 1, 10, 'Animation speed'), FX_ANIMATED_COND) +
+        fxRow('Direction', fxSegH('bdDir', [['cw', 'Clockwise'], ['ccw', 'Counter-clockwise']], 'Animation direction'), FX_ANIMATED_COND) +
+        fxRow('Pause when idle', fxSwitchH('bdIdle', 'Pause the animation when idle'), FX_ANIMATED_COND, 'Stops after 12 seconds without input or when the window loses focus.') +
+        '<div class="fx-group"><p class="studio-sub">Where it shows</p>' +
+          fxRow('Windows', fxSegH('bdWin', [['off', 'Off'], ['focused', 'Focused only'], ['all', 'All, focused brightest']], 'Window borders')) +
+          fxRow('Screen frame', fxSwitchH('bdFrame', 'Border around the whole screen'), '', 'Around the desktop edge, above windows, below dialogs. Windows keep the corner radius; the frame is square.') +
+          fxRow('Taskbar line', fxSwitchH('bdTaskbar', 'Rainbow line on the taskbar top edge')) +
+          fxRow('Header line', fxSwitchH('bdHeader', 'Rainbow line under the header')) +
+          fxRow('Desktop icons', fxSwitchH('bdIcons', 'Ring on hovered or dragged desktop icons')) +
+          fxRow('Notes &amp; widgets', fxSwitchH('bdNotes', 'Outline on sticky notes and widgets')) +
+        '</div>' +
+      '</div></div>' +
+    '<div class="settings-card"><h3>' + icon('layout') + ' Windows</h3>' +
+      fxRow('Shadow', fxSegH('shadow', [['default', 'Default'], ['none', 'None'], ['soft', 'Soft'], ['deep', 'Deep'], ['neon', 'Neon glow'], ['rainbow', 'Rainbow glow']], 'Window shadow')) +
+      fxRow('Corner radius', '<input type="range" class="grow fx-range" id="fx-radius" min="0" max="24" step="1" aria-label="Window corner radius (same as Appearance)"><span class="studio-val" id="fx-radius-val"></span>', '', 'Same value as Appearance. Borders follow it.') +
+      '<div class="fx-group"><p class="studio-sub">Title bar</p>' +
+        fxRow('Height', fxSegH('tbDensity', [['compact', 'Compact'], ['normal', 'Normal'], ['roomy', 'Roomy']], 'Title bar height')) +
+        fxRow('Title', fxSegH('tbAlign', [['left', 'Left'], ['center', 'Centered']], 'Title alignment')) +
+        fxRow('Buttons', fxSegH('tbBtns', [['right', 'Right'], ['left', 'Left'], ['dots', 'Left, traffic lights']], 'Title bar button side')) +
+        fxRow('Gradient', fxSegH('tbGrad', [['default', 'Default'], ['sweep', 'Accent sweep'], ['flat', 'Flat']], 'Title bar gradient'), '', 'Day theme keeps its blue bars.') +
+      '</div></div>' +
+    '<div class="settings-card"><h3>' + icon('cursor') + ' Cursor &amp; pointer</h3>' +
+      fxRow('Cursor color', fxSegH('curColor', [['default', 'Default'], ['accent', 'Accent'], ['rainbow', 'Rainbow']], 'Cursor color')) +
+      fxRow('Cursor trail', fxSwitchH('curTrail', 'Cursor trail'), '', 'Small fading dots on one canvas.') +
+      fxRow('Click ripple', fxSwitchH('curRipple', 'Click ripple'), '', 'A ring that expands where you click.') +
+      '<p class="studio-sub" style="margin:6px 0 0;">The trail and ripple pause in Performance mode, Reduce motion, a hidden tab and the lock screen.</p></div>' +
+    '<div class="settings-card"><h3>' + icon('sliders') + ' Scrollbars, selection &amp; focus</h3>' +
+      fxRow('Scrollbar color', fxSegH('sbMode', [['default', 'Default'], ['accent', 'Accent'], ['rainbow', 'Rainbow']], 'Scrollbar color')) +
+      fxRow('Scrollbar size', fxSegH('sbSize', [['thin', 'Thin'], ['normal', 'Normal'], ['wide', 'Wide']], 'Scrollbar size')) +
+      fxRow('Text selection', fxSegH('selMode', [['default', 'Default'], ['accent', 'Accent'], ['rainbow', 'Rainbow']], 'Text selection color'), '', 'Rainbow picks a new hue for each selection.') +
+      '<div class="fx-group"><p class="studio-sub">Keyboard focus ring</p>' +
+        fxRow('Color', fxSegH('focusMode', [['default', 'Default'], ['accent', 'Accent'], ['rainbow', 'Rainbow']], 'Focus ring color')) +
+        fxRow('Width', fxRangeH('focusW', 1, 6, 'Focus ring width')) +
+        fxRow('Offset', fxRangeH('focusO', 0, 6, 'Focus ring offset')) +
+        fxRow('High contrast focus', fxSwitchH('focusHigh', 'High contrast focus ring'), '', 'A white and black double ring that shows on any background.') +
+      '</div></div>' +
+    '<div class="settings-card"><h3>' + icon('palette', 'icon-fill') + ' Looks</h3>' +
+      '<p class="studio-sub">One click sets the theme, accent, wallpaper, icon colors, corner radius and all of the effects above. Every look can be undone.</p>' +
+      '<div class="fx-looks" id="fx-looks"></div>' +
+      '<div class="conv-btn-row" style="margin-top:10px;"><button type="button" class="ghost-btn" data-act="random">' + icon('shuffle') + ' Random look</button>' +
+        '<button type="button" class="ghost-btn" data-act="save">' + icon('save') + ' Save current as look…</button>' +
+        '<button type="button" class="ghost-btn" data-act="undo" data-fx-undo>' + icon('rotate-cw') + ' Undo last look</button></div>' +
+      '<div class="fx-saved" id="fx-saved"></div>' +
+      '<div class="fx-group"><p class="studio-sub">Share a look</p>' +
+        '<textarea id="fx-json" rows="5" spellcheck="false" style="width:100%; font-family:monospace; font-size:11.5px;" aria-label="Look JSON" placeholder=\'{"spacepad-look":1,"name":"My look","accent":"#8b7cf6","fx":{"bdOn":true,"bdStyle":"flow"}}\'></textarea>' +
+        '<div class="conv-btn-row"><button type="button" class="ghost-btn" data-act="export">' + icon('clipboard') + ' Copy current look JSON</button><button type="button" class="ghost-btn" data-act="import">Apply pasted look</button></div>' +
+        '<p class="studio-note" id="fx-note" role="status" aria-live="polite"></p></div>' +
+      '<div class="conv-btn-row" style="margin-top:6px;"><button type="button" class="ghost-btn" data-act="reset" style="margin-left:auto; color:var(--error); border-color:var(--error);">Reset borders &amp; effects</button></div></div>';
+  const v = studioMount('borders', 'rainbow', 'Borders &amp; Effects', 'Rainbow borders, glow, shadows, title bars, cursor, scrollbars, focus rings and one-click looks. Live, undoable and kept with your backups.', body);
+  v.querySelector('.studio-wrap').classList.add('fx-wrap');
+  const $ = id => document.getElementById(id);
+
+  function drawLooks(){
+    $('fx-looks').innerHTML = FX_LOOKS.map(fxLookCard).join('');
+    const saved = $('fx-saved');
+    saved.innerHTML = fxSaved.length ? '<p class="studio-sub" style="margin:12px 0 4px; font-weight:600; color:var(--text);">Your looks</p><div class="studio-list">' + fxSaved.map(l =>
+      '<div class="studio-item"><span class="name" title="' + sEsc(l.name) + '">' + sEsc(l.name) + '</span>' +
+      '<button type="button" class="ghost-btn" data-slook="' + sEsc(l.id) + '" aria-label="Apply ' + sEsc(l.name) + '">Apply</button>' +
+      '<button type="button" class="ghost-btn" data-act="rename" data-id="' + sEsc(l.id) + '" aria-label="Rename ' + sEsc(l.name) + '">Rename</button>' +
+      '<button type="button" class="ghost-btn" data-act="delete" data-id="' + sEsc(l.id) + '" aria-label="Delete ' + sEsc(l.name) + '" style="color:var(--error); border-color:var(--error);">Delete</button></div>').join('') + '</div>' : '';
+    fxMarkLooks(); fxSyncUi();
+  }
+  function note(msg, err){ sNote($('fx-note'), msg, err); }
+  function syncRadius(){
+    const r = studioCall('appearance', 'getRadius'); if (r == null) return;
+    $('fx-radius').value = r; $('fx-radius-val').textContent = r + 'px';
+  }
+  function say(m){ note(m, false); }
+  v.addEventListener('click', async (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.fx !== undefined){ fxSet({ [t.dataset.fx]: t.dataset.v }); return; }
+    if (t.dataset.look){ const l = FX_LOOKS.find(x => x.id === t.dataset.look); if (l){ fxApplyLook(l); say('Applied “' + l.name + '”.'); } return; }
+    if (t.dataset.slook){ const l = fxSaved.find(x => x.id === t.dataset.slook); if (l){ fxApplyLook(l); say('Applied “' + l.name + '”.'); } return; }
+    const act = t.dataset.act;
+    if (act === 'random'){ fxRandomLook(); say('Random look applied. Use Undo last look to go back.'); }
+    else if (act === 'undo'){ if (!fxUndo()) say('Nothing to undo.'); else say('Undone.'); }
+    else if (act === 'reset'){ fxResetAll(); say('Borders & effects reset to the defaults.'); }
+    else if (act === 'save'){
+      if (fxSaved.length >= 40){ note('You can keep up to 40 looks. Delete one first.', true); return; }
+      const name = await fxPrompt('Save current as look', 'Name for this look', 'My look ' + (fxSaved.length + 1), 'Save');
+      if (!name) return;
+      const L = fxCaptureLook(name); L.id = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      fxSaved.push(L); fxSaveSaved(); fxSet({ look: L.id }, { quiet: true }); drawLooks(); studioEmit(); say('Saved “' + name + '”. It also appears in Settings and in Next look.'); showToast('Look “' + name + '” saved.');
+    }
+    else if (act === 'rename'){
+      const l = fxSaved.find(x => x.id === t.dataset.id); if (!l) return;
+      const name = await fxPrompt('Rename look', 'New name', l.name, 'Rename'); if (!name) return;
+      l.name = name; fxSaveSaved(); drawLooks(); studioEmit(); say('Renamed to “' + name + '”.');
+    }
+    else if (act === 'delete'){
+      const l = fxSaved.find(x => x.id === t.dataset.id); if (!l) return;
+      const ok = await appConfirm('Delete look “' + l.name + '”?', 'This removes the saved look. Your current appearance stays as it is.', 'Delete', true); if (!ok) return;
+      fxSaved = fxSaved.filter(x => x.id !== l.id); fxSaveSaved(); if (fx.look === l.id) fxSet({ look: '' }, { quiet: true });
+      drawLooks(); studioEmit(); say('Deleted “' + l.name + '”.');
+    }
+    else if (act === 'export'){
+      const L = fxCaptureLook(((fxFindLook(fx.look) || {}).name) || 'My look');
+      const txt = JSON.stringify(Object.assign({ 'spacepad-look': 1 }, L), null, 2);
+      $('fx-json').value = txt; sCopy(txt, 'Look JSON copied.'); say('Look JSON is in the box above.');
+    }
+    else if (act === 'import'){
+      let o; const txt = $('fx-json').value.trim();
+      if (!txt){ note('Paste a look first.', true); return; }
+      try { o = JSON.parse(txt); } catch(err){ note('That is not valid JSON.', true); return; }
+      const r = fxNormalizeLook(o, true);
+      if (r.error){ note(r.error, true); return; }
+      fxApplyLook(r.look, 'Look imported'); say('Applied “' + r.look.name + '”. Use Save current as look to keep it.');
+    }
+  });
+  v.addEventListener('input', (e) => {
+    const t = e.target; if (t.id === 'fx-radius'){ studioCall('appearance', 'setRadius', +t.value); $('fx-radius-val').textContent = t.value + 'px'; return; }
+    if (!t.dataset || t.dataset.fx === undefined || t.tagName !== 'INPUT') return;
+    if (t.type === 'range') fxSet({ [t.dataset.fx]: t.value }, { quiet: true });
+    else if (t.type === 'color') fxSet({ [t.dataset.fx]: t.value }, { quiet: true });
+  });
+  v.addEventListener('change', (e) => {
+    const t = e.target; if (!t.dataset || t.dataset.fx === undefined) return;
+    if (t.type === 'checkbox') fxSet({ [t.dataset.fx]: t.checked });
+    else if (t.type === 'range' || t.type === 'color') { fxSet({ [t.dataset.fx]: t.value }); }
+  });
+  document.addEventListener('spacepad:settings', () => { try { fxApply(); fxGateSync(); fxSyncUi(); syncRadius(); } catch(err){} });
+  studioApps.borders = { refresh: () => { drawLooks(); syncRadius(); }, toggle: fxToggleBorder, next: fxNextLook, random: fxRandomLook, trail: fxToggleTrail, _state: () => fx };
+  drawLooks(); syncRadius();
+})();
+
+/* ---- Mirror in Settings -> Appearance (same data-fx hooks, same setter) ---- */
+(function fxSettingsMirror(){
+  const host = document.getElementById('settings-fx'); if (!host) return;
+  const row = (label, desc, inner, cond) => '<div class="settings-row"' + (cond ? ' data-fx-if="' + cond + '"' : '') + '><div><div class="settings-row-label">' + label + '</div>' + (desc ? '<div class="settings-row-desc">' + desc + '</div>' : '') + '</div>' + inner + '</div>';
+  const range = (key, lo, hi, aria) => '<span style="display:flex; align-items:center; gap:8px; min-width:0; flex:0 1 150px;"><input type="range" min="' + lo + '" max="' + hi + '" step="1" data-fx="' + key + '" aria-label="' + aria + '" style="flex:1; min-width:50px; width:100%;"><span class="studio-val" data-fx-val="' + key + '"></span></span>';
+  host.insertAdjacentHTML('beforebegin',
+    row('Look', 'One-click presets for theme, accent, wallpaper, icon colors and effects. Also in Ctrl+K as “Next look” and “Random look”.', '<select data-fx-look aria-label="Look" style="width:auto; max-width:200px;"></select>') +
+    row('Rainbow border', 'A rainbow (or gradient, solid, neon) ring on the focused window, plus optional screen frame and taskbar line. Also in Ctrl+K.', fxSwitchH('bdOn', 'Rainbow border')) +
+    row('Border style', '', fxSelH('bdStyle', FX_STYLES, 'Border style'), 'bdOn') +
+    row('Border width', '', range('bdWidth', 1, 8, 'Border width'), 'bdOn') +
+    row('Border speed', 'Stands still in Performance mode or Reduce motion.', range('bdSpeed', 1, 10, 'Border animation speed'), 'bdOn&' + FX_ANIMATED_COND) +
+    row('Screen frame', '', fxSwitchH('bdFrame', 'Border around the whole screen'), 'bdOn') +
+    row('Taskbar line', '', fxSwitchH('bdTaskbar', 'Rainbow line on the taskbar'), 'bdOn') +
+    row('More effects', 'Shadows, title bars, cursor, scrollbars, focus rings and saved looks.', '<button type="button" class="ghost-btn" data-fx-open>Borders &amp; Effects…</button>'));
+  host.remove();
+  document.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t && t.matches && t.matches('select[data-fx-look]')){
+      const l = fxFindLook(t.value);
+      if (l) fxApplyLook(l); else fxSet({ look: '' });
+    } else if (t && t.dataset && t.dataset.fx !== undefined && !t.closest('#view-borders')){
+      if (t.type === 'checkbox') fxSet({ [t.dataset.fx]: t.checked });
+      else if (t.tagName === 'SELECT') fxSet({ [t.dataset.fx]: t.value });
+      else if (t.type === 'range') fxSet({ [t.dataset.fx]: t.value });
+    }
+  });
+  document.addEventListener('input', (e) => {
+    const t = e.target; if (t && t.dataset && t.dataset.fx !== undefined && t.type === 'range' && !t.closest('#view-borders')) fxSet({ [t.dataset.fx]: t.value }, { quiet: true });
+  });
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('[data-fx-open]')) switchAppView('borders'); });
+  fxSyncUi();
+})();
+
+(function fxInit(){
+  fxApply(); fxGateSync(); fxSyncUi();
+  document.addEventListener('visibilitychange', fxGateSync);
+  window.matchMedia && (function(){ try { const mq = window.matchMedia('(prefers-reduced-motion: reduce)'); if (mq.addEventListener) mq.addEventListener('change', fxGateSync); } catch(e){} })();
+  flushHooks.push(fxPersist);
 })();
 
 
@@ -17924,7 +18875,7 @@ const CHAOS_NOTES = [
   'Review open tasks before the end of the day.', 'Export the session as a backup.', 'Follow up on pending messages.',
   'Check tomorrow\'s schedule.', 'Take a short break and drink some water.', 'Close the windows that are no longer needed.', 'Try saving a window layout.'
 ];
-const CHAOS_OPEN_APPS = ['settings', 'customize', 'appstore', 'wallpapers', 'appearance', 'widgets', 'iconlayout', 'shortcuts', 'layouts', 'stargazing', 'game', 'customcss'];
+const CHAOS_OPEN_APPS = ['settings', 'customize', 'appstore', 'wallpapers', 'appearance', 'widgets', 'iconlayout', 'shortcuts', 'layouts', 'borders', 'stargazing', 'game', 'customcss'];
 
 function chaosParticleEnvelope(elapsed, total, fade){ // 0..1: quick fade-in, fade-out over the last `fade` ms
   return Math.max(0, Math.min(1, elapsed / 250, (total - elapsed) / fade));
@@ -18741,7 +19692,7 @@ const EFFECTS = [
     } },
   { id: 'win-party', cat: 'windows', icon: 'layers', risky: true, weight: 2, label: 'Compact windows', desc: 'Several apps opened as small windows.', run(ctx){
       if (ctx.calmOnly('Compact windows')) return;
-      const SAFE = ['wallpapers', 'appearance', 'widgets', 'iconlayout', 'shortcuts', 'layouts', 'customcss', 'customize'];
+      const SAFE = ['wallpapers', 'appearance', 'widgets', 'iconlayout', 'shortcuts', 'layouts', 'borders', 'customcss', 'customize'];
       const pool = SAFE.filter(v => !(appWindows[v] && appWindows[v].open)), guests = [];
       const layer = document.getElementById('windows-layer'), cw = layer.clientWidth, ch = layer.clientHeight;
       for (let i = 0; i < 5 && pool.length; i++){
