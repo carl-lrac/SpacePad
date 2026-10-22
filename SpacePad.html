@@ -2637,6 +2637,78 @@
   .sp-sw-laps { margin: 7px 0 0; padding: 0; list-style: none; font-size: 11.5px; color: var(--text-dim); max-height: 80px; overflow-y: auto; font-variant-numeric: tabular-nums; }
 
   /* Icon Layout / Layouts / lists */
+  /* Text Labs: Zalgo Text Generator + Unicode Lab */
+  .studio-wrap.ul-wrap { max-width: 980px; min-width: 0; align-self: flex-start; }
+  #view-zalgo .studio-wrap { max-width: 860px; }
+  .tl-ta { width: 100%; box-sizing: border-box; resize: vertical; min-height: 60px; font-family: inherit; line-height: 1.5; user-select: text; -webkit-user-select: text; }
+  .tl-meta { margin-top: 4px; }
+  .tl-meta .studio-sub { margin: 0; }
+  .tl-dim { color: var(--text-dim); font-size: 11.5px; }
+  .tl-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .tl-details { margin-top: 8px; }
+  .tl-details > summary { cursor: pointer; font-size: 12px; color: var(--text-dim); padding: 3px 0; }
+  .tl-details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .zg-prev { margin-top: 10px; box-sizing: border-box; min-height: 120px; font-size: 26px; border: 1px solid var(--border); border-radius: 10px; background: #0b1020; color: #f2f4ff;
+    white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; overflow: visible; user-select: text; -webkit-user-select: text; cursor: text; text-align: left; }
+  .zg-prev.light { background: #f6f7fb; color: #12141f; }
+  .zg-prev.compact { max-height: 150px; overflow: auto; font-size: 20px; }
+  .zg-prev:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .zg-prev::selection { background: rgba(139,124,246,0.45); }
+  #ul-sets { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow: auto; padding-right: 4px; }
+  #ul-sets[data-empty="1"]::after { content: "No sets match that filter."; color: var(--text-dim); font-size: 12px; }
+  .ul-group[hidden], .ul-chip[hidden] { display: none; }
+  .ul-ghead { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin: 0 0 5px; }
+  .ul-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+  .ul-chip { position: relative; display: flex; align-items: center; gap: 9px; padding: 6px 9px; border: 1px solid var(--border); border-radius: 9px; background: var(--panel-2); cursor: pointer; min-width: 0; }
+  .ul-chip:hover { border-color: var(--accent-dim); }
+  .ul-chip.on { border-color: var(--accent); background: var(--panel-3); box-shadow: inset 0 0 0 1px var(--accent); }
+  .ul-chip input { position: absolute; opacity: 0; width: 100%; height: 100%; left: 0; top: 0; margin: 0; cursor: pointer; }
+  .ul-chip:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .ul-glyph { flex: 0 0 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; border-radius: 7px; background: var(--panel); color: var(--text);
+    font-family: "Noto Sans", "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Sans Math", "DejaVu Sans", "Segoe UI Symbol", system-ui, sans-serif; overflow: hidden; }
+  .ul-cmeta { display: flex; flex-direction: column; min-width: 0; }
+  .ul-cname { font-size: 12px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ul-crange { font-size: 10.5px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .ul-bar { position: sticky; top: -22px; z-index: 6; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px 14px; border-radius: 10px; background: var(--panel-3); border: 1px solid var(--accent-dim); box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+  .ul-gen { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 150px; padding: 8px 18px; font-size: 13px; font-weight: 700; background: var(--accent); color: #14132b; border-color: var(--accent); }
+  .ul-gen:hover { background: var(--accent); color: #14132b; border-color: var(--accent); filter: brightness(1.08); }
+  .ul-gen:focus-visible, .ul-auto-t:focus-within { outline: 2px solid var(--accent-cyan, var(--accent)); outline-offset: 2px; }
+  .ul-gen:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
+  .ul-gen[aria-disabled="true"] { cursor: progress; opacity: .8; }
+  .ul-gen .icon { width: 16px; height: 16px; }
+  .ul-gen.dirty::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+  .ul-bar-info { display: flex; flex-direction: column; gap: 2px; flex: 1 1 180px; min-width: 0; font-size: 12px; }
+  .ul-bar-info #ul-setcount { color: var(--text); font-variant-numeric: tabular-nums; }
+  .ul-dirty, .ul-hint, .ul-stale-note { font-size: 11.5px; color: var(--text-dim); }
+  .ul-dirty { color: var(--accent); }
+  .ul-dirty[hidden], .ul-hint[hidden], .ul-stale-note[hidden] { display: none; }
+  .ul-auto { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); flex: 0 1 auto; }
+  .ul-auto label { cursor: pointer; }
+  .ul-out.stale { border-style: dashed; border-color: var(--accent-dim); }
+  .ul-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); column-gap: 18px; }
+  .ul-form .studio-label { min-width: 120px; }
+  #ul-search { flex: 1 1 150px; min-width: 140px; }
+  .ul-out { font-size: 18px; min-height: 110px; font-family: "Noto Sans", "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Sans Math", "DejaVu Sans", "Segoe UI Symbol", system-ui, sans-serif; }
+  .ul-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; max-height: 340px; overflow: auto; padding: 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+  .ul-cell { content-visibility: auto; contain-intrinsic-size: 38px 38px; position: relative; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; box-sizing: border-box;
+    border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--text); font-size: 20px; cursor: pointer;
+    font-family: "Noto Sans", "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Sans Math", "DejaVu Sans", "Segoe UI Symbol", system-ui, sans-serif; }
+  .ul-cell small { font-size: 9px; color: var(--text-dim); font-family: system-ui, sans-serif; }
+  .ul-cell:hover { border-color: var(--accent-dim); }
+  .ul-cell.sel { border-color: var(--accent); background: var(--accent); color: #14132b; box-shadow: 0 0 0 1px var(--accent); }
+  .ul-cell.sel small { color: #14132b; }
+  .ul-cell.lock::after { content: ""; position: absolute; right: 2px; top: 2px; width: 7px; height: 7px; border-radius: 2px; background: var(--accent-cyan, var(--accent)); border: 1px solid var(--bg, #000); }
+  .ul-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ul-detail { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; margin-top: 12px; }
+  .ul-dbig { flex: 0 0 90px; height: 90px; display: flex; align-items: center; justify-content: center; font-size: 54px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-2);
+    font-family: "Noto Sans", "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Sans Math", "DejaVu Sans", "Segoe UI Symbol", system-ui, sans-serif; }
+  .ul-dbig small { font-size: 12px; color: var(--text-dim); }
+  .ul-dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; font-size: 12px; min-width: 0; flex: 1 1 220px; }
+  .ul-dl dt { color: var(--text-dim); } .ul-dl dd { margin: 0; user-select: text; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .ul-hname { font-family: "Noto Sans", "DejaVu Sans", system-ui, sans-serif; }
+  #ul-hist .studio-item { flex-wrap: wrap; min-width: 0; } #ul-hist .ul-hname { min-width: 0; flex: 1 1 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 520px) { #view-zalgo.studio-view, #view-unilab.studio-view { padding: 16px 12px 48px; } .ul-chips { grid-template-columns: 1fr; } .ul-bar { top: -16px; padding: 8px 10px; } .ul-bar-info { flex-basis: 120px; } .ul-gen { min-width: 0; padding: 8px 14px; } .ul-auto { flex: 1 1 100%; } .ul-form .studio-label { min-width: 0; flex: 1 1 100%; } }
+
   .studio-list { display: flex; flex-direction: column; }
   .studio-item { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-top: 1px solid var(--border); }
   .studio-item:first-child { border-top: none; }
@@ -4331,6 +4403,8 @@
             <option value="shortcuts">Shortcuts</option>
             <option value="layouts">Window Layouts</option>
             <option value="borders">Borders &amp; Effects</option>
+            <option value="zalgo">Zalgo</option>
+            <option value="unilab">Unicode Lab</option>
             <option value="chaos">Chaos</option>
             <option value="settings">Settings</option>
           </select>
@@ -4703,6 +4777,8 @@
   <div id="view-shortcuts" class="app-view studio-view"></div>
   <div id="view-layouts" class="app-view studio-view"></div>
   <div id="view-borders" class="app-view studio-view"></div>
+  <div id="view-zalgo" class="app-view studio-view"></div>
+  <div id="view-unilab" class="app-view studio-view"></div>
   <div id="view-chaos" class="app-view studio-view"></div>
 
 </main>
@@ -5364,6 +5440,8 @@ const ICONS = {
   hourglass: { svg: '<path d="M6 2h12M6 22h12"/><path d="M7 2c0 5 5 6 5 10s-5 5-5 10M17 2c0 5-5 6-5 10s5 5 5 10"/>' },
   'circle-minus': { svg: '<circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>' },
   bot: { svg: '<rect x="4" y="8" width="16" height="12" rx="2"/><line x1="12" y1="8" x2="12" y2="5"/><circle cx="12" cy="4" r="1"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><line x1="9" y1="17" x2="15" y2="17"/>' },
+  zalgo: { svg: '<polyline points="2 15 6 8 10 16 14 8 18 16 22 9"/><line x1="7" y1="3" x2="7.01" y2="3"/><line x1="12" y1="4" x2="12.01" y2="4"/><line x1="17" y1="3" x2="17.01" y2="3"/><line x1="9" y1="21" x2="9.01" y2="21"/><line x1="15" y1="21" x2="15.01" y2="21"/>' },
+  unicode: { svg: '<path d="M6 4v8a6 6 0 0 0 12 0V4"/><line x1="4" y1="21" x2="20" y2="21"/>' },
   question: { svg: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>' }
 };
 function icon(name, cls){
@@ -6975,6 +7053,9 @@ const DESKTOP_APPS = [
   { view: 'github', icon: 'github', iconFill: true, label: 'GitHub', gated: true },
   { view: 'convert', icon: 'link', label: 'Convert' },
   { view: 'tools', icon: 'tool', label: 'Tools' },
+  // Text Labs — Unicode text generators (code lives in the "TEXT LABS" section next to the Studio apps).
+  { view: 'zalgo', icon: 'zalgo', label: 'Zalgo', cmd: 'Open Zalgo Text Generator' },
+  { view: 'unilab', icon: 'unicode', label: 'Unicode Lab', cmd: 'Open Random Unicode Generator' },
   { view: 'python', icon: 'terminal', label: 'Python' },
   { view: 'stargazing', icon: 'moon', iconFill: true, label: 'Stargazing' },
   { view: 'game', icon: 'rocket', iconFill: true, label: 'Space Dino' },
@@ -7548,7 +7629,7 @@ const DEFAULT_WIN_SIZE = {
   stargazing: { w: 720, h: 480 }, game: { w: 640, h: 480 }, settings: { w: 580, h: 540 },
   customize: { w: 580, h: 580 }, appstore: { w: 680, h: 640 }, 'custom-app': { w: 680, h: 540 },
   wallpapers: { w: 700, h: 600 }, appearance: { w: 720, h: 620 }, widgets: { w: 600, h: 560 }, iconlayout: { w: 640, h: 600 },
-  customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, borders: { w: 740, h: 640 }, chaos: { w: 560, h: 700 }
+  customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, borders: { w: 740, h: 640 }, zalgo: { w: 700, h: 640 }, unilab: { w: 780, h: 660 }, chaos: { w: 560, h: 700 }
 };
 
 function defaultWinRect(key){
@@ -8237,7 +8318,7 @@ const BASE_COMMANDS = [
 const APP_SHORTCUT_DEFAULTS = { settings: 'Mod+,' };
 function getAllCommands(){
   const list = [];
-  DESKTOP_APPS.forEach(a => { if (a.view === 'chaos') return; /* has its own 'Open Chaos' command */ list.push({ id: 'app:' + a.view, label: 'Go to ' + a.label, iconName: a.icon, iconFill: !!a.iconFill, def: APP_SHORTCUT_DEFAULTS[a.view] || '', run: () => switchAppView(a.view) }); });
+  DESKTOP_APPS.forEach(a => { if (a.view === 'chaos') return; /* has its own 'Open Chaos' command */ list.push({ id: 'app:' + a.view, label: a.cmd || ('Go to ' + a.label), iconName: a.icon, iconFill: !!a.iconFill, def: APP_SHORTCUT_DEFAULTS[a.view] || '', run: () => switchAppView(a.view) }); });
   customApps.forEach(a => list.push({ id: 'app:custom:' + a.id, label: 'Open ' + a.name, iconName: ICONS[a.icon] ? a.icon : 'play', iconFill: !!(ICONS[a.icon] && ICONS[a.icon].fill), def: '', run: () => switchAppView('custom:' + a.id) }));
   list.push({ id: 'win:desktop', label: 'Go to Desktop', iconName: 'monitor', def: '', run: () => showDesktop() });
   BASE_COMMANDS.forEach(c => list.push(c));
@@ -18759,6 +18840,8 @@ const CHAOS_TIPS = [
   { id: 'rightclick', icon: 'cursor', title: 'Tip: right-click an icon', text: 'Right-click a desktop icon and choose Hide from desktop. Hidden icons can be shown again from Customize or from Icon Layout.', tryLabel: 'Icon Layout', run: chaosGo('iconlayout') },
   { id: 'calendar', icon: 'calendar', title: 'Tip: the taskbar calendar', text: 'Click the clock at the right end of the taskbar to open a calendar for the month.', tryLabel: 'Show it', run: chaosCmd('tb-calendar') },
   { id: 'layouts', icon: 'layout', title: 'Tip: Window Layouts', text: 'Arrange your windows once, save the arrangement in Window Layouts, and apply it with one click. Saved layouts also appear in Ctrl+K as "Apply window layout".', tryLabel: 'Window Layouts', run: chaosGo('layouts') },
+  { id: 'zalgo', icon: 'zalgo', title: 'Tip: Zalgo Text Generator', text: 'The Zalgo app stacks combining marks above, in the middle and below your letters. A seed makes the result repeatable, and Un-zalgo cleans it up again.', tryLabel: 'Zalgo', run: chaosGo('zalgo') },
+  { id: 'unilab', icon: 'unicode', title: 'Tip: Unicode Lab', text: 'Unicode Lab draws random characters from the Unicode blocks you pick. Click characters in its grid to select, lock or re-roll them, or send the text to Zalgo.', tryLabel: 'Unicode Lab', run: chaosGo('unilab') },
   { id: 'wallpapers', icon: 'image', title: 'Tip: Wallpapers', text: 'The Wallpapers app has scenes, solid colors, gradients, or your own picture from a link or file. In the Day theme the default sky also shows grass and flowers along the bottom; that can be switched off there, or kept over custom wallpapers.', tryLabel: 'Wallpapers', run: chaosGo('wallpapers') },
   { id: 'css', icon: 'code', title: 'Tip: Custom CSS', text: 'Custom CSS restyles anything live, and it has example snippets you click to add. If a style ever makes the app hard to use, press Ctrl/Cmd+Alt+Shift+C or run "Disable custom CSS" from Ctrl+K.', tryLabel: 'Custom CSS', run: chaosGo('customcss') },
   { id: 'export', icon: 'save', title: 'Tip: back up your session', text: 'SpacePad keeps nothing in your browser, so everything lives in this tab. Use Export everything in Settings to download a backup file, and Import to load it again.', tryLabel: 'Settings', run: chaosGo('settings') },
@@ -18875,7 +18958,7 @@ const CHAOS_NOTES = [
   'Review open tasks before the end of the day.', 'Export the session as a backup.', 'Follow up on pending messages.',
   'Check tomorrow\'s schedule.', 'Take a short break and drink some water.', 'Close the windows that are no longer needed.', 'Try saving a window layout.'
 ];
-const CHAOS_OPEN_APPS = ['settings', 'customize', 'appstore', 'wallpapers', 'appearance', 'widgets', 'iconlayout', 'shortcuts', 'layouts', 'borders', 'stargazing', 'game', 'customcss'];
+const CHAOS_OPEN_APPS = ['settings', 'customize', 'appstore', 'wallpapers', 'appearance', 'widgets', 'iconlayout', 'shortcuts', 'layouts', 'borders', 'stargazing', 'game', 'customcss', 'zalgo', 'unilab'];
 
 function chaosParticleEnvelope(elapsed, total, fade){ // 0..1: quick fade-in, fade-out over the last `fade` ms
   return Math.max(0, Math.min(1, elapsed / 250, (total - elapsed) / fade));
@@ -20553,6 +20636,1017 @@ function chaosUiSyncAll(){ chaosUiSyncControls(); chaosUiRenderHistory(); chaosU
 })();
 
 
+
+/* =========================================================================
+   TEXT LABS — two built-in apps that generate Unicode text:
+     Zalgo Text Generator (view 'zalgo')   and   Unicode Lab (view 'unilab').
+   Same mechanism as the Studio apps: DESKTOP_APPS entry (desktop icon, Ctrl+K,
+   window, taskbar chip, new-tab button, hide/restore), studioMount() for the UI,
+   studioApps.<id> for refresh/hooks, and ALL settings in memStore
+   (spacepad_zalgo_v1 / spacepad_unilab_v1) so they ride along with Export
+   everything and new tabs. Nothing is written anywhere else.
+   ========================================================================= */
+function tlMulberry(seed){
+  let a = seed >>> 0;
+  return function(){ a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function tlSeedFrom(v){
+  v = String(v == null ? '' : v).trim();
+  if (/^\d{1,15}$/.test(v)) return Number(v) % 4294967296;
+  let h = 2166136261; for (let i = 0; i < v.length; i++){ h ^= v.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function tlRandSeed(){ return Math.floor(Math.random() * 1e9); }
+function tlHex(n, w){ return n.toString(16).toUpperCase().padStart(w || 4, '0'); }
+function tlEscJs(s){
+  let o = '';
+  for (let i = 0; i < s.length; i++){
+    const ch = s[i], c = s.charCodeAt(i);
+    if (ch === '\\') o += '\\\\'; else if (ch === '"') o += '\\"'; else if (ch === '\n') o += '\\n'; else if (ch === '\r') o += '\\r'; else if (ch === '\t') o += '\\t';
+    else if (c < 32 || c > 126) o += '\\u' + tlHex(c, 4); else o += ch;
+  }
+  return o;
+}
+function tlEscHtml(s){
+  let o = '';
+  for (const ch of s){
+    const cp = ch.codePointAt(0);
+    if (ch === '&') o += '&amp;'; else if (ch === '<') o += '&lt;'; else if (ch === '>') o += '&gt;'; else if (ch === '"') o += '&quot;';
+    else if (cp < 32 || cp > 126) o += '&#x' + tlHex(cp, 1) + ';'; else o += ch;
+  }
+  return o;
+}
+// Copy with a Clipboard API first and a select + execCommand fallback second; reports with an in-app toast. Resolves to true/false.
+function tlCopy(text, okMsg, onFail){
+  const prev = document.activeElement;
+  const ok = () => { showToast(okMsg || 'Copied.'); return true; };
+  const fallback = () => {
+    let done = false;
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.setAttribute('aria-hidden', 'true');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, ta.value.length);
+      done = document.execCommand('copy'); ta.remove();
+    } catch(e){}
+    try { if (prev && prev.focus) prev.focus(); } catch(e){}
+    if (done) return ok();
+    if (onFail) { try { onFail(); } catch(e){} }
+    showToast('Could not copy automatically. The text is selected, press Ctrl+C to copy it.', 'error');
+    return false;
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(ok, fallback);
+  } catch(e){}
+  return Promise.resolve(fallback());
+}
+function tlSelectNode(el){
+  try { const r = document.createRange(); r.selectNodeContents(el); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){}
+}
+
+/* -------------------------------------------------------------------------
+   Zalgo Text Generator
+   ------------------------------------------------------------------------- */
+(function zalgoApp(){
+  const KEY = 'spacepad_zalgo_v1', MAX_BASE = 5000, HARD_MAX = 400000, PREVIEW_MAX = 60000;
+  const expand = (rs) => { const a = []; rs.forEach(r => { const hi = r.length > 1 ? r[1] : r[0]; for (let c = r[0]; c <= hi; c++) a.push(c); }); return a; };
+  // Three standard pools (de-duplicated, every code point is a combining mark, no overlap between pools).
+  const STD = {
+    up:   expand([[0x300, 0x314], [0x33D, 0x33F], [0x342, 0x344], [0x346], [0x34A, 0x34C], [0x350, 0x352], [0x357], [0x35B], [0x363, 0x36F]]),
+    mid:  expand([[0x315], [0x31B], [0x340, 0x341], [0x358], [0x321, 0x322], [0x327, 0x328], [0x334, 0x338], [0x489]]),
+    down: expand([[0x316, 0x319], [0x31C, 0x320], [0x323, 0x326], [0x329, 0x333], [0x339, 0x33C], [0x345], [0x347, 0x349], [0x34D, 0x34E], [0x353, 0x356], [0x359, 0x35A], [0x35C, 0x362]])
+  };
+  const RE_M = /^\p{M}$/u, RE_M_G = /\p{M}/gu, RE_WORD = /[\p{L}\p{N}]/u;
+  const CUSTOM = [
+    { id: 'supp', name: 'Diacritical Marks Supplement', range: 'U+1DC0-U+1DFF', list: expand([[0x1DC0, 0x1DFF]]).filter(c => RE_M.test(String.fromCodePoint(c))) },
+    { id: 'sym',  name: 'Marks for Symbols', range: 'U+20D0-U+20F0', list: expand([[0x20D0, 0x20F0]]).filter(c => RE_M.test(String.fromCodePoint(c))) },
+    { id: 'cyr',  name: 'Cyrillic combining', range: 'U+0483-U+0489', list: expand([[0x483, 0x489]]).filter(c => RE_M.test(String.fromCodePoint(c))) }
+  ];
+  const ACCENTS = new Set(expand([[0x300, 0x304], [0x306, 0x30C], [0x30F], [0x311], [0x31B], [0x323], [0x327, 0x328]]));
+  const PRESETS = {
+    mini:   { up: 1,  mid: 0, down: 1,  vary: false, spaces: false },
+    normal: { up: 4,  mid: 1, down: 4,  vary: false, spaces: false },
+    max:    { up: 25, mid: 8, down: 25, vary: false, spaces: false },
+    chaos:  { up: 20, mid: 8, down: 20, vary: true,  spaces: true }
+  };
+  const FONTS = {
+    sans: 'system-ui, "Segoe UI", Roboto, "Noto Sans", "DejaVu Sans", sans-serif',
+    serif: 'Georgia, "Times New Roman", "Noto Serif", "DejaVu Serif", serif',
+    mono: 'ui-monospace, "DejaVu Sans Mono", Consolas, "Courier New", monospace',
+    cursive: '"Comic Sans MS", "Brush Script MT", "Segoe Script", cursive'
+  };
+  const DEF = {
+    text: 'Hello, SpacePad! Zalgo makes text look haunted.', preset: 'normal', up: 4, mid: 1, down: 4, upOn: true, midOn: true, downOn: true,
+    intensity: 100, vary: false, spaces: false, nth: 1, target: 'all', seed: 424242, newRandom: false,
+    std: { up: true, mid: true, down: true }, useCustom: false, customSel: ['supp'], font: 'sans', light: false, compact: false
+  };
+  function norm(o){
+    o = (o && typeof o === 'object') ? o : {};
+    const s = Object.assign({}, DEF, o);
+    s.std = Object.assign({}, DEF.std, (o.std && typeof o.std === 'object') ? o.std : {});
+    s.text = String(s.text == null ? '' : s.text).slice(0, 20000);
+    s.up = sClamp(s.up, 0, 30, 4) | 0; s.mid = sClamp(s.mid, 0, 15, 1) | 0; s.down = sClamp(s.down, 0, 30, 4) | 0;
+    s.intensity = sClamp(s.intensity, 0, 100, 100) | 0; s.nth = sClamp(s.nth, 1, 10, 1) | 0;
+    ['upOn', 'midOn', 'downOn', 'vary', 'spaces', 'newRandom', 'useCustom', 'light', 'compact'].forEach(k => { s[k] = !!s[k]; });
+    ['up', 'mid', 'down'].forEach(k => { s.std[k] = s.std[k] !== false; });
+    s.customSel = Array.isArray(s.customSel) ? s.customSel.filter(x => CUSTOM.some(c => c.id === x)) : [];
+    if (['all', 'vowels', 'upper', 'skipfirst'].indexOf(s.target) === -1) s.target = 'all';
+    if (!FONTS[s.font]) s.font = 'sans';
+    if (['mini', 'normal', 'max', 'chaos', 'custom'].indexOf(s.preset) === -1) s.preset = 'custom';
+    s.seed = String(s.seed == null ? DEF.seed : s.seed).slice(0, 40);
+    return s;
+  }
+  let st = norm(sJson(KEY, {}));
+  const save = () => { const o = Object.assign({}, st); sSave(KEY, o); };
+  flushHooks.push(save);
+
+  function capInput(s){
+    // The cap counts base characters only; combining marks are free (so a zalgo result can be swapped back in). A hard ceiling still applies.
+    let n = 0, i = 0, trimmed = false;
+    if (s.length > HARD_MAX){ s = s.slice(0, HARD_MAX); trimmed = true; }
+    for (const ch of s){
+      if (!RE_M.test(ch)){ if (n >= MAX_BASE){ trimmed = true; break; } n++; }
+      i += ch.length;
+    }
+    return { text: trimmed ? s.slice(0, i) : s, trimmed, base: n };
+  }
+  function pools(s){
+    const res = { fb: [] };
+    ['up', 'mid', 'down'].forEach(k => {
+      const set = new Set();
+      if (s.std[k]) STD[k].forEach(c => set.add(c));
+      if (s.useCustom) CUSTOM.forEach(p => { if (s.customSel.indexOf(p.id) !== -1) p.list.forEach(c => set.add(c)); });
+      let arr = Array.from(set);
+      if (!arr.length){ arr = STD[k].slice(); res.fb.push(k); }
+      res[k] = arr.map(c => String.fromCodePoint(c));
+    });
+    return res;
+  }
+  function effCounts(s){
+    const f = s.intensity / 100;
+    return { up: s.upOn ? Math.round(s.up * f) : 0, mid: s.midOn ? Math.round(s.mid * f) : 0, down: s.downOn ? Math.round(s.down * f) : 0 };
+  }
+  function build(input, s, rnd){
+    const P = pools(s), C = effCounts(s);
+    const chars = Array.from(input), out = [];
+    let k = 0, inWord = false, i = 0; build.added = 0;
+    while (i < chars.length){
+      const ch = chars[i++];
+      if (RE_M.test(ch)){ out.push(ch); continue; } // a stray mark with no base: keep it
+      let cluster = ch;
+      while (i < chars.length && RE_M.test(chars[i])) cluster += chars[i++];
+      const isWord = RE_WORD.test(ch), first = isWord && !inWord;
+      inWord = isWord;
+      let ok = true;
+      if (ch === '\n' || ch === '\r') ok = false;
+      else if (/\s/.test(ch)) ok = s.spaces;
+      else if (s.target === 'vowels') ok = /[aeiouAEIOU]/.test(ch.normalize('NFD').charAt(0));
+      else if (s.target === 'upper') ok = ch !== ch.toLowerCase() && ch === ch.toUpperCase();
+      else if (s.target === 'skipfirst') ok = !first;
+      if (ok){ const idx = k++; if (idx % s.nth !== 0) ok = false; }
+      out.push(cluster);
+      if (ok){
+        for (const pos of ['up', 'mid', 'down']){
+          let n = C[pos]; if (s.vary) n = Math.floor(rnd() * (n + 1));
+          const pl = P[pos];
+          for (let j = 0; j < n; j++) out.push(pl[Math.floor(rnd() * pl.length)]);
+          build.added += n;
+        }
+      }
+    }
+    return out.join('');
+  }
+  function cpLen(s){ let n = s.length; for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); if (c >= 0xD800 && c <= 0xDBFF) n--; } return n; }
+  function unzalgoKeep(s){
+    const cps = Array.from(s); let out = '', i = 0;
+    while (i < cps.length){
+      const ch = cps[i];
+      if (RE_M.test(ch)){ i++; continue; }
+      let j = i + 1; const marks = [];
+      while (j < cps.length && RE_M.test(cps[j])){ marks.push(cps[j]); j++; }
+      if (marks.length === 1 && ACCENTS.has(marks[0].codePointAt(0))){
+        const comp = (ch + marks[0]).normalize('NFC');
+        out += Array.from(comp).length === 1 ? comp : ch;
+      } else out += ch;
+      i = j;
+    }
+    return out;
+  }
+  function stripAll(s){ return s.normalize('NFD').replace(RE_M_G, '').normalize('NFC'); }
+
+  const sel = (a) => '<option value="' + a[0] + '">' + a[1] + '</option>';
+  const slider = (label, id, max, hint) =>
+    '<div class="studio-row"><span class="studio-label"><label for="zg-' + id + '">' + label + '</label></span>' +
+    '<input type="range" class="grow" id="zg-' + id + '" min="0" max="' + max + '" step="1" aria-describedby="zg-' + id + '-v">' +
+    '<span class="studio-val" id="zg-' + id + '-v"></span>' +
+    (hint ? '<label class="toggle-switch" title="Use these marks"><input type="checkbox" id="zg-' + id + 'On" aria-label="' + hint + '"><span class="toggle-track"></span></label>' : '') + '</div>';
+  const tog = (id, label, title) => '<div class="studio-row"><span class="studio-label"><label for="' + id + '">' + label + '</label></span><label class="toggle-switch"' + (title ? ' title="' + title + '"' : '') + '><input type="checkbox" id="' + id + '"><span class="toggle-track"></span></label></div>';
+  const body =
+    '<div class="settings-card"><h3>' + icon('edit') + ' Your text</h3>' +
+      '<label class="studio-sub" for="zg-in">Type or paste text. Up to 5,000 characters (combining marks do not count).</label>' +
+      '<textarea id="zg-in" class="tl-ta" rows="3" spellcheck="false" autocomplete="off"></textarea>' +
+      '<div class="studio-row tl-meta"><span class="studio-sub" id="zg-incount"></span></div>' +
+      '<div class="studio-note" id="zg-note" role="status"></div>' +
+      '<div class="studio-row">' +
+        '<button type="button" class="ghost-btn" data-act="unz" title="Remove stacked marks but keep real accents such as e-acute (precomposed letters are never touched)">Un-zalgo (keep accents)</button>' +
+        '<button type="button" class="ghost-btn" data-act="strip" title="Remove every combining mark, accents included">Strip all marks</button>' +
+        '<button type="button" class="ghost-btn" data-act="swap" title="Move the output into the input box">Output to input</button>' +
+        '<button type="button" class="ghost-btn" data-act="reset" title="Back to the defaults">Reset</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('zalgo') + ' Output</h3>' +
+      '<div class="studio-row">' +
+        '<button type="button" class="ghost-btn" data-act="copy" title="Copy the whole output">Copy</button>' +
+        '<button type="button" class="ghost-btn" data-act="selall" title="Select the whole output">Select all</button>' +
+        '<button type="button" class="ghost-btn" data-act="rezalgo" title="New random seed, then generate again">Re-zalgo</button>' +
+        '<button type="button" class="ghost-btn" data-act="copyjs" title="Copy as escaped code units, e.g. \\u0301">Copy as \\u escapes</button>' +
+        '<button type="button" class="ghost-btn" data-act="copyhtml" title="Copy as HTML numeric entities, e.g. &amp;#x301;">Copy as HTML entities</button>' +
+      '</div>' +
+      '<div id="zg-prev" class="zg-prev" tabindex="0" role="textbox" aria-readonly="true" aria-multiline="true" aria-label="Zalgo output (selectable)"></div>' +
+      '<div class="studio-row tl-meta"><span class="studio-sub" id="zg-stats"></span></div>' +
+      '<span id="zg-live" class="tl-sr" aria-live="polite" role="status"></span>' +
+      '<div class="studio-row" style="margin-top:8px;">' +
+        '<span class="studio-label"><label for="zg-font">Preview font</label></span>' +
+        '<select id="zg-font" aria-label="Preview font">' + [['sans', 'Sans-serif'], ['serif', 'Serif'], ['mono', 'Monospace'], ['cursive', 'Cursive']].map(sel).join('') + '</select>' +
+        '<button type="button" class="ghost-btn" data-act="light" aria-pressed="false" title="Switch the preview between dark and light backgrounds">Light preview</button>' +
+        '<button type="button" class="ghost-btn" data-act="compact" aria-pressed="false" title="Limit the preview height and scroll inside it">Compact preview</button>' +
+      '</div>' +
+      '<div class="studio-sub" style="margin-top:6px;">Some fonts stack marks better than others. If a mark looks flat or clipped, try another font; the copied text is the same either way. Some websites and apps strip combining marks, so the result may look plainer once pasted there.</div>' +
+      '<details class="tl-details"><summary>Plain-text output box</summary><textarea id="zg-out" class="tl-ta" rows="4" readonly spellcheck="false" aria-label="Zalgo output as plain text"></textarea></details>' +
+      '<details class="tl-details"><summary>Why it works</summary><div class="studio-sub">Unicode has combining characters (general category Mn, mark nonspacing). They have no width of their own and draw on the letter before them, above, in the middle, or below. Stack enough of them on one letter and the text looks glitched. The text stays real text: it can be copied, searched in many places, and cleaned again with Un-zalgo.</div></details>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('sliders') + ' Intensity</h3>' +
+      '<div class="studio-row"><span class="studio-label">Presets</span>' +
+        ['mini', 'normal', 'max', 'chaos'].map(p => '<button type="button" class="ghost-btn" data-preset="' + p + '" aria-pressed="false">' + p.charAt(0).toUpperCase() + p.slice(1) + '</button>').join('') + '</div>' +
+      slider('Intensity (%)', 'intensity', 100) +
+      slider('Marks above', 'up', 30, 'Marks above on') + slider('Marks in the middle', 'mid', 15, 'Marks in the middle on') + slider('Marks below', 'down', 30, 'Marks below on') +
+      tog('zg-vary', 'Vary the count per letter', 'Each letter gets a random number of marks from 0 up to the amount set above') +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('target') + ' Which letters</h3>' +
+      tog('zg-spaces', 'Apply to spaces') +
+      '<div class="studio-row"><span class="studio-label"><label for="zg-nth">Every Nth character</label></span><input type="number" id="zg-nth" min="1" max="10" step="1" style="width:84px;"></div>' +
+      '<div class="studio-row"><span class="studio-label"><label for="zg-target">Emphasis</label></span><select id="zg-target">' +
+        [['all', 'Every character'], ['vowels', 'Only vowels'], ['upper', 'Only uppercase letters'], ['skipfirst', 'Skip the first letter of each word']].map(sel).join('') + '</select></div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('dice') + ' Randomness</h3>' +
+      '<div class="studio-row"><span class="studio-label"><label for="zg-seed">Seed</label></span><input type="text" id="zg-seed" class="grow" maxlength="40" autocomplete="off" aria-describedby="zg-seed-help" style="max-width:200px;">' +
+        '<button type="button" class="ghost-btn" data-act="newseed">Randomize seed</button></div>' +
+      '<div class="studio-sub" id="zg-seed-help">The same text, seed and settings always give the same output.</div>' +
+      tog('zg-newrandom', 'New random each time', 'Pick a fresh seed on every update instead of keeping this one') +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('layers') + ' Mark pools</h3>' +
+      '<div class="studio-sub">Standard pools, one for each position. A position uses every pool switched on here.</div>' +
+      '<div class="studio-row" id="zg-std">' + [['up', 'Standard above'], ['mid', 'Standard middle'], ['down', 'Standard below']].map(a => '<button type="button" class="ghost-btn" data-std="' + a[0] + '" aria-pressed="true">' + a[1] + '</button>').join('') + '</div>' +
+      tog('zg-usecustom', 'Custom marks', 'Mix extra combining blocks into every position') +
+      '<div class="studio-row" id="zg-custom">' + CUSTOM.map(p => '<button type="button" class="ghost-btn" data-custom="' + p.id + '" aria-pressed="false" title="' + p.range + '">' + p.name + ' <span class="tl-dim">' + p.range + '</span></button>').join('') + '</div>' +
+      '<div class="studio-note" id="zg-poolnote"></div>' +
+    '</div>';
+  const v = studioMount('zalgo', 'zalgo', 'Zalgo Text Generator', 'Stack combining marks above, in the middle and below your letters. Live, repeatable with a seed, and kept in session memory with your other settings.', body);
+  const $ = id => document.getElementById(id);
+  const inEl = $('zg-in'), prevEl = $('zg-prev'), outEl = $('zg-out');
+  let out = '', marksAdded = 0, lastMs = 0, timer = 0, liveTimer = 0, lastLive = '', inTrimmed = false;
+
+  function syncUI(){
+    if (inEl.value !== st.text) inEl.value = st.text;
+    ['up', 'mid', 'down', 'intensity'].forEach(k => { $('zg-' + k).value = st[k]; });
+    ['up', 'mid', 'down'].forEach(k => { $('zg-' + k + 'On').checked = st[k + 'On']; $('zg-' + k).disabled = !st[k + 'On']; });
+    $('zg-intensity-v').textContent = st.intensity + '%';
+    $('zg-up-v').textContent = st.up; $('zg-mid-v').textContent = st.mid; $('zg-down-v').textContent = st.down;
+    $('zg-vary').checked = st.vary; $('zg-spaces').checked = st.spaces; $('zg-nth').value = st.nth; $('zg-target').value = st.target;
+    $('zg-seed').value = st.seed; $('zg-newrandom').checked = st.newRandom; $('zg-usecustom').checked = st.useCustom;
+    v.querySelectorAll('[data-preset]').forEach(b => b.setAttribute('aria-pressed', String(st.preset === b.dataset.preset)));
+    v.querySelectorAll('[data-std]').forEach(b => b.setAttribute('aria-pressed', String(!!st.std[b.dataset.std])));
+    v.querySelectorAll('[data-custom]').forEach(b => { b.setAttribute('aria-pressed', String(st.customSel.indexOf(b.dataset.custom) !== -1)); b.disabled = !st.useCustom; });
+    $('zg-font').value = st.font;
+    v.querySelector('[data-act="light"]').setAttribute('aria-pressed', String(st.light));
+    v.querySelector('[data-act="compact"]').setAttribute('aria-pressed', String(st.compact));
+    $('zg-seed').disabled = st.newRandom;
+  }
+  function styleOf(){
+    const C = effCounts(st), side = Math.max(C.up, C.down, C.mid * 0.6);
+    const lh = Math.min(12, 1.4 + 0.19 * (Math.max(C.up, C.mid * 0.6) + C.down)), pad = Math.min(5.5, 0.4 + 0.19 * side);
+    prevEl.style.fontFamily = FONTS[st.font];
+    prevEl.style.lineHeight = String(lh.toFixed(2));
+    prevEl.style.padding = pad.toFixed(2) + 'em 14px';
+    prevEl.classList.toggle('light', st.light);
+    prevEl.classList.toggle('compact', st.compact);
+  }
+  function update(){
+    timer = 0;
+    const t0 = performance.now();
+    if (st.newRandom){ st.seed = String(tlRandSeed()); $('zg-seed').value = st.seed; }
+    out = build(st.text, st, tlMulberry(tlSeedFrom(st.seed)));
+    marksAdded = build.added;
+    const trunc = out.length > PREVIEW_MAX;
+    prevEl.textContent = trunc ? out.slice(0, PREVIEW_MAX) : out;
+    prevEl.dataset.len = String(out.length);
+    styleOf();
+    if (!outEl.parentNode.open) outEl.dataset.stale = '1'; else { outEl.value = out; outEl.dataset.stale = ''; }
+    const baseIn = cpLen(st.text);
+    $('zg-incount').textContent = baseIn.toLocaleString() + ' characters in (' + capInput(st.text).base.toLocaleString() + ' of 5,000 counted)';
+    const outCps = cpLen(out);
+    $('zg-stats').textContent = 'Output: ' + outCps.toLocaleString() + ' characters, ' + marksAdded.toLocaleString() + ' combining marks added' + (trunc ? '. The preview shows the first ' + PREVIEW_MAX.toLocaleString() + ' characters, Copy still copies everything.' : '.');
+    const P = pools(st);
+    sNote($('zg-poolnote'), P.fb.length ? 'No marks are selected for ' + P.fb.join(', ') + ', so the standard pool is used there.' : '', false);
+    sNote($('zg-note'), inTrimmed ? 'Input trimmed to 5,000 characters (combining marks not counted).' : '', false);
+    lastMs = performance.now() - t0;
+    save();
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(() => {
+      const msg = 'Output ' + outCps + ' characters with ' + marksAdded + ' combining marks added.';
+      if (msg !== lastLive){ lastLive = msg; $('zg-live').textContent = msg; }
+    }, 700);
+  }
+  function schedule(){ if (timer) clearTimeout(timer); timer = setTimeout(update, 60); }
+  function setText(t){
+    const c = capInput(String(t)); inTrimmed = c.trimmed; st.text = c.text; if (inEl.value !== st.text) inEl.value = st.text;
+  }
+  function applyPreset(p){
+    const pr = PRESETS[p]; if (!pr) return;
+    Object.assign(st, pr, { preset: p, intensity: 100, upOn: true, midOn: true, downOn: true });
+    syncUI(); schedule();
+  }
+  function selectOut(){ prevEl.focus({ preventScroll: true }); tlSelectNode(prevEl); }
+  function reseed(){ st.seed = String(tlRandSeed()); $('zg-seed').value = st.seed; }
+  v.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t === inEl){ const raw = inEl.value; const c = capInput(raw); inTrimmed = c.trimmed; st.text = c.text; if (c.trimmed) inEl.value = c.text; schedule(); return; }
+    if (t.id === 'zg-seed'){ st.seed = t.value; schedule(); return; }
+    if (t.type === 'range'){
+      const k = t.id.slice(3); st[k] = +t.value; if (k !== 'intensity') st.preset = 'custom'; syncUI(); schedule();
+    } else if (t.id === 'zg-nth'){ st.nth = sClamp(t.value, 1, 10, 1) | 0; schedule(); }
+  });
+  v.addEventListener('change', (e) => {
+    const t = e.target;
+    if (['up', 'mid', 'down'].some(k => t.id === 'zg-' + k + 'On')){ st[t.id.slice(3)] = t.checked; st.preset = 'custom'; syncUI(); schedule(); }
+    else if (t.id === 'zg-vary'){ st.vary = t.checked; st.preset = 'custom'; syncUI(); schedule(); }
+    else if (t.id === 'zg-spaces'){ st.spaces = t.checked; schedule(); }
+    else if (t.id === 'zg-newrandom'){ st.newRandom = t.checked; syncUI(); schedule(); }
+    else if (t.id === 'zg-usecustom'){ st.useCustom = t.checked; syncUI(); schedule(); }
+    else if (t.id === 'zg-target'){ st.target = t.value; schedule(); }
+    else if (t.id === 'zg-font'){ st.font = t.value; styleOf(); save(); }
+    else if (t.id === 'zg-nth'){ st.nth = sClamp(t.value, 1, 10, 1) | 0; t.value = st.nth; schedule(); }
+  });
+  outEl.parentNode.addEventListener('toggle', () => { if (outEl.parentNode.open && outEl.dataset.stale){ outEl.value = out; outEl.dataset.stale = ''; } });
+  v.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.preset){ applyPreset(b.dataset.preset); return; }
+    if (b.dataset.std){ st.std[b.dataset.std] = !st.std[b.dataset.std]; syncUI(); schedule(); return; }
+    if (b.dataset.custom){ const i = st.customSel.indexOf(b.dataset.custom); if (i === -1) st.customSel.push(b.dataset.custom); else st.customSel.splice(i, 1); syncUI(); schedule(); return; }
+    const act = b.dataset.act; if (!act) return;
+    if (timer){ clearTimeout(timer); update(); }
+    if (act === 'copy') tlCopy(out, 'Copied ' + cpLen(out).toLocaleString() + ' characters.', selectOut);
+    else if (act === 'selall') selectOut();
+    else if (act === 'copyjs') tlCopy(tlEscJs(out), 'Copied as \\u escapes.', selectOut);
+    else if (act === 'copyhtml') tlCopy(tlEscHtml(out), 'Copied as HTML entities.', selectOut);
+    else if (act === 'rezalgo' || act === 'newseed'){ reseed(); update(); }
+    else if (act === 'unz'){ setText(unzalgoKeep(st.text)); update(); showToast('Marks removed, accents kept.'); }
+    else if (act === 'strip'){ setText(stripAll(st.text)); update(); showToast('All combining marks removed.'); }
+    else if (act === 'swap'){ setText(out); update(); }
+    else if (act === 'light'){ st.light = !st.light; syncUI(); styleOf(); save(); }
+    else if (act === 'compact'){ st.compact = !st.compact; syncUI(); styleOf(); save(); }
+    else if (act === 'reset'){ st = norm({}); inTrimmed = false; syncUI(); update(); showToast('Zalgo settings reset.'); }
+  });
+  studioApps.zalgo = {
+    refresh(){ syncUI(); update(); },
+    setInput(t){ setText(t); update(); },
+    output(){ if (timer){ clearTimeout(timer); update(); } return out; },
+    stats(){ return { ms: lastMs, marks: marksAdded, len: out.length }; },
+    _state(){ return st; },
+    _api: { build, pools, effCounts, unzalgoKeep, stripAll, STD, CUSTOM, norm }
+  };
+  syncUI(); update();
+})();
+
+/* -------------------------------------------------------------------------
+   Unicode Lab — random Unicode text from character sets you choose.
+   Validity: every block's code points are tested in this browser with Unicode
+   property regexes (letters, marks, numbers, punctuation, symbols only; spaces
+   and format/control characters only when asked). Unassigned, surrogate,
+   private-use and noncharacter code points never pass. Lists are built lazily
+   per block the first time the block is used (big ones in chunks).
+   ------------------------------------------------------------------------- */
+(function unicodeLabApp(){
+  const KEY = 'spacepad_unilab_v1', MAX_TOTAL = 100000, GRID_STEP = 1000;
+  const GROUPS = ['Latin and Greek', 'Other alphabets', 'South and Southeast Asia', 'East Asia', 'Symbols and technical', 'Math, music and games', 'Emoji and pictographs', 'Ancient scripts', 'Combining marks'];
+  // id|name|group|ranges (hex)|flags   flags: on = selected by default, m = combining-mark block, big = large block
+  const RAW = [
+    'basic-latin|Basic Latin (printable)|0|20-7E|on', 'latin1|Latin-1 Supplement|0|A0-FF|', 'latin-ext-a|Latin Extended-A|0|100-17F|on', 'latin-ext-b|Latin Extended-B|0|180-24F|',
+    'ipa|IPA Extensions|0|250-2AF|', 'latin-ext-add|Latin Extended Additional|0|1E00-1EFF|', 'greek|Greek and Coptic|0|370-3FF|on', 'greek-ext|Greek Extended|0|1F00-1FFF|',
+    'cyrillic|Cyrillic|1|400-4FF|on', 'armenian|Armenian|1|530-58F|', 'hebrew|Hebrew|1|590-5FF|', 'arabic|Arabic|1|600-6FF|', 'syriac|Syriac|1|700-74F|', 'thaana|Thaana|1|780-7BF|',
+    'georgian|Georgian|1|10A0-10FF|', 'ethiopic|Ethiopic|1|1200-137F|', 'cherokee|Cherokee|1|13A0-13FF|', 'ucas|Canadian Aboriginal Syllabics|1|1400-167F|', 'ogham|Ogham|1|1680-169F|',
+    'runic|Runic|1|16A0-16FF|', 'mongolian|Mongolian|1|1800-18AF|',
+    'devanagari|Devanagari|2|900-97F|', 'bengali|Bengali|2|980-9FF|', 'gurmukhi|Gurmukhi|2|A00-A7F|', 'gujarati|Gujarati|2|A80-AFF|', 'tamil|Tamil|2|B80-BFF|', 'telugu|Telugu|2|C00-C7F|',
+    'kannada|Kannada|2|C80-CFF|', 'malayalam|Malayalam|2|D00-D7F|', 'sinhala|Sinhala|2|D80-DFF|', 'thai|Thai|2|E00-E7F|', 'lao|Lao|2|E80-EFF|', 'tibetan|Tibetan|2|F00-FFF|',
+    'myanmar|Myanmar|2|1000-109F|', 'khmer|Khmer|2|1780-17FF|',
+    'hiragana|Hiragana|3|3040-309F|on', 'katakana|Katakana|3|30A0-30FF|on', 'cjk-symbols|CJK Symbols and Punctuation|3|3000-303F|', 'bopomofo|Bopomofo|3|3100-312F|',
+    'hangul-compat|Hangul Compatibility Jamo|3|3130-318F|', 'hangul-jamo|Hangul Jamo|3|1100-11FF|', 'hangul-syl|Hangul Syllables|3|AC00-D7A3|big', 'cjk-unified|CJK Unified Ideographs|3|4E00-9FFF|big',
+    'cjk-ext-a|CJK Unified Ideographs Extension A|3|3400-4DBF|big', 'yi|Yi Syllables|3|A000-A48C|', 'fullwidth|Halfwidth and Fullwidth Forms|3|FF00-FFEF|',
+    'gen-punct|General Punctuation|4|2000-206F|', 'sup-sub|Superscripts and Subscripts|4|2070-209F|', 'currency|Currency Symbols|4|20A0-20CF|', 'letterlike|Letterlike Symbols|4|2100-214F|',
+    'number-forms|Number Forms|4|2150-218F|', 'arrows|Arrows|4|2190-21FF|on', 'math-ops|Mathematical Operators|4|2200-22FF|on', 'misc-tech|Miscellaneous Technical|4|2300-23FF|',
+    'control-pics|Control Pictures|4|2400-243F|', 'ocr|Optical Character Recognition|4|2440-245F|', 'enclosed|Enclosed Alphanumerics|4|2460-24FF|', 'box|Box Drawing|4|2500-257F|on',
+    'blocks|Block Elements|4|2580-259F|', 'geo|Geometric Shapes|4|25A0-25FF|on', 'misc-sym|Miscellaneous Symbols|4|2600-26FF|', 'dingbats|Dingbats|4|2700-27BF|on',
+    'misc-math-a|Miscellaneous Mathematical Symbols-A|4|27C0-27EF|', 'sup-arrows-a|Supplemental Arrows-A|4|27F0-27FF|', 'braille|Braille Patterns|4|2800-28FF|on', 'sup-arrows-b|Supplemental Arrows-B|4|2900-297F|',
+    'misc-math-b|Miscellaneous Mathematical Symbols-B|4|2980-29FF|', 'sup-math-ops|Supplemental Mathematical Operators|4|2A00-2AFF|', 'misc-sym-arrows|Miscellaneous Symbols and Arrows|4|2B00-2BFF|',
+    'geo-ext|Geometric Shapes Extended|4|1F780-1F7FF|',
+    'math-alnum|Mathematical Alphanumeric Symbols|5|1D400-1D7FF|', 'musical|Musical Symbols|5|1D100-1D1FF|', 'byzantine|Byzantine Musical Symbols|5|1D000-1D0FF|', 'playing-cards|Playing Cards|5|1F0A0-1F0FF|',
+    'mahjong|Mahjong Tiles|5|1F000-1F02F|', 'domino|Domino Tiles|5|1F030-1F09F|', 'alchemical|Alchemical Symbols|5|1F700-1F77F|', 'enclosed-sup|Enclosed Alphanumeric Supplement|5|1F100-1F1FF|',
+    'counting-rod|Counting Rod Numerals|5|1D360-1D37F|', 'tai-xuan|Tai Xuan Jing Symbols|5|1D300-1D35F|',
+    'pictographs|Miscellaneous Symbols and Pictographs|6|1F300-1F5FF|', 'emoticons|Emoticons|6|1F600-1F64F|', 'transport|Transport and Map Symbols|6|1F680-1F6FF|',
+    'supp-symbols|Supplemental Symbols and Pictographs|6|1F900-1F9FF|', 'sym-ext-a|Symbols and Pictographs Extended-A|6|1FA70-1FAFF|',
+    'egyptian|Egyptian Hieroglyphs|7|13000-1342F|', 'cuneiform|Cuneiform|7|12000-123FF|', 'linear-b|Linear B Syllabary|7|10000-1007F|', 'phoenician|Phoenician|7|10900-1091F|',
+    'gothic|Gothic|7|10330-1034F|', 'old-italic|Old Italic|7|10300-1032F|', 'ugaritic|Ugaritic|7|10380-1039F|', 'tangut|Tangut|7|17000-187F7|big',
+    'comb-dm|Combining Diacritical Marks|8|300-36F|m', 'comb-dm-sup|Combining Diacritical Marks Supplement|8|1DC0-1DFF|m', 'comb-sym|Combining Diacritical Marks for Symbols|8|20D0-20FF|m'
+  ];
+  const CAT = RAW.map(r => {
+    const p = r.split('|');
+    const ranges = p[3].split(',').map(x => { const a = x.split('-'); return [parseInt(a[0], 16), parseInt(a[1], 16)]; });
+    let size = 0; ranges.forEach(a => { size += a[1] - a[0] + 1; });
+    const fl = p[4] || '';
+    return { id: p[0], name: p[1], group: +p[2], ranges, size, on: fl.indexOf('on') !== -1, marksBlock: fl.indexOf('m') !== -1, big: fl.indexOf('big') !== -1 || size > 6000, cache: null, eff: {}, sample: null, ms: 0 };
+  });
+  const BY = {}; CAT.forEach(b => { BY[b.id] = b; });
+  const EMOJI_IDS = ['pictographs', 'emoticons', 'transport', 'supp-symbols', 'sym-ext-a'];
+
+  const RE_BASE = /^[\p{L}\p{M}\p{N}\p{P}\p{S}]$/u, RE_MK = /^\p{M}$/u, RE_ZS = /^\p{Zs}$/u, RE_CC = /^[\p{Cc}\p{Cf}]$/u;
+  function cls(c){ const s = String.fromCodePoint(c); if (RE_BASE.test(s)) return RE_MK.test(s) ? 1 : 0; if (RE_ZS.test(s)) return 2; if (RE_CC.test(s)) return 3; return -1; }
+  function buildBlock(b){
+    return new Promise(resolve => {
+      const parts = [[], [], [], []]; let ri = 0, c = b.ranges[0][0]; const t0 = performance.now();
+      function step(limit){
+        let n = 0;
+        while (ri < b.ranges.length && n < limit){
+          const hi = b.ranges[ri][1];
+          for (; c <= hi && n < limit; c++, n++){ const k = cls(c); if (k >= 0) parts[k].push(c); }
+          if (c > hi){ ri++; if (ri < b.ranges.length) c = b.ranges[ri][0]; }
+        }
+      }
+      function done(){ b.cache = { base: Uint32Array.from(parts[0]), marks: Uint32Array.from(parts[1]), sp: Uint32Array.from(parts[2]), ctl: Uint32Array.from(parts[3]) }; b.eff = {}; b.ms = performance.now() - t0; resolve(b); }
+      if (!b.big){ step(Infinity); done(); }
+      else (function tick(){ step(3000); if (ri < b.ranges.length) setTimeout(tick, 0); else done(); })();
+    });
+  }
+  // one in-flight build per block, shared by the pool-size summary and Generate
+  function build(b){ return b.cache ? Promise.resolve(b) : (b.pending || (b.pending = buildBlock(b).then(x => { b.pending = null; return x; }))); }
+  async function ensure(ids, progress){
+    let i = 0;
+    for (const id of ids){ const b = BY[id]; if (b && !b.cache) await build(b); i++; if (progress && i % 6 === 0) progress(i, ids.length); }
+  }
+  function poolOf(b, o){
+    const key = (o.marks ? 'm' : '') + (o.spaces ? 's' : '') + (o.ctl ? 'c' : '');
+    if (b.eff[key]) return b.eff[key];
+    const c = b.cache, parts = [c.base];
+    if (o.marks || b.marksBlock) parts.push(c.marks);
+    if (o.spaces) parts.push(c.sp);
+    if (o.ctl) parts.push(c.ctl);
+    let n = 0; parts.forEach(p => { n += p.length; });
+    const arr = new Uint32Array(n); let at = 0; parts.forEach(p => { arr.set(p, at); at += p.length; });
+    return (b.eff[key] = arr);
+  }
+  // best-effort "can this browser draw it" check: compares canvas pixels with the pixels of a reference missing glyph
+  const rend = { ctx: null, refs: null, memo: new Map() };
+  function sig(ch){
+    const x = rend.ctx; x.clearRect(0, 0, 32, 32); x.fillText(ch, 3, 24);
+    const d = x.getImageData(0, 0, 32, 32).data; let h = 0, ink = 0;
+    for (let i = 3; i < d.length; i += 4){ if (d[i]){ ink++; h = (Math.imul(h, 31) + d[i] + i) | 0; } }
+    return ink ? String(h) : 'blank';
+  }
+  function renderable(cp){
+    if (rend.memo.has(cp)) return rend.memo.get(cp);
+    let ok = true;
+    try {
+      if (!rend.ctx){
+        const cv = document.createElement('canvas'); cv.width = cv.height = 32;
+        rend.ctx = cv.getContext('2d', { willReadFrequently: true }); rend.ctx.font = '24px sans-serif'; rend.ctx.fillStyle = '#000'; rend.ctx.textBaseline = 'alphabetic';
+        rend.refs = new Set([0x10FFFF, 0x10FFFE, 0xFFFF, 0xFDD0, 0x2FFFE].map(c => sig(String.fromCodePoint(c))));
+      }
+      const s = sig(String.fromCodePoint(cp));
+      ok = !(s === 'blank' && !RE_ZS.test(String.fromCodePoint(cp))) && !rend.refs.has(s);
+    } catch(e){ ok = true; }
+    rend.memo.set(cp, ok); return ok;
+  }
+
+  const CATNAMES = { Lu: 'Uppercase letter', Ll: 'Lowercase letter', Lt: 'Titlecase letter', Lm: 'Modifier letter', Lo: 'Other letter', Mn: 'Nonspacing mark', Mc: 'Spacing mark', Me: 'Enclosing mark',
+    Nd: 'Decimal number', Nl: 'Letter number', No: 'Other number', Pc: 'Connector punctuation', Pd: 'Dash punctuation', Ps: 'Open punctuation', Pe: 'Close punctuation', Pi: 'Initial quote',
+    Pf: 'Final quote', Po: 'Other punctuation', Sm: 'Math symbol', Sc: 'Currency symbol', Sk: 'Modifier symbol', So: 'Other symbol', Zs: 'Space separator', Zl: 'Line separator',
+    Zp: 'Paragraph separator', Cc: 'Control', Cf: 'Format' };
+  const CATRE = Object.keys(CATNAMES).map(k => [k, new RegExp('^\\p{' + k + '}$', 'u')]);
+  const SCRIPTS = 'Latin Greek Cyrillic Armenian Hebrew Arabic Syriac Thaana Devanagari Bengali Gurmukhi Gujarati Oriya Tamil Telugu Kannada Malayalam Sinhala Thai Lao Tibetan Myanmar Georgian Hangul Ethiopic Cherokee Canadian_Aboriginal Ogham Runic Khmer Mongolian Hiragana Katakana Bopomofo Han Yi Braille Coptic Gothic Old_Italic Ugaritic Phoenician Linear_B Cuneiform Egyptian_Hieroglyphs Tangut Glagolitic Tifinagh Nko Javanese Balinese Sundanese Cham Lisu Vai Bamum Tagalog Buhid Hanunoo Tagbanwa Limbu Tai_Le Deseret Shavian Osmanya Cypriot Brahmi Kharoshthi Common Inherited'.split(' ')
+    .map(n => { try { return [n.replace(/_/g, ' '), new RegExp('^\\p{Script=' + n + '}$', 'u')]; } catch(e){ return null; } }).filter(Boolean);
+  function describe(cp){
+    const ch = String.fromCodePoint(cp);
+    let gc = '?'; for (const c of CATRE){ if (c[1].test(ch)){ gc = c[0]; break; } }
+    let sc = ''; for (const c of SCRIPTS){ if (c[1].test(ch)){ sc = c[0]; break; } }
+    const blk = CAT.find(b => b.ranges.some(r => cp >= r[0] && cp <= r[1]));
+    const u8 = Array.from(new TextEncoder().encode(ch)).map(x => tlHex(x, 2)).join(' ');
+    const u16 = []; for (let i = 0; i < ch.length; i++) u16.push(tlHex(ch.charCodeAt(i), 4));
+    return { ch, cp, hex: 'U+' + tlHex(cp, 4), dec: cp, utf8: u8, utf16: u16.join(' '), block: blk ? blk.name : 'Outside the catalog', gc, gcName: CATNAMES[gc] || 'Unknown', script: sc || 'Unknown' };
+  }
+
+  const DEF = { sets: CAT.filter(b => b.on).map(b => b.id), length: 40, count: 1, sep: 'none', sepCustom: '', mode: 'chars', group: 5, unique: false, weight: 'set', seed: '20240101', seeded: false,
+    prefix: '', suffix: '', norm: 'none', marks: false, spaces: false, ctl: false, hide: false, keepLocked: true, auto: false, fmt: 'text', history: [] };
+  function normCfg(o){
+    o = (o && typeof o === 'object') ? o : {};
+    const s = Object.assign({}, DEF, o);
+    s.sets = (Array.isArray(s.sets) ? s.sets : DEF.sets).filter(id => BY[id]);
+    s.length = sClamp(s.length, 1, 5000, 40) | 0; s.count = sClamp(s.count, 1, 200, 1) | 0; s.group = sClamp(s.group, 1, 64, 5) | 0;
+    if (['none', 'space', 'newline', 'comma', 'custom'].indexOf(s.sep) === -1) s.sep = 'none';
+    if (['chars', 'words', 'pass', 'grid'].indexOf(s.mode) === -1) s.mode = 'chars';
+    if (['none', 'NFC', 'NFD', 'NFKC'].indexOf(s.norm) === -1) s.norm = 'none';
+    if (['set', 'cp'].indexOf(s.weight) === -1) s.weight = 'set';
+    if (['text', 'js', 'html', 'cps', 'json'].indexOf(s.fmt) === -1) s.fmt = 'text';
+    s.sepCustom = String(s.sepCustom || '').slice(0, 20); s.prefix = String(s.prefix || '').slice(0, 50); s.suffix = String(s.suffix || '').slice(0, 50);
+    s.seed = String(s.seed == null ? DEF.seed : s.seed).slice(0, 40);
+    ['unique', 'seeded', 'marks', 'spaces', 'ctl', 'hide', 'keepLocked', 'auto'].forEach(k => { s[k] = !!s[k]; });
+    s.history = Array.isArray(s.history) ? s.history.filter(h => h && typeof h === 'object' && h.cfg).slice(0, 10) : [];
+    return s;
+  }
+  let st = normCfg(sJson(KEY, {}));
+  const save = () => sSave(KEY, st);
+  flushHooks.push(save);
+
+  const sepStr = (c, dflt) => c.sep === 'space' ? ' ' : c.sep === 'newline' ? '\n' : c.sep === 'comma' ? ',' : c.sep === 'custom' ? c.sepCustom : (dflt || '');
+  function compose(lines, c){
+    const sep = sepStr(c);
+    const text = lines.map(line => {
+      const chars = line.map(cp => String.fromCodePoint(cp));
+      let s;
+      if (c.mode === 'chars') s = chars.join(sep);
+      else if (c.mode === 'grid'){ const rows = []; for (let i = 0; i < chars.length; i += c.group) rows.push(chars.slice(i, i + c.group).join(sep)); s = rows.join('\n'); }
+      else { const g = []; for (let i = 0; i < chars.length; i += c.group) g.push(chars.slice(i, i + c.group).join('')); s = g.join(c.mode === 'pass' ? (sep || '-') : (sep || ' ')); }
+      return c.prefix + s + c.suffix;
+    }).join('\n');
+    return c.norm === 'none' ? text : text.normalize(c.norm);
+  }
+  function poolsFor(c){ const on = new Set(c.sets); return CAT.filter(b => on.has(b.id) && b.cache).map(b => poolOf(b, c)).filter(p => p.length); } // catalog order, so the same sets always give the same output
+  // Draw `total` code points. Returns { cps, requested }.
+  function draw(pools, c, total, rnd, avoid){
+    const out = [], hide = c.hide, pick = (arr, i) => arr[i];
+    const okCp = cp => !hide || renderable(cp);
+    if (!c.unique){
+      const sizes = pools.map(p => p.length); const cum = []; let sum = 0; sizes.forEach(n => { sum += n; cum.push(sum); });
+      for (let i = 0; i < total; i++){
+        let cp = 0;
+        for (let t = 0; t < 40; t++){
+          if (c.weight === 'set'){ const p = pools[Math.floor(rnd() * pools.length)]; cp = p[Math.floor(rnd() * p.length)]; }
+          else { const x = Math.floor(rnd() * sum); let lo = 0, hi = cum.length - 1; while (lo < hi){ const m = (lo + hi) >> 1; if (cum[m] > x) hi = m; else lo = m + 1; } const p = pools[lo]; cp = p[x - (lo ? cum[lo - 1] : 0)]; }
+          if (okCp(cp) && !(avoid && avoid.has(cp))) break;
+        }
+        out.push(cp);
+      }
+      return out;
+    }
+    // unique: sparse Fisher-Yates per pool
+    const sts = pools.map(p => ({ p, n: p.length, m: new Map() }));
+    const alive = sts.slice();
+    const take = (s) => {
+      const j = Math.floor(rnd() * s.n), v = s.m.has(j) ? s.m.get(j) : j, last = s.n - 1, lv = s.m.has(last) ? s.m.get(last) : last;
+      s.m.set(j, lv); s.n--; return s.p[v];
+    };
+    while (out.length < total && alive.length){
+      let s;
+      if (c.weight === 'set') s = alive[Math.floor(rnd() * alive.length)];
+      else { let rem = 0; alive.forEach(a => { rem += a.n; }); let x = Math.floor(rnd() * rem); for (const a of alive){ if (x < a.n){ s = a; break; } x -= a.n; } }
+      const cp = take(s);
+      if (s.n === 0) alive.splice(alive.indexOf(s), 1);
+      if (okCp(cp) && !(avoid && avoid.has(cp))) out.push(cp);
+    }
+    return out;
+  }
+
+  // ---------- UI ----------
+  const sel = (a) => '<option value="' + a[0] + '">' + a[1] + '</option>';
+  const tog = (id, label, title) => '<div class="studio-row"><span class="studio-label"><label for="' + id + '">' + label + '</label></span><label class="toggle-switch"' + (title ? ' title="' + title + '"' : '') + '><input type="checkbox" id="' + id + '"><span class="toggle-track"></span></label></div>';
+  const num = (id, label, min, max, w) => '<div class="studio-row"><span class="studio-label"><label for="' + id + '">' + label + '</label></span><input type="number" id="' + id + '" min="' + min + '" max="' + max + '" step="1" style="width:' + (w || 96) + 'px;"></div>';
+  const body =
+    '<div class="ul-bar" id="ul-bar" role="group" aria-label="Generate">' +
+      '<button type="button" class="ghost-btn primary ul-gen" id="ul-gen" data-act="gen" aria-describedby="ul-setcount ul-hint" title="Generate from the selected sets (Ctrl+Enter)">' + icon('zap') + '<span id="ul-genlabel">Generate</span></button>' +
+      '<div class="ul-bar-info"><span id="ul-setcount" aria-live="polite"></span><span class="ul-hint" id="ul-hint" hidden>Select at least one set to generate.</span><span class="ul-dirty" id="ul-dirty" role="status" hidden>Sets changed. Press Generate.</span><span class="studio-sub" id="ul-status" role="status" aria-live="polite"></span></div>' +
+      '<div class="ul-auto"><label class="toggle-switch ul-auto-t" title="Off: the output only changes when you press Generate"><input type="checkbox" id="ul-auto"><span class="toggle-track"></span></label><label for="ul-auto">Auto-generate when I change sets</label></div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('unicode') + ' Character sets</h3>' +
+      '<div class="studio-sub">Pick the blocks to draw from, then press Generate. Choosing sets never changes the output by itself unless Auto-generate is on. Each chip shows the block, its code point range and a sample glyph. Boxes instead of glyphs mean your fonts lack that script.</div>' +
+      '<div class="studio-row"><input type="search" id="ul-search" class="grow" placeholder="Filter sets by name or range" aria-label="Filter character sets" autocomplete="off">' +
+        '<button type="button" class="ghost-btn" data-act="all" title="Select every set shown">Select all</button><button type="button" class="ghost-btn" data-act="none" title="Clear every set shown">Select none</button>' +
+        '<button type="button" class="ghost-btn" data-act="invert" title="Flip the selection of every set shown">Invert</button><button type="button" class="ghost-btn" data-act="random" title="Pick a few random sets (press Generate afterwards)">Random sets</button></div>' +
+      '<div id="ul-sets"></div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('sliders') + ' Generate</h3>' +
+      '<div class="ul-form">' +
+        '<div><div class="studio-row"><span class="studio-label"><label for="ul-mode">Mode</label></span><select id="ul-mode">' + [['chars', 'Random characters'], ['words', 'Random words (groups of N)'], ['pass', 'Passphrase-like groups'], ['grid', 'Grid, one character per cell']].map(sel).join('') + '</select></div>' +
+        num('ul-length', 'Length (characters)', 1, 5000) + num('ul-count', 'Lines', 1, 200) + num('ul-group', 'Group size / columns', 1, 64) + '</div>' +
+        '<div><div class="studio-row"><span class="studio-label"><label for="ul-sep">Separator</label></span><select id="ul-sep">' + [['none', 'None'], ['space', 'Space'], ['newline', 'Newline'], ['comma', 'Comma'], ['custom', 'Custom']].map(sel).join('') + '</select>' +
+          '<input type="text" id="ul-sepc" maxlength="20" style="width:90px;" placeholder="custom" aria-label="Custom separator"></div>' +
+        '<div class="studio-row"><span class="studio-label"><label for="ul-prefix">Prefix / suffix</label></span><input type="text" id="ul-prefix" maxlength="50" style="width:90px;" aria-label="Prefix"><input type="text" id="ul-suffix" maxlength="50" style="width:90px;" aria-label="Suffix"></div>' +
+        '<div class="studio-row"><span class="studio-label"><label for="ul-norm">Normalize</label></span><select id="ul-norm">' + [['none', 'None'], ['NFC', 'NFC'], ['NFD', 'NFD'], ['NFKC', 'NFKC']].map(sel).join('') + '</select></div>' +
+        '<div class="studio-row"><span class="studio-label"><label for="ul-weight">Weighting</label></span><select id="ul-weight">' + [['set', 'Even per set'], ['cp', 'Per code point (bigger sets win)']].map(sel).join('') + '</select></div></div>' +
+      '</div>' +
+      tog('ul-unique', 'No repeated characters') +
+      '<div class="studio-row"><span class="studio-label"><label for="ul-seeded">Repeatable (use seed)</label></span><label class="toggle-switch"><input type="checkbox" id="ul-seeded"><span class="toggle-track"></span></label>' +
+        '<label for="ul-seed" class="tl-dim">Seed</label><input type="text" id="ul-seed" maxlength="40" style="width:130px;" autocomplete="off"><button type="button" class="ghost-btn" data-act="newseed">New seed</button></div>' +
+      '<div class="studio-sub">Off: every press uses a fresh random seed (shown here afterwards). On: the same seed and settings always make the same output.</div>' +
+      tog('ul-marks', 'Allow combining marks', 'Off by default so output is made of standalone characters') + tog('ul-spaces', 'Include space characters') + tog('ul-ctl', 'Include format and control characters', 'Zero-width joiners, directional marks and similar. Invisible, and shown as code points in the grid.') +
+      tog('ul-hide', 'Hide characters my browser cannot render (best effort)', 'Compares canvas drawing with a known missing glyph. Slower, and not perfect.') +
+      '<div class="studio-row"><button type="button" class="ghost-btn" data-act="surprise" title="Pick random sets and a random length, then generate right away">Surprise me</button><span class="studio-sub">Use the Generate button at the top to build from the sets you picked (Ctrl+Enter works too).</span></div>' +
+      '<div class="studio-note" id="ul-msg" role="status"></div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('file-text') + ' Output</h3>' +
+      '<textarea id="ul-out" class="tl-ta ul-out" rows="6" readonly spellcheck="false" aria-label="Generated text (selectable)"></textarea>' +
+      '<div class="ul-stale-note" id="ul-stale" hidden>This output is from the previous sets. Press Generate to update it.</div>' +
+      '<div class="studio-row tl-meta"><span class="studio-sub" id="ul-stats"></span></div>' +
+      '<div class="studio-row"><label for="ul-fmt" class="tl-dim">Copy format</label><select id="ul-fmt">' + [['text', 'Plain text'], ['js', '\\u escapes'], ['html', 'HTML entities'], ['cps', 'Code points list'], ['json', 'JSON array']].map(sel).join('') + '</select>' +
+        '<button type="button" class="ghost-btn" data-act="copyall">Copy all</button><button type="button" class="ghost-btn" data-act="copysel">Copy selected</button>' +
+        '<button type="button" class="ghost-btn" data-act="zalgo" title="Open the Zalgo app with this text">Send to Zalgo</button><button type="button" class="ghost-btn" data-act="download" title="Save as a UTF-8 text file">Download .txt</button></div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('grid') + ' Characters</h3>' +
+      '<div class="studio-sub">Click a cell to select it (click again to deselect). Ctrl or Cmd adds, Shift selects a range, dragging sweeps a range. Arrow keys move, Space toggles.</div>' +
+      '<div class="studio-row">' +
+        '<button type="button" class="ghost-btn" data-act="selall">Select all</button><button type="button" class="ghost-btn" data-act="selclear">Clear</button>' +
+        '<button type="button" class="ghost-btn" data-act="reroll" title="Replace the selected characters with new random ones">Re-roll selected</button>' +
+        '<button type="button" class="ghost-btn" data-act="lock" title="Locked characters survive Generate and Re-roll">Lock selected</button><button type="button" class="ghost-btn" data-act="unlock">Unlock selected</button>' +
+        '<button type="button" class="ghost-btn" data-act="addsel" title="Append copies of the selected characters">Add selected to output</button><button type="button" class="ghost-btn" data-act="remsel">Remove selected</button></div>' +
+      tog('ul-keeplocked', 'Keep locked characters when generating') +
+      '<div id="ul-grid" class="ul-grid" role="listbox" aria-multiselectable="true" aria-label="Generated characters"></div>' +
+      '<div class="studio-row" id="ul-more" style="display:none;"><button type="button" class="ghost-btn" data-act="more">Show 1,000 more</button><button type="button" class="ghost-btn" data-act="showall">Show all</button><span class="studio-sub" id="ul-shown"></span></div>' +
+      '<div id="ul-detail" class="ul-detail" aria-live="polite"></div>' +
+    '</div>' +
+    '<div class="settings-card"><h3>' + icon('clock') + ' History</h3><div class="studio-sub">The last 10 generations. Restoring rebuilds the output from its settings and seed.</div><div class="studio-list" id="ul-hist"></div></div>';
+  const v = studioMount('unilab', 'unicode', 'Unicode Lab', 'Random Unicode from the character sets you pick. Every character is checked in your browser to be assigned and printable. Settings are kept in session memory with your other settings.', body);
+  v.querySelector('.studio-wrap').classList.add('ul-wrap');
+  const $ = id => document.getElementById(id);
+  const gridEl = $('ul-grid'), outEl = $('ul-out');
+  let gridTok = 0;
+  let cur = null;      // { lines, cfg, seed, flat, locked:Set }
+  let selSet = new Set(), anchor = -1, primary = -1, shown = GRID_STEP, busy = false, lastGenMs = 0, lastPrepMs = 0, dragging = false, firstRun = true;
+  const flatOf = lines => { const f = []; lines.forEach(l => { for (let i = 0; i < l.length; i++) f.push(l[i]); }); return f; };
+
+  function firstValidSample(b){
+    if (b.sample) return b.sample;
+    for (const r of b.ranges) for (let c = r[0]; c <= Math.min(r[1], r[0] + 400); c++){ const k = cls(c); if (k === 0 || (b.marksBlock && k === 1)) return (b.sample = c); }
+    return (b.sample = b.ranges[0][0]);
+  }
+  const sampleHtml = b => { const c = firstValidSample(b); return sEsc((b.marksBlock ? '\u25CC' : '') + String.fromCodePoint(c)); };
+  const rangeTxt = b => b.ranges.map(r => 'U+' + tlHex(r[0], 4) + '-' + tlHex(r[1], 4)).join(', ');
+  function renderSets(){
+    $('ul-sets').innerHTML = GROUPS.map((g, gi) => {
+      const items = CAT.filter(b => b.group === gi); if (!items.length) return '';
+      return '<div class="ul-group" data-g="' + gi + '"><div class="ul-ghead">' + sEsc(g) + '</div><div class="ul-chips">' + items.map(b =>
+        '<label class="ul-chip" data-id="' + b.id + '" title="' + sEsc(b.name + ', ' + rangeTxt(b) + (b.marksBlock ? '. Combining marks need a base character to look right.' : '') + (EMOJI_IDS.indexOf(b.id) !== -1 ? '. May draw in color.' : '')) + '">' +
+        '<input type="checkbox" value="' + b.id + '" aria-label="' + sEsc(b.name) + '"><span class="ul-glyph" id="ulg-' + b.id + '" aria-hidden="true">' + sampleHtml(b) + '</span>' +
+        '<span class="ul-cmeta"><span class="ul-cname">' + sEsc(b.name) + '</span><span class="ul-crange">' + rangeTxt(b) + (b.marksBlock ? ' (marks)' : '') + '</span></span></label>').join('') + '</div></div>';
+    }).join('');
+  }
+  function syncChips(){
+    const on = new Set(st.sets);
+    v.querySelectorAll('.ul-chip').forEach(l => { const o = on.has(l.dataset.id); l.classList.toggle('on', o); l.querySelector('input').checked = o; });
+    updateBar();
+  }
+  // ----- Generate bar: summary, disabled state, "sets changed" marker; pool sizes are counted lazily in small steps -----
+  const setSig = ids => ids.slice().sort().join(',');
+  let calcRunning = false;
+  function updateBar(){
+    if (!$('ul-gen')) return;
+    const n = st.sets.length, missing = st.sets.some(id => !BY[id].cache);
+    let tot = 0; st.sets.forEach(id => { const b = BY[id]; if (b.cache) tot += poolOf(b, st).length; });
+    $('ul-setcount').textContent = n ? n + (n === 1 ? ' set' : ' sets') + ' selected \u00B7 ' + (missing ? 'calculating\u2026 (' + (tot ? '~' + tot.toLocaleString() + ' so far' : 'large blocks') + ')' : '~' + tot.toLocaleString() + ' characters in pool') : '0 sets selected';
+    $('ul-gen').disabled = !n; $('ul-hint').hidden = !!n;
+    const dirty = !!cur && !!n && !st.auto && cur.sig !== setSig(st.sets);
+    $('ul-dirty').hidden = !dirty; $('ul-gen').classList.toggle('dirty', dirty); $('ul-stale').hidden = !dirty; outEl.classList.toggle('stale', dirty);
+    $('ul-gen').title = n ? 'Generate from the selected sets (Ctrl+Enter)' + (dirty ? '. Sets changed since the last output.' : '') : 'Select at least one set first';
+    if (missing && !calcRunning) calcPools();
+  }
+  async function calcPools(){
+    calcRunning = true;
+    try {
+      for (;;){
+        const id = st.sets.find(i => !BY[i].cache); if (!id) break;
+        await build(BY[id]); updateBar();
+        await new Promise(r => setTimeout(r, 0)); // let the page breathe between blocks
+      }
+    } finally { calcRunning = false; }
+    updateBar();
+  }
+  let autoAgain = false;
+  function autoKick(){
+    if (!st.auto || !st.sets.length) return;
+    if (busy){ autoAgain = true; return; }
+    if (cur && cur.sig === setSig(st.sets)) return;
+    generate({ auto: true, noHistory: true });
+  }
+  function setsChanged(){ syncChips(); save(); autoKick(); }
+  function visibleChips(){ return Array.from(v.querySelectorAll('.ul-chip')).filter(l => !l.hidden); }
+  function applyFilter(){
+    const q = $('ul-search').value.trim().toLowerCase();
+    v.querySelectorAll('.ul-chip').forEach(l => { const b = BY[l.dataset.id]; l.hidden = !!q && (b.name + ' ' + rangeTxt(b) + ' ' + b.id).toLowerCase().indexOf(q) === -1; });
+    v.querySelectorAll('.ul-group').forEach(g => { g.hidden = !g.querySelector('.ul-chip:not([hidden])'); });
+    if (!visibleChips().length && !$('ul-setempty')) { /* noop */ }
+    $('ul-sets').dataset.empty = visibleChips().length ? '' : '1';
+  }
+  function syncForm(){
+    $('ul-mode').value = st.mode; $('ul-length').value = st.length; $('ul-count').value = st.count; $('ul-group').value = st.group;
+    $('ul-sep').value = st.sep; $('ul-sepc').value = st.sepCustom; $('ul-sepc').disabled = st.sep !== 'custom';
+    $('ul-prefix').value = st.prefix; $('ul-suffix').value = st.suffix; $('ul-norm').value = st.norm; $('ul-weight').value = st.weight;
+    $('ul-unique').checked = st.unique; $('ul-seeded').checked = st.seeded; $('ul-seed').value = st.seed;
+    $('ul-marks').checked = st.marks; $('ul-spaces').checked = st.spaces; $('ul-ctl').checked = st.ctl; $('ul-hide').checked = st.hide;
+    $('ul-keeplocked').checked = st.keepLocked; $('ul-fmt').value = st.fmt; $('ul-auto').checked = st.auto;
+    $('ul-count').disabled = st.mode === 'grid';
+    $('ul-group').disabled = st.mode === 'chars';
+  }
+  function readForm(){
+    st.mode = $('ul-mode').value; st.length = sClamp($('ul-length').value, 1, 5000, st.length) | 0; st.count = sClamp($('ul-count').value, 1, 200, st.count) | 0; st.group = sClamp($('ul-group').value, 1, 64, st.group) | 0;
+    st.sep = $('ul-sep').value; st.sepCustom = $('ul-sepc').value; st.prefix = $('ul-prefix').value; st.suffix = $('ul-suffix').value; st.norm = $('ul-norm').value; st.weight = $('ul-weight').value;
+    st.unique = $('ul-unique').checked; st.seeded = $('ul-seeded').checked; st.seed = $('ul-seed').value;
+    st.marks = $('ul-marks').checked; st.spaces = $('ul-spaces').checked; st.ctl = $('ul-ctl').checked; st.hide = $('ul-hide').checked;
+    st.keepLocked = $('ul-keeplocked').checked; st.fmt = $('ul-fmt').value; st.auto = $('ul-auto').checked;
+  }
+
+  // ----- the grid -----
+  const isInvisible = cp => { const s = String.fromCodePoint(cp); return RE_ZS.test(s) || RE_CC.test(s) || /^\s$/.test(s); };
+  function cellHtml(cp, i){
+    const inv = isInvisible(cp);
+    return '<span class="ul-cell' + (selSet.has(i) ? ' sel' : '') + (cur.locked.has(i) ? ' lock' : '') + (inv ? ' inv' : '') + '" role="option" aria-selected="' + selSet.has(i) + '" data-i="' + i + '" tabindex="' + (i === (primary >= 0 ? primary : 0) ? 0 : -1) + '" title="U+' + tlHex(cp, 4) + '">' +
+      (inv ? '<small>' + tlHex(cp, 4) + '</small>' : sEsc(String.fromCodePoint(cp))) + '</span>';
+  }
+  function renderGrid(){
+    const t0 = performance.now();
+    if (!cur || !cur.flat.length){ gridTok++; gridEl.innerHTML = '<div class="custom-app-empty">Nothing generated yet. Press Generate.</div>'; $('ul-more').style.display = 'none'; renderDetail(); return; }
+    const n = Math.min(cur.flat.length, shown), tok = ++gridTok, flat = cur.flat, first = Math.min(n, GRID_STEP);
+    const build = (a, z) => { const parts = new Array(z - a); for (let i = a; i < z; i++) parts[i - a] = cellHtml(flat[i], i); return parts.join(''); };
+    gridEl.innerHTML = build(0, first);
+    let at = first; // cells beyond the first 1,000 are added in chunks so a 5,000-cell grid never blocks the page
+    (function more(){
+      if (tok !== gridTok) return;
+      if (at >= n){ if (cur) cur.gridDoneMs = performance.now() - t0; return; }
+      const end = Math.min(n, at + GRID_STEP); gridEl.insertAdjacentHTML('beforeend', build(at, end)); at = end; setTimeout(more, 0);
+    })();
+    const more = cur.flat.length > n;
+    $('ul-more').style.display = cur.flat.length > GRID_STEP ? 'flex' : 'none';
+    $('ul-more').querySelectorAll('button').forEach(b => { b.disabled = !more; });
+    $('ul-shown').textContent = 'Showing ' + n.toLocaleString() + ' of ' + cur.flat.length.toLocaleString() + ' characters. The text above always has all of them.';
+    renderDetail();
+    cur.gridMs = performance.now() - t0;
+  }
+  function syncSel(){
+    gridEl.querySelectorAll('.ul-cell').forEach(c => {
+      const i = +c.dataset.i, s = selSet.has(i), l = cur.locked.has(i);
+      if (c.classList.contains('sel') !== s){ c.classList.toggle('sel', s); c.setAttribute('aria-selected', String(s)); }
+      if (c.classList.contains('lock') !== l) c.classList.toggle('lock', l);
+    });
+    renderDetail();
+  }
+  function renderDetail(){
+    const el = $('ul-detail'); const n = selSet.size;
+    if (!n){ el.innerHTML = '<div class="studio-sub">Select a character to see its details.</div>'; return; }
+    const idx = (primary >= 0 && selSet.has(primary)) ? primary : Math.min.apply(null, Array.from(selSet));
+    const d = describe(cur.flat[idx]);
+    const inv = isInvisible(d.cp);
+    let h = '<div class="ul-dbig" aria-hidden="true">' + (inv ? '<small>' + d.hex + '</small>' : sEsc(d.ch)) + '</div><dl class="ul-dl">' +
+      '<dt>Code point</dt><dd data-k="hex">' + d.hex + '</dd><dt>Decimal</dt><dd data-k="dec">' + d.dec + '</dd><dt>UTF-8 bytes</dt><dd data-k="utf8">' + d.utf8 + '</dd><dt>UTF-16 units</dt><dd data-k="utf16">' + d.utf16 + '</dd>' +
+      '<dt>Block</dt><dd data-k="block">' + sEsc(d.block) + '</dd><dt>Category</dt><dd data-k="gc">' + d.gc + ' (' + d.gcName + ')</dd><dt>Script</dt><dd data-k="script">' + sEsc(d.script) + '</dd></dl>';
+    if (n > 1){
+      const list = Array.from(selSet).sort((a, b) => a - b).slice(0, 40).map(i => 'U+' + tlHex(cur.flat[i], 4)).join(' ');
+      h += '<div class="studio-sub" style="flex-basis:100%;"><b>' + n.toLocaleString() + ' selected.</b> Showing the details of the most recent one. ' + sEsc(list) + (n > 40 ? ' ...' : '') + '</div>';
+    }
+    el.innerHTML = h;
+  }
+  function setRange(a, b, add){
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    if (!add) selSet = new Set();
+    for (let i = lo; i <= hi; i++) selSet.add(i);
+  }
+  function cellFromEvent(e){ const c = e.target.closest && e.target.closest('.ul-cell'); return c ? +c.dataset.i : -1; }
+  gridEl.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return; const i = cellFromEvent(e); if (i < 0) return;
+    e.preventDefault(); // cell selection, not text selection; the output box above stays selectable text
+    const cell = e.target.closest('.ul-cell'); cell.focus({ preventScroll: true });
+    if (e.shiftKey && anchor >= 0){ setRange(anchor, i, e.ctrlKey || e.metaKey); }
+    else if (e.ctrlKey || e.metaKey){ if (selSet.has(i)) selSet.delete(i); else selSet.add(i); anchor = i; }
+    else { if (selSet.size === 1 && selSet.has(i)) selSet = new Set(); else selSet = new Set([i]); anchor = i; dragging = true; }
+    primary = i; syncSel();
+  });
+  gridEl.addEventListener('mouseover', (e) => {
+    if (!dragging || !(e.buttons & 1)) { dragging = false; return; }
+    const i = cellFromEvent(e); if (i < 0 || i === primary) return;
+    setRange(anchor, i, false); primary = i; syncSel();
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+  gridEl.addEventListener('keydown', (e) => {
+    const i = cellFromEvent(e); if (i < 0) return;
+    const cell0 = gridEl.querySelector('.ul-cell');
+    const per = Math.max(1, Math.floor(gridEl.clientWidth / ((cell0 ? cell0.offsetWidth : 40) + 4)));
+    const nshown = gridEl.querySelectorAll('.ul-cell').length;
+    let to = -1;
+    if (e.key === 'ArrowRight') to = i + 1; else if (e.key === 'ArrowLeft') to = i - 1; else if (e.key === 'ArrowDown') to = i + per; else if (e.key === 'ArrowUp') to = i - per;
+    else if (e.key === 'Home') to = 0; else if (e.key === 'End') to = nshown - 1;
+    else if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); if (selSet.has(i)) selSet.delete(i); else selSet.add(i); anchor = i; primary = i; syncSel(); return; }
+    else if ((e.key === 'a' || e.key === 'A') && (e.ctrlKey || e.metaKey)){ e.preventDefault(); selSet = new Set(cur.flat.map((_, k) => k)); syncSel(); return; }
+    else if (e.key === 'Escape'){ selSet = new Set(); syncSel(); return; }
+    if (to < 0) return;
+    e.preventDefault(); to = Math.max(0, Math.min(nshown - 1, to));
+    if (e.shiftKey){ if (anchor < 0) anchor = i; setRange(anchor, to, false); }
+    primary = to; const c = gridEl.querySelector('[data-i="' + to + '"]');
+    gridEl.querySelectorAll('.ul-cell[tabindex="0"]').forEach(x => x.tabIndex = -1);
+    if (c){ c.tabIndex = 0; c.focus(); }
+    syncSel();
+  });
+
+  // ----- generation -----
+  function opts(){ return { marks: st.marks, spaces: st.spaces, ctl: st.ctl }; }
+  function say(msg, err){ sNote($('ul-msg'), msg, err); }
+  function pushHistory(text){
+    const cfg = JSON.parse(JSON.stringify(cur.cfg));
+    st.history.unshift({ cfg, seed: cur.seed, preview: Array.from(text.replace(/\s+/g, ' ')).slice(0, 36).join(''), n: cur.flat.length, t: Date.now() });
+    st.history = st.history.slice(0, 10);
+    renderHistory();
+  }
+  function renderHistory(){
+    $('ul-hist').innerHTML = st.history.length ? st.history.map((h, i) => '<div class="studio-item"><span class="name ul-hname">' + sEsc(h.preview || '(empty)') + '</span><span class="meta">' + h.n + ' chars, seed ' + sEsc(String(h.seed)) + '</span><button type="button" class="ghost-btn" data-hist="' + i + '" aria-label="Restore generation ' + (i + 1) + '">Restore</button></div>').join('')
+      : '<div class="custom-app-empty">Nothing yet. Generations appear here.</div>';
+  }
+  function setBusyUI(on, prep){
+    const g = $('ul-gen'); g.classList.toggle('busy', on); g.setAttribute('aria-busy', on ? 'true' : 'false');
+    if (on) g.setAttribute('aria-disabled', 'true'); else g.removeAttribute('aria-disabled');
+    $('ul-genlabel').textContent = on ? (prep ? 'Preparing sets…' : 'Generating…') : 'Generate';
+  }
+  async function generate(o){
+    o = o || {};
+    if (busy) return null; // a second press while preparing or generating is ignored
+    if (!o.fromCfg) readForm();
+    if (!st.sets.length){ say('Select at least one character set first.', true); if (!o.auto) showToast('Select at least one character set first.', 'error'); return null; }
+    const c = JSON.parse(JSON.stringify(Object.assign({}, st, { history: [] }))); // settings are frozen at the press, so edits made while preparing cannot leak in
+    busy = true; setBusyUI(true, false);
+    const t0 = performance.now();
+    try {
+      const need = c.sets.filter(id => !BY[id].cache);
+      if (need.length){ setBusyUI(true, true); $('ul-status').textContent = 'Preparing ' + need.length + ' set' + (need.length === 1 ? '' : 's') + '...'; }
+      await ensure(c.sets, (i, n) => { $('ul-status').textContent = 'Preparing sets ' + i + ' of ' + n + '...'; });
+      $('ul-status').textContent = '';
+      const tGen = performance.now(), prepMs = tGen - t0;
+      const pools = poolsFor(c);
+      if (!pools.length){ say('The selected sets have no characters with the current filters. Combining mark blocks only produce output when they are selected; other sets may need "Include space characters" or "Include format and control characters".', true); if (!o.auto) showToast('The selected sets have no characters with the current filters.', 'error'); return null; }
+      let total = c.mode === 'grid' ? c.length : c.length * c.count, notes = [];
+      if (total > MAX_TOTAL){ total = MAX_TOTAL; notes.push('Limited to ' + MAX_TOTAL.toLocaleString() + ' characters in total.'); }
+      const seedUsed = (c.seeded && !o.newSeed) ? c.seed : String(tlRandSeed());
+      if (!c.seeded || o.newSeed){ st.seed = seedUsed; c.seed = seedUsed; $('ul-seed').value = seedUsed; }
+      const rnd = tlMulberry(tlSeedFrom(seedUsed));
+      const flat = draw(pools, c, total, rnd);
+      if (flat.length < total) notes.push('Only ' + flat.length.toLocaleString() + ' unique characters exist in the selected sets, so the output has ' + flat.length.toLocaleString() + ' instead of ' + total.toLocaleString() + '.');
+      // keep locked characters in place
+      const locked = new Set();
+      if (c.keepLocked && cur && cur.locked.size){ cur.locked.forEach(i => { if (i < flat.length){ flat[i] = cur.flat[i]; locked.add(i); } }); }
+      const lines = []; const per = c.mode === 'grid' ? Math.max(1, flat.length) : c.length;
+      for (let i = 0; i < flat.length; i += per) lines.push(flat.slice(i, i + per));
+      if (!lines.length) lines.push([]);
+      cur = { lines, flat, locked, seed: seedUsed, sig: setSig(c.sets), cfg: JSON.parse(JSON.stringify(c)), gridMs: 0 };
+      selSet = new Set(); anchor = -1; primary = -1; shown = GRID_STEP;
+      // refresh the live sample glyphs of selected chips
+      c.sets.forEach(id => { const b = BY[id], p = poolOf(b, c); if (p.length){ const g = $('ulg-' + id); if (g) g.textContent = (b.marksBlock ? '◌' : '') + String.fromCodePoint(p[Math.floor(Math.random() * p.length)]); } });
+      lastGenMs = performance.now() - tGen; lastPrepMs = prepMs;
+      updateOutput(true);
+      renderGrid(); say(notes.join(' '), false);
+      if (!o.noHistory) pushHistory(outEl.value);
+      save();
+      return { ms: lastGenMs, length: flat.length, text: outEl.value };
+    } finally {
+      busy = false; setBusyUI(false); $('ul-status').textContent = ''; syncChips();
+      if (autoAgain){ autoAgain = false; setTimeout(autoKick, 0); }
+    }
+  }
+  function curCfg(){ return cur ? cur.cfg : st; }
+  function updateOutput(){
+    if (!cur) return;
+    cur.flat = flatOf(cur.lines);
+    outEl.value = compose(cur.lines, cur.cfg);
+    const text = outEl.value, cps = cur.flat.length;
+    const uniq = new Set(cur.flat).size;
+    $('ul-stats').textContent = cps.toLocaleString() + ' characters generated, ' + uniq.toLocaleString() + ' distinct. Seed ' + cur.seed + '. Built in ' + lastGenMs.toFixed(0) + ' ms.' + (cur.cfg.norm !== 'none' ? ' Text normalized to ' + cur.cfg.norm + '.' : '') + (text.length !== cps ? ' Text is ' + Array.from(text).length.toLocaleString() + ' code points long with separators.' : '');
+  }
+  function selectedCps(){ return Array.from(selSet).sort((a, b) => a - b).map(i => cur.flat[i]); }
+  function fmtText(chars, fmt){
+    const s = chars.join('');
+    if (fmt === 'js') return tlEscJs(s);
+    if (fmt === 'html') return tlEscHtml(s);
+    if (fmt === 'cps') return chars.map(c => 'U+' + tlHex(c.codePointAt(0), 4)).join(' ');
+    if (fmt === 'json') return JSON.stringify(chars);
+    return s;
+  }
+  async function reroll(){
+    if (!cur || !selSet.size){ showToast('Select some characters first.', 'error'); return; }
+    await ensure(st.sets);
+    const pools = poolsFor(Object.assign({}, st, cur.cfg, { sets: st.sets }));
+    if (!pools.length){ showToast('No characters available in the selected sets.', 'error'); return; }
+    const targets = Array.from(selSet).filter(i => !cur.locked.has(i)).sort((a, b) => a - b);
+    if (!targets.length){ showToast('Every selected character is locked.', 'error'); return; }
+    const c = Object.assign({}, st, { unique: false });
+    const avoid = st.unique ? new Set(cur.flat) : null;
+    const rnd = tlMulberry(tlSeedFrom(String(tlRandSeed())));
+    const vals = [];
+    targets.forEach(() => { const d = draw(pools, c, 1, rnd, avoid); vals.push(d[0]); if (avoid) avoid.add(d[0]); });
+    // write back through the line structure
+    let off = 0; const starts = cur.lines.map(l => { const s = off; off += l.length; return s; });
+    targets.forEach((idx, k) => { let li = starts.length - 1; while (starts[li] > idx) li--; cur.lines[li][idx - starts[li]] = vals[k]; });
+    updateOutput(); renderGrid(); showToast('Re-rolled ' + targets.length + ' character' + (targets.length === 1 ? '' : 's') + '.');
+  }
+  function removeSelected(){
+    if (!cur || !selSet.size) return;
+    let idx = 0, newLocked = new Set(), n = 0;
+    cur.lines = cur.lines.map(l => l.filter(() => { const i = idx++; if (selSet.has(i)) return false; if (cur.locked.has(i)) newLocked.add(n); n++; return true; }));
+    cur.locked = newLocked; selSet = new Set(); anchor = primary = -1; updateOutput(); renderGrid();
+  }
+  function addSelected(){
+    if (!cur || !selSet.size) return;
+    const add = selectedCps(); const last = cur.lines[cur.lines.length - 1]; add.forEach(c => last.push(c));
+    updateOutput(); renderGrid();
+  }
+  function setLock(on){
+    if (!cur || !selSet.size) return;
+    selSet.forEach(i => { if (on) cur.locked.add(i); else cur.locked.delete(i); });
+    syncSel(); showToast((on ? 'Locked ' : 'Unlocked ') + selSet.size + ' character' + (selSet.size === 1 ? '' : 's') + '.');
+  }
+  function randomSets(){
+    const vis = visibleChips().map(l => l.dataset.id); if (!vis.length) return;
+    const n = Math.min(vis.length, 3 + Math.floor(Math.random() * 4)), pick = new Set();
+    while (pick.size < n) pick.add(vis[Math.floor(Math.random() * vis.length)]);
+    st.sets = Array.from(pick); setsChanged();
+  }
+  function cloneCfgInto(c){
+    const keep = st.history, auto = st.auto; st = normCfg(Object.assign({}, c, { history: keep, auto })); syncForm(); syncChips();
+  }
+
+  v.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'ul-search'){ applyFilter(); return; }
+    if (t.id === 'ul-seed'){ $('ul-seeded').checked = true; }
+    if (t.id === 'ul-sep'){ $('ul-sepc').disabled = t.value !== 'custom'; }
+    if (t.id && t.id.indexOf('ul-') === 0 && t.id !== 'ul-search'){ readForm(); syncDisabled(); save(); updateBar(); }
+  });
+  function syncDisabled(){ $('ul-count').disabled = st.mode === 'grid'; $('ul-group').disabled = st.mode === 'chars'; $('ul-sepc').disabled = st.sep !== 'custom'; }
+  v.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.closest && t.closest('#ul-sets') && t.type === 'checkbox'){
+      const i = st.sets.indexOf(t.value); if (t.checked && i === -1) st.sets.push(t.value); else if (!t.checked && i !== -1) st.sets.splice(i, 1);
+      setsChanged(); return;
+    }
+    if (t.id === 'ul-auto'){ readForm(); save(); updateBar(); autoKick(); return; }
+    if (t.id && t.id.indexOf('ul-') === 0){ readForm(); syncDisabled(); save(); updateBar(); }
+  });
+  v.addEventListener('click', async (e) => {
+    const hb = e.target.closest('[data-hist]');
+    if (hb){ const h = st.history[+hb.dataset.hist]; if (h){ const keep = st.history; cloneCfgInto(Object.assign({}, h.cfg, { seeded: true, seed: h.seed })); st.history = keep; await generate({ fromCfg: true, noHistory: true }); say('Restored from history.', false); } return; }
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    const act = b.dataset.act; if (!act) return;
+    const vis = visibleChips().map(l => l.dataset.id);
+    if (act === 'all'){ vis.forEach(id => { if (st.sets.indexOf(id) === -1) st.sets.push(id); }); setsChanged(); }
+    else if (act === 'none'){ st.sets = st.sets.filter(id => vis.indexOf(id) === -1); setsChanged(); }
+    else if (act === 'invert'){ const on = new Set(st.sets); vis.forEach(id => { if (on.has(id)) on.delete(id); else on.add(id); }); st.sets = Array.from(on); setsChanged(); }
+    else if (act === 'random') randomSets();
+    else if (act === 'newseed'){ st.seed = String(tlRandSeed()); $('ul-seed').value = st.seed; $('ul-seeded').checked = true; readForm(); save(); }
+    else if (act === 'gen') generate();
+    else if (act === 'surprise'){
+      if (busy) return;
+      const all = CAT.filter(x => x.group !== 8).map(x => x.id), pick = new Set(), n = 2 + Math.floor(Math.random() * 5);
+      while (pick.size < n) pick.add(all[Math.floor(Math.random() * all.length)]);
+      st.sets = Array.from(pick); $('ul-length').value = 20 + Math.floor(Math.random() * 380); $('ul-seeded').checked = false; syncChips(); generate();
+    }
+    else if (act === 'copyall'){ readForm(); const t = outEl.value; if (!t){ showToast('Nothing to copy yet.', 'error'); return; } const f = st.fmt; tlCopy(f === 'text' ? t : fmtText(Array.from(t), f), 'Copied all output' + (f === 'text' ? '.' : ' as ' + $('ul-fmt').selectedOptions[0].textContent + '.'), () => { outEl.focus(); outEl.select(); }); }
+    else if (act === 'copysel'){ readForm(); if (!cur || !selSet.size){ showToast('Select some characters in the grid first.', 'error'); return; } const chars = selectedCps().map(c => String.fromCodePoint(c)); tlCopy(fmtText(chars, st.fmt), 'Copied ' + chars.length + ' selected character' + (chars.length === 1 ? '' : 's') + '.'); }
+    else if (act === 'zalgo'){
+      const t = (cur && selSet.size) ? selectedCps().map(c => String.fromCodePoint(c)).join('') : outEl.value;
+      if (!t){ showToast('Generate something first.', 'error'); return; }
+      switchAppView('zalgo'); studioCall('zalgo', 'setInput', t);
+    }
+    else if (act === 'download'){ if (!outEl.value){ showToast('Nothing to download yet.', 'error'); return; } sDownload('unicode-lab.txt', outEl.value, 'text/plain;charset=utf-8'); }
+    else if (act === 'selall'){ if (cur){ selSet = new Set(cur.flat.map((_, i) => i)); primary = 0; anchor = 0; syncSel(); } }
+    else if (act === 'selclear'){ selSet = new Set(); syncSel(); }
+    else if (act === 'reroll') reroll();
+    else if (act === 'lock') setLock(true);
+    else if (act === 'unlock') setLock(false);
+    else if (act === 'addsel') addSelected();
+    else if (act === 'remsel') removeSelected();
+    else if (act === 'more'){ shown += GRID_STEP; renderGrid(); }
+    else if (act === 'showall'){ shown = cur ? cur.flat.length : GRID_STEP; renderGrid(); }
+  });
+
+  // Enter in a field and Ctrl/Cmd+Enter anywhere in this app press Generate
+  v.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.isComposing && t.tagName === 'INPUT' && t.id && t.id.indexOf('ul-') === 0 && (t.type === 'number' || t.type === 'text')){ e.preventDefault(); generate(); }
+  });
+  window.addEventListener('keydown', (e) => {
+    if (!((e.ctrlKey || e.metaKey) && e.key === 'Enter') || e.isComposing) return;
+    if (!(getFocusedView() === 'unilab' || v.contains(e.target)) || !v.getClientRects().length) return;
+    e.preventDefault(); generate();
+  });
+
+  renderSets(); applyFilter(); syncForm(); syncChips(); renderHistory(); renderGrid();
+  studioApps.unilab = {
+    refresh(){ if (firstRun){ firstRun = false; if (!cur) generate({ fromCfg: true, noHistory: true }); } },
+    generate, ensure, catalog: () => CAT, describe, rend: () => renderable,
+    _state: () => st, _cur: () => cur,
+    _api: { poolOf, cls, compose, draw, tlMulberry },
+    gridMs: () => (cur ? cur.gridMs : 0), gridDoneMs: () => (cur ? cur.gridDoneMs || 0 : 0), times: () => ({ gen: lastGenMs, prep: lastPrepMs }), buildMs: () => CAT.filter(b => b.cache).map(b => [b.id, b.size, +b.ms.toFixed(1)])
+  };
+})();
 
 // Apply the saved startup screen now that every view and its setup
 // exists. Defaults to the Desktop screen for anyone who hasn't picked a
