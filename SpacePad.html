@@ -1188,6 +1188,20 @@
   .net-popup button:not(.ghost-btn):not(.cust-preset-btn):not(.cust-theme-btn):not(.cust-custom-del):not(.net-cancel):not(.cmdk-item):active { transform: scale(0.95); }
 
   /* ---- Customize modal: save feedback + presets ---- */
+  /* Scrollable Customize dialog: the card never grows past the window; its
+     body scrolls while the title bar and the Done/Reset row stay pinned. */
+  #customize-overlay { padding: 12px; box-sizing: border-box; overflow: hidden; }
+  #customize-overlay .net-popup {
+    width: 100%; box-sizing: border-box;
+    max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px);
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  }
+  #customize-overlay .net-popup > h3 { position: sticky; top: 0; z-index: 2; }
+  html:not([data-theme="day"]) #customize-overlay .net-popup > h3, html.day-plain #customize-overlay .net-popup > h3 { background: var(--panel); margin-top: -20px; padding-top: 20px; padding-bottom: 6px; }
+  #customize-overlay .net-popup > .conv-btn-row:last-child {
+    position: sticky; bottom: -20px; z-index: 2; background: var(--panel);
+    margin: 0 -22px -20px; padding: 10px 22px 14px; border-top: 1px solid var(--border);
+  }
   .cust-saved-status {
     text-align: center; font-size: 11.5px; height: 16px; margin-bottom: 10px;
     color: var(--accent); opacity: 0; transition: opacity .25s ease;
@@ -1220,7 +1234,7 @@
   .group { display: flex; align-items: center; gap: 6px; }
   .group + .group { padding-left: 16px; border-left: 1px solid var(--border); }
 
-  header button {
+  header button, :where(#editor-toolbar) button {
     background: var(--panel-2);
     color: var(--text);
     border: 1px solid var(--border);
@@ -1234,17 +1248,17 @@
     transition: border-color .15s, color .15s, background .15s, transform .15s, box-shadow .15s;
     white-space: nowrap;
   }
-  header button:hover { border-color: var(--accent-dim); color: var(--accent); background: #232830; transform: translateY(-1px); }
-  header button:active { transform: translateY(0); }
-  header button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-  header button:disabled:hover { border-color: var(--border); color: var(--text); background: var(--panel-2); }
-  header button.primary {
+  header button:hover, :where(#editor-toolbar) button:hover { border-color: var(--accent-dim); color: var(--accent); background: #232830; transform: translateY(-1px); }
+  header button:active, :where(#editor-toolbar) button:active { transform: translateY(0); }
+  header button:disabled, :where(#editor-toolbar) button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  header button:disabled:hover, :where(#editor-toolbar) button:disabled:hover { border-color: var(--border); color: var(--text); background: var(--panel-2); }
+  header button.primary, :where(#editor-toolbar) button.primary {
     background: var(--accent);
     color: #14132b;
     border-color: var(--accent);
     font-weight: 600;
   }
-  header button.primary:hover { filter: brightness(1.08); color: #14132b; background: var(--accent); box-shadow: 0 4px 14px rgba(139,124,246,0.4); }
+  header button.primary:hover, :where(#editor-toolbar) button.primary:hover { filter: brightness(1.08); color: #14132b; background: var(--accent); box-shadow: 0 4px 14px rgba(139,124,246,0.4); }
 
   /* ---- toolbar dropdown menus (File / Share / More) ---- */
   .dropdown { position: relative; }
@@ -1489,6 +1503,16 @@
   .dino-hint { font-size: 11px; color: var(--text-dim); margin-top: 12px; opacity: .8; }
 
   /* ===== Editor view ===== */
+  /* The Editor's own action bar lives INSIDE its window (top of the app),
+     not in the global header. #editor-main holds the old side-by-side
+     editor | divider | preview layout. */
+  #view-editor { flex-direction: column; }
+  #editor-main { flex: 1; min-height: 0; display: flex; }
+  .app-toolbar {
+    display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; flex-shrink: 0;
+    padding: 6px 10px; background: var(--panel); border-bottom: 1px solid var(--border);
+    position: relative; z-index: 5;
+  }
   #editors { display: flex; flex-direction: column; width: 52%; min-width: 200px; border-right: 1px solid var(--border); }
   #divider { width: 6px; cursor: col-resize; background: var(--panel); position: relative; touch-action: none; }
   @media (pointer: coarse){ #divider { width: 14px; } } /* easier to grab with a finger */
@@ -1881,7 +1905,7 @@
 
   /* ===== Python view — code editor + JSON/CSV data pane + in-browser runner ===== */
   #view-python {
-    flex-direction: row; position: relative;
+    flex-direction: column; position: relative;
     background:
       radial-gradient(circle at 12% 0%, rgba(75,139,190,0.14), transparent 50%),
       radial-gradient(circle at 90% 100%, rgba(255,212,59,0.09), transparent 50%),
@@ -1894,6 +1918,9 @@
   }
   @keyframes pyGradientSlide { from { background-position: 0% 0; } to { background-position: 200% 0; } }
 
+  #python-main { flex: 1; min-height: 0; display: flex; }
+  #python-toolbar { padding-top: 9px; } /* clears the 3px gradient strip */
+  #python-toolbar .py-run-row { flex-wrap: wrap; }
   #python-editors { display: flex; flex-direction: column; width: 50%; min-width: 200px; border-right: 1px solid var(--border); }
   #python-divider { width: 6px; cursor: col-resize; background: transparent; position: relative; touch-action: none; transition: background .15s; }
   @media (pointer: coarse){ #python-divider { width: 14px; } }
@@ -2071,12 +2098,12 @@
     header { padding: 8px 10px; gap: 8px; }
     .brand { font-size: 13px; }
     .status { display: none; } /* redundant with the view tabs on a small screen — reclaim the space */
-    header button, .dropdown-item { padding: 9px 11px; min-height: 38px; font-size: 12px; }
+  header button, :where(#editor-toolbar) button, .dropdown-item { padding: 9px 11px; min-height: 38px; font-size: 12px; }
     .toolbar { gap: 10px; }
     .group + .group { padding-left: 10px; }
 
     /* Stack every split-pane view instead of squeezing columns side by side */
-    #view-editor, #view-chat, #view-github, #view-convert, #view-python { flex-direction: column; }
+    #view-editor, #view-chat, #view-github, #view-convert, #view-python, #editor-main, #python-main { flex-direction: column; }
 
     #editors { width: 100% !important; height: 46%; border-right: none; border-bottom: 1px solid var(--border); }
     #divider { display: none; } /* mouse-drag resize doesn't apply once panes are stacked */
@@ -2104,7 +2131,7 @@
 
   @media (max-width: 480px){
     .brand-text { display: none; } /* icon dot only — reclaim header space on very small phones */
-    header button span { font-size: 11.5px; }
+  header button span, :where(#editor-toolbar) button span { font-size: 11.5px; }
     .drop-zone { padding: 22px 12px; }
   }
 
@@ -2707,15 +2734,15 @@
   html[data-theme="day"]:not(.day-plain) :focus-visible { outline-color: var(--day-focus); }
   html[data-theme="day"]:not(.day-plain) :is(header, #taskbar, .win-titlebar) :focus-visible { outline-color: #fff; }
   /* black buttons */
-  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .net-popup > button, .net-popup .conv-btn-row button, #sp-lock-go, .cz-hero, .toast-action, .tb-pop .tb-today, .tb-cal-head button, .net-ok, .cz-dlg-f button, .cz-cb-btn, .sc-row button, #cc-safe, #setFontSizeDown, #setFontSizeUp) {
+  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, :where(#editor-toolbar) button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .net-popup > button, .net-popup .conv-btn-row button, #sp-lock-go, .cz-hero, .toast-action, .tb-pop .tb-today, .tb-cal-head button, .net-ok, .cz-dlg-f button, .cz-cb-btn, .sc-row button, #cc-safe, #setFontSizeDown, #setFontSizeUp) {
     background: var(--day-btn-bg); color: var(--day-btn-text); border: 1px solid var(--day-edge); box-shadow: none; text-shadow: none;
   }
-  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .net-popup > button, .net-popup .conv-btn-row button, #sp-lock-go, .toast-action, .tb-pop .tb-today, .tb-cal-head button, .net-ok, .cz-dlg-f button, .cz-cb-btn, #cc-safe, #setFontSizeDown, #setFontSizeUp):hover:not(:disabled) {
+  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, :where(#editor-toolbar) button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .net-popup > button, .net-popup .conv-btn-row button, #sp-lock-go, .toast-action, .tb-pop .tb-today, .tb-cal-head button, .net-ok, .cz-dlg-f button, .cz-cb-btn, #cc-safe, #setFontSizeDown, #setFontSizeUp):hover:not(:disabled) {
     background: var(--day-btn-hover); color: var(--day-btn-text); border-color: rgba(255,255,255,.5); box-shadow: none;
   }
-  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .net-ok, .cz-dlg-f button):active:not(:disabled) { background: var(--day-btn-active); }
-  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .cz-dlg-f button):disabled { background: var(--day-btn-off); color: #c9c9d2; border-color: transparent; opacity: .75; }
-  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, .tb-btn):focus-visible { outline: 2px solid var(--day-focus); outline-offset: 2px; }
+  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, :where(#editor-toolbar) button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .net-ok, .cz-dlg-f button):active:not(:disabled) { background: var(--day-btn-active); }
+  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, :where(#editor-toolbar) button, .dropdown-toggle, button.primary, .tb-btn, .win-titlebar button, .cz-dlg-f button):disabled { background: var(--day-btn-off); color: #c9c9d2; border-color: transparent; opacity: .75; }
+  html[data-theme="day"]:not(.day-plain) :is(.ghost-btn, header button, :where(#editor-toolbar) button, .tb-btn):focus-visible { outline: 2px solid var(--day-focus); outline-offset: 2px; }
   html[data-theme="day"]:not(.day-plain) :is(header, #taskbar, .win-titlebar) :is(button):focus-visible { outline-color: #fff; }
   html[data-theme="day"]:not(.day-plain) .win-close:hover { background: #7a1020 !important; color: #fff !important; border-color: #ffb3c0 !important; }
   html[data-theme="day"]:not(.day-plain) .tb-btn[aria-expanded="true"], html[data-theme="day"]:not(.day-plain) .tb-btn.on { background: var(--day-btn-hover); color: #fff; border-color: #fff; }
@@ -2783,13 +2810,30 @@
   }
   html.bd-frame-on #bd-frame::after { border-radius: 0; z-index: auto; }
   html.bd-win.bd-all .app-window:not(.win-focus):not(.win-hidden)::after { opacity: .45; }
-  html.bd-anim .app-window.win-focus::after, html.bd-anim #bd-frame::after { animation: bd-spin var(--bd-dur, 8s) steps(var(--bd-steps, 80)) infinite; }
-  html.bd-anim[data-bddir="ccw"] .app-window.win-focus::after, html.bd-anim[data-bddir="ccw"] #bd-frame::after { animation-direction: reverse; }
+  html.bd-win.bd-all.bd-allfull .app-window:not(.win-focus):not(.win-hidden)::after { opacity: 1; }
+  html.bd-anim .app-window.win-focus::after, html.bd-anim.bd-allfull .app-window:not(.win-hidden)::after, html.bd-anim #bd-frame::after { animation: bd-spin var(--bd-dur, 8s) steps(var(--bd-steps, 80)) infinite; }
+  html.bd-anim[data-bddir="ccw"] .app-window.win-focus::after, html.bd-anim.bd-allfull[data-bddir="ccw"] .app-window:not(.win-hidden)::after, html.bd-anim[data-bddir="ccw"] #bd-frame::after { animation-direction: reverse; }
   html.bd-win[data-bdstyle="dashed"] .app-window.win-focus::after, html.bd-win[data-bdstyle="dotted"] .app-window.win-focus::after,
   html.bd-win.bd-all[data-bdstyle="dashed"] .app-window:not(.win-hidden)::after, html.bd-win.bd-all[data-bdstyle="dotted"] .app-window:not(.win-hidden)::after,
   html.bd-frame-on[data-bdstyle="dashed"] #bd-frame::after, html.bd-frame-on[data-bdstyle="dotted"] #bd-frame::after {
     background: none; padding: 0; -webkit-mask: none; mask: none; border: var(--bd-w, 2px) var(--bd-line, dashed) var(--bd-solid, var(--accent));
   }
+  /* Rainbow flow (icon colors): the SAME hue palette as the Icon colors Rainbow flow (hsl(hue + shift)); the
+     shared flow clock in Icon colors writes --bd-shift on the border hosts, so no per-window timers exist. */
+  /* --bd-shift does not inherit (registered), so a tick only restyles the border hosts, never their subtrees;
+     the ring pseudo-elements pick it up with `inherit`. */
+  @property --bd-shift { syntax: '<number>'; inherits: false; initial-value: 0; }
+  html[data-bdstyle="hueflow"] :is(.app-window, #bd-frame, .sticky-note, .sp-widget)::after, html[data-bdstyle="hueflow"] header::after, html[data-bdstyle="hueflow"] #taskbar::before {
+    --bd-shift: inherit; --bd-h0: hsl(calc(0 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h1: hsl(calc(60 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h2: hsl(calc(120 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h3: hsl(calc(180 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h4: hsl(calc(240 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h5: hsl(calc(300 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%));
+    --bd-colors: var(--bd-h0), var(--bd-h1), var(--bd-h2), var(--bd-h3), var(--bd-h4), var(--bd-h5), var(--bd-h0);
+    --bd-line-colors: var(--bd-h0), var(--bd-h1), var(--bd-h2), var(--bd-h3), var(--bd-h4), var(--bd-h5), var(--bd-h0), var(--bd-h1), var(--bd-h2), var(--bd-h3), var(--bd-h4), var(--bd-h5), var(--bd-h0);
+  }
+  html.bd-icon[data-bdstyle="hueflow"] .desktop-icon:is(:hover, :focus-visible, .icon-dragging) {
+    --bd-h0: hsl(calc(0 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h1: hsl(calc(60 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h2: hsl(calc(120 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h3: hsl(calc(180 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h4: hsl(calc(240 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h5: hsl(calc(300 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%));
+    --bd-colors: var(--bd-h0), var(--bd-h1), var(--bd-h2), var(--bd-h3), var(--bd-h4), var(--bd-h5), var(--bd-h0);
+  }
+  html.bd-hfglow .app-window.win-focus { --bd-h0: hsl(calc(0 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h1: hsl(calc(60 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h2: hsl(calc(120 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h3: hsl(calc(180 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h4: hsl(calc(240 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%)); --bd-h5: hsl(calc(300 + var(--bd-shift, 0)) var(--bd-s, 85%) var(--bd-l, 60%));
+    --bd-glow-sh: calc(-1 * var(--bd-gx)) 0 var(--bd-gb) -2px var(--bd-h5), var(--bd-gx) 0 var(--bd-gb) -2px var(--bd-h3), 0 calc(-1 * var(--bd-gy)) var(--bd-gb) -2px var(--bd-h1), 0 var(--bd-gy) var(--bd-gb) -2px var(--bd-h2); }
   html.bd-win .app-window.win-focus { box-shadow: 0 20px 60px rgba(0,0,0,.45), var(--bd-glow-sh, 0 0 0 transparent); }
   html.bd-win.bd-all .app-window:not(.win-focus):not(.win-hidden) { box-shadow: 0 14px 40px rgba(0,0,0,.35); }
   html[data-wsh="none"] .app-window { box-shadow: none; }
@@ -3023,8 +3067,20 @@
     </div>
   </div>
   <div class="spacer"></div>
+</header>
 
-  <div class="toolbar" id="editor-toolbar">
+<div id="desktop-area">
+<!-- Floating app windows are created here on demand by the window manager
+     (see openApp()/createAppWindow() in the script) — one .app-window per
+     open app, each wrapping that app's real #view-* content. -->
+<div id="day-scenery" aria-hidden="true"></div>
+<div id="windows-layer"></div>
+
+<main>
+
+  <!-- ===================== EDITOR VIEW ===================== -->
+  <div id="view-editor" class="app-view active">
+  <div class="toolbar app-toolbar" id="editor-toolbar" role="toolbar" aria-label="Editor actions">
     <div class="group">
       <label id="autorun-wrap"><input type="checkbox" id="autorun" checked> auto-run</label>
       <button id="run-btn" class="primary run-btn-cosmic" title="Rebuild the preview now (Ctrl/Cmd+Enter)"><svg class="icon icon-fill"><use href="#icon-play"></use></svg> Run</button>
@@ -3062,19 +3118,7 @@
       </div>
     </div>
   </div>
-</header>
-
-<div id="desktop-area">
-<!-- Floating app windows are created here on demand by the window manager
-     (see openApp()/createAppWindow() in the script) — one .app-window per
-     open app, each wrapping that app's real #view-* content. -->
-<div id="day-scenery" aria-hidden="true"></div>
-<div id="windows-layer"></div>
-
-<main>
-
-  <!-- ===================== EDITOR VIEW ===================== -->
-  <div id="view-editor" class="app-view active">
+    <div id="editor-main">
     <div id="editors">
       <div class="tabs">
         <div class="tab active single-tab" data-lang="html"><span class="sq"></span>index.html</div>
@@ -3121,6 +3165,7 @@
         <span id="console-repl-prompt">›</span>
         <input type="text" id="console-repl-input" placeholder="Run JS in the preview… (Enter)" autocomplete="off" spellcheck="false">
       </div>
+    </div>
     </div>
   </div>
 
@@ -3401,106 +3446,110 @@
 
   <!-- ===================== PYTHON VIEW ===================== -->
   <div id="view-python" class="app-view">
-    <div id="python-editors">
-      <div class="tabs">
-        <div class="tab active py-tab-py" data-plang="py"><span class="sq"></span>script.py</div>
-        <div class="tab py-tab-data" data-plang="data"><span class="sq"></span><input type="text" id="py-data-tab-label" class="py-data-label-input" value="data.json" title="Rename this tab's file (also sets the download filename)"></div>
-        <div id="py-extra-tabs" style="display:contents;"></div>
-        <button type="button" class="tab py-tab-add" id="py-add-tab-btn" title="Add another file — json, md, csv, txt, anything">+</button>
-      </div>
-      <div class="editor-body">
-        <div class="code-panel active" data-plang="py">
-          <div class="gutter" id="gutter-py">1</div>
-          <textarea class="code" id="code-py" spellcheck="false" wrap="off"></textarea>
+    <div class="app-toolbar" id="python-toolbar" role="toolbar" aria-label="Python actions">
+    <div class="py-run-row">
+      <div class="dropdown">
+        <button class="dropdown-toggle" id="pyFileMenuBtn" type="button"><svg class="icon"><use href="#icon-file-text"></use></svg> File ▾</button>
+        <div class="dropdown-menu" id="pyFileMenu">
+          <div class="dropdown-section-label">Templates</div>
+          <button type="button" class="dropdown-item" data-py-template="hello">Hello World</button>
+          <button type="button" class="dropdown-item" data-py-template="json">JSON parsing example</button>
+          <button type="button" class="dropdown-item" data-py-template="csv">CSV parsing example</button>
+          <button type="button" class="dropdown-item" data-py-template="pygame" title="A bouncing ball — installs pygame-ce first via Packages, then Run">Pygame demo (bouncing ball)</button>
+          <button type="button" class="dropdown-item" data-py-template="scraper" title="requests + BeautifulSoup + urllib.parse + robotparser crawler">Web crawler (requests + bs4)</button>
+          <button type="button" class="dropdown-item" data-py-template="stdlib" title="argparse, io, re, sys, time, zipfile, collections.deque">Stdlib tour (zipfile, deque, re…)</button>
+          <button type="button" class="dropdown-item" data-py-template="blank">Blank</button>
+          <div class="dropdown-divider"></div>
+          <label class="dropdown-item" for="py-open-script"><svg class="icon"><use href="#icon-folder"></use></svg> Open script (.py)…</label>
+          <input type="file" id="py-open-script" accept=".py,.txt" style="display:none">
+          <label class="dropdown-item" for="py-open-data"><svg class="icon"><use href="#icon-folder"></use></svg> Open data file (.json/.csv/.txt)…</label>
+          <input type="file" id="py-open-data" accept=".json,.csv,.tsv,.txt" style="display:none">
+          <label class="dropdown-item" for="py-add-file-input"><svg class="icon"><use href="#icon-file-text"></use></svg> Add file as new tab…</label>
+          <input type="file" id="py-add-file-input" style="display:none">
+          <label class="dropdown-item" for="py-file-upload"><svg class="icon"><use href="#icon-paperclip"></use></svg> Upload file(s) for open()…</label>
+          <input type="file" id="py-file-upload" multiple style="display:none">
+          <label class="dropdown-item" for="py-open-folder"><svg class="icon"><use href="#icon-folder"></use></svg> Open a whole folder…</label>
+          <input type="file" id="py-open-folder" webkitdirectory multiple style="display:none">
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item" id="py-download-script"><svg class="icon"><use href="#icon-download"></use></svg> Download script.py</button>
+          <button type="button" class="dropdown-item" id="py-download-data"><svg class="icon"><use href="#icon-download"></use></svg> Download data file</button>
         </div>
-        <div class="code-panel" data-plang="data">
-          <div class="gutter" id="gutter-pydata">1</div>
-          <textarea class="code" id="code-pydata" spellcheck="false" wrap="off"></textarea>
-        </div>
-        <div id="py-extra-panels" style="display:contents;"></div>
       </div>
+      <div class="dropdown">
+        <button class="dropdown-toggle" id="pyShareMenuBtn" type="button"><svg class="icon"><use href="#icon-link"></use></svg> Share ▾</button>
+        <div class="dropdown-menu" id="pyShareMenu">
+          <div class="dropdown-section-label">New tab method</div>
+          <div class="newtab-picker"></div>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item" id="py-launch-tab-btn" title="Opens using whichever method is selected above"><svg class="icon"><use href="#icon-external-link"></use></svg> New tab</button>
+          <button type="button" class="dropdown-item" id="py-launch-here-btn" title="Breaks out of any embedding frame and loads the app directly in this tab"><svg class="icon"><use href="#icon-maximize"></use></svg> Open in this tab</button>
+        </div>
+      </div>
+      <button id="py-packages-btn" class="ghost-btn" type="button" title="Install Python packages (numpy, pandas, pygame, and more)"><svg class="icon"><use href="#icon-download"></use></svg> Packages</button>
+      <button id="py-preview-btn" class="ghost-btn" type="button" title="A canvas + image area for pygame, matplotlib plots, and PIL images"><svg class="icon"><use href="#icon-monitor"></use></svg> Preview</button>
+      <button id="py-run-btn" class="primary run-btn-cosmic" type="button" title="Run script.py (Ctrl/Cmd+Enter)"><svg class="icon icon-fill"><use href="#icon-play"></use></svg> Run</button>
     </div>
-
-    <div id="python-divider"></div>
-
-    <div id="python-output-wrap">
-      <div class="preview-toolbar">
-        <strong>Output</strong><span>— runs script.py; the data tab is available as <code style="background:var(--panel-2); border:1px solid var(--border); border-radius:4px; padding:0 4px;">DATA</code>, uploaded files can be opened by name</span>
-        <div class="py-run-row">
-          <div class="dropdown">
-            <button class="dropdown-toggle" id="pyFileMenuBtn" type="button"><svg class="icon"><use href="#icon-file-text"></use></svg> File ▾</button>
-            <div class="dropdown-menu" id="pyFileMenu">
-              <div class="dropdown-section-label">Templates</div>
-              <button type="button" class="dropdown-item" data-py-template="hello">Hello World</button>
-              <button type="button" class="dropdown-item" data-py-template="json">JSON parsing example</button>
-              <button type="button" class="dropdown-item" data-py-template="csv">CSV parsing example</button>
-              <button type="button" class="dropdown-item" data-py-template="pygame" title="A bouncing ball — installs pygame-ce first via Packages, then Run">Pygame demo (bouncing ball)</button>
-              <button type="button" class="dropdown-item" data-py-template="scraper" title="requests + BeautifulSoup + urllib.parse + robotparser crawler">Web crawler (requests + bs4)</button>
-              <button type="button" class="dropdown-item" data-py-template="stdlib" title="argparse, io, re, sys, time, zipfile, collections.deque">Stdlib tour (zipfile, deque, re…)</button>
-              <button type="button" class="dropdown-item" data-py-template="blank">Blank</button>
-              <div class="dropdown-divider"></div>
-              <label class="dropdown-item" for="py-open-script"><svg class="icon"><use href="#icon-folder"></use></svg> Open script (.py)…</label>
-              <input type="file" id="py-open-script" accept=".py,.txt" style="display:none">
-              <label class="dropdown-item" for="py-open-data"><svg class="icon"><use href="#icon-folder"></use></svg> Open data file (.json/.csv/.txt)…</label>
-              <input type="file" id="py-open-data" accept=".json,.csv,.tsv,.txt" style="display:none">
-              <label class="dropdown-item" for="py-add-file-input"><svg class="icon"><use href="#icon-file-text"></use></svg> Add file as new tab…</label>
-              <input type="file" id="py-add-file-input" style="display:none">
-              <label class="dropdown-item" for="py-file-upload"><svg class="icon"><use href="#icon-paperclip"></use></svg> Upload file(s) for open()…</label>
-              <input type="file" id="py-file-upload" multiple style="display:none">
-              <label class="dropdown-item" for="py-open-folder"><svg class="icon"><use href="#icon-folder"></use></svg> Open a whole folder…</label>
-              <input type="file" id="py-open-folder" webkitdirectory multiple style="display:none">
-              <div class="dropdown-divider"></div>
-              <button type="button" class="dropdown-item" id="py-download-script"><svg class="icon"><use href="#icon-download"></use></svg> Download script.py</button>
-              <button type="button" class="dropdown-item" id="py-download-data"><svg class="icon"><use href="#icon-download"></use></svg> Download data file</button>
-            </div>
+    </div>
+    <div id="python-main">
+      <div id="python-editors">
+        <div class="tabs">
+          <div class="tab active py-tab-py" data-plang="py"><span class="sq"></span>script.py</div>
+          <div class="tab py-tab-data" data-plang="data"><span class="sq"></span><input type="text" id="py-data-tab-label" class="py-data-label-input" value="data.json" title="Rename this tab's file (also sets the download filename)"></div>
+          <div id="py-extra-tabs" style="display:contents;"></div>
+          <button type="button" class="tab py-tab-add" id="py-add-tab-btn" title="Add another file — json, md, csv, txt, anything">+</button>
+        </div>
+        <div class="editor-body">
+          <div class="code-panel active" data-plang="py">
+            <div class="gutter" id="gutter-py">1</div>
+            <textarea class="code" id="code-py" spellcheck="false" wrap="off"></textarea>
           </div>
-          <div class="dropdown">
-            <button class="dropdown-toggle" id="pyShareMenuBtn" type="button"><svg class="icon"><use href="#icon-link"></use></svg> Share ▾</button>
-            <div class="dropdown-menu" id="pyShareMenu">
-              <div class="dropdown-section-label">New tab method</div>
-              <div class="newtab-picker"></div>
-              <div class="dropdown-divider"></div>
-              <button type="button" class="dropdown-item" id="py-launch-tab-btn" title="Opens using whichever method is selected above"><svg class="icon"><use href="#icon-external-link"></use></svg> New tab</button>
-              <button type="button" class="dropdown-item" id="py-launch-here-btn" title="Breaks out of any embedding frame and loads the app directly in this tab"><svg class="icon"><use href="#icon-maximize"></use></svg> Open in this tab</button>
-            </div>
+          <div class="code-panel" data-plang="data">
+            <div class="gutter" id="gutter-pydata">1</div>
+            <textarea class="code" id="code-pydata" spellcheck="false" wrap="off"></textarea>
           </div>
-          <button id="py-packages-btn" class="ghost-btn" type="button" title="Install Python packages (numpy, pandas, pygame, and more)"><svg class="icon"><use href="#icon-download"></use></svg> Packages</button>
-          <button id="py-preview-btn" class="ghost-btn" type="button" title="A canvas + image area for pygame, matplotlib plots, and PIL images"><svg class="icon"><use href="#icon-monitor"></use></svg> Preview</button>
-          <button id="py-run-btn" class="primary run-btn-cosmic" type="button" title="Run script.py (Ctrl/Cmd+Enter)"><svg class="icon icon-fill"><use href="#icon-play"></use></svg> Run</button>
+          <div id="py-extra-panels" style="display:contents;"></div>
         </div>
       </div>
-      <div id="py-packages-panel" style="display:none;">
-        <div class="py-packages-search-row">
-          <svg class="icon"><use href="#icon-search"></use></svg>
-          <input type="text" id="py-packages-search" placeholder="Search packages… (numpy, pandas, pygame…) or type any PyPI name and press Enter">
-          <button type="button" id="py-packages-install-btn" class="ghost-btn">Install</button>
-          <button type="button" id="py-packages-close-btn" class="ghost-btn" title="Close"><svg class="icon"><use href="#icon-x"></use></svg></button>
+
+      <div id="python-divider"></div>
+
+      <div id="python-output-wrap">
+        <div class="preview-toolbar">
+          <strong>Output</strong><span>— runs script.py; the data tab is available as <code style="background:var(--panel-2); border:1px solid var(--border); border-radius:4px; padding:0 4px;">DATA</code>, uploaded files can be opened by name</span>
         </div>
-        <div id="py-packages-suggestions"></div>
-        <div id="py-packages-terminal"></div>
-      </div>
-      <div id="py-preview-panel" style="display:none;">
-        <div class="py-preview-head">
-          <span>Preview <span class="py-preview-sub">— pygame draws into the canvas below; matplotlib's plt.show() and a PIL image's .show() land here automatically</span></span>
-          <button type="button" id="py-preview-close-btn" class="ghost-btn" title="Close"><svg class="icon"><use href="#icon-x"></use></svg></button>
+        <div id="py-packages-panel" style="display:none;">
+          <div class="py-packages-search-row">
+            <svg class="icon"><use href="#icon-search"></use></svg>
+            <input type="text" id="py-packages-search" placeholder="Search packages… (numpy, pandas, pygame…) or type any PyPI name and press Enter">
+            <button type="button" id="py-packages-install-btn" class="ghost-btn">Install</button>
+            <button type="button" id="py-packages-close-btn" class="ghost-btn" title="Close"><svg class="icon"><use href="#icon-x"></use></svg></button>
+          </div>
+          <div id="py-packages-suggestions"></div>
+          <div id="py-packages-terminal"></div>
         </div>
-        <canvas id="canvas" width="480" height="360"></canvas>
-        <div id="py-preview-content"></div>
-      </div>
-      <div id="py-files-bar">
-        <span class="py-files-label">Files:</span>
-        <div id="py-files-chips"></div>
-      </div>
-      <div id="py-loading-wrap" style="display:none;">
-        <div class="py-loading-head">
-          <span id="py-loading-label">Loading Python runtime…</span>
-          <span id="py-loading-pct">0%</span>
+        <div id="py-preview-panel" style="display:none;">
+          <div class="py-preview-head">
+            <span>Preview <span class="py-preview-sub">— pygame draws into the canvas below; matplotlib's plt.show() and a PIL image's .show() land here automatically</span></span>
+            <button type="button" id="py-preview-close-btn" class="ghost-btn" title="Close"><svg class="icon"><use href="#icon-x"></use></svg></button>
+          </div>
+          <canvas id="canvas" width="480" height="360"></canvas>
+          <div id="py-preview-content"></div>
         </div>
-        <div class="py-loading-track">
-          <div id="py-loading-fill" class="py-loading-fill"></div>
+        <div id="py-files-bar">
+          <span class="py-files-label">Files:</span>
+          <div id="py-files-chips"></div>
         </div>
+        <div id="py-loading-wrap" style="display:none;">
+          <div class="py-loading-head">
+            <span id="py-loading-label">Loading Python runtime…</span>
+            <span id="py-loading-pct">0%</span>
+          </div>
+          <div class="py-loading-track">
+            <div id="py-loading-fill" class="py-loading-fill"></div>
+          </div>
+        </div>
+        <div id="py-console"></div>
       </div>
-      <div id="py-console"></div>
     </div>
   </div>
 
@@ -7165,9 +7214,8 @@ function renderWinDock(){ if (taskbarRender) taskbarRender(); }
 // Back-compat name: the taskbar re-render also refreshes the "has window" state.
 function updateHasWindowIndicators(){ renderWinDock(); }
 
-// Keeps the Editor toolbar + header status chip in line with the focused app.
+// Keeps the header status chip in line with the focused app (the Editor's toolbar now lives inside its own window).
 function syncChromeForView(name){
-  document.getElementById('editor-toolbar').style.display = name === 'editor' ? 'flex' : 'none';
   const labels = { editor: 'ready', chat: 'chat mode', github: 'github search', python: 'python', stargazing: '✦', game: 'space dino',
     settings: 'settings', tools: 'tools', customize: 'customize', appstore: 'app store', convert: 'convert mode', desktop: 'desktop' };
   if (labels[name]) statusEl.textContent = labels[name];
@@ -7445,6 +7493,7 @@ function createAppWindow(key, meta){
     '<div class="win-body"></div>' +
     ['n','s','e','w','ne','nw','se','sw'].map(d => '<div class="win-resize win-resize-' + d + '" data-dir="' + d + '"></div>').join('');
   document.getElementById('windows-layer').appendChild(winEl);
+  if (spHooks.bdFlow) spHooks.bdFlow.one(winEl);
 
   const saved = winState[key];
   const rect = clampRectToLayer((saved && typeof saved.w === 'number') ? saved : defaultWinRect(key));
@@ -7566,6 +7615,29 @@ function closeAllDropdowns(){
   document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
   document.querySelectorAll('.dropdown-toggle.open').forEach(b => b.classList.remove('open'));
 }
+/* Menus that belong to an app window's toolbar are positioned with
+   position:fixed from the toggle's rect, so the window's overflow never clips
+   them; they are clamped to the screen and scroll if taller than the space. */
+function placeWindowMenu(toggle, menu){
+  if (!toggle.closest('.app-window')) return;
+  menu.style.position = 'fixed';
+  menu.style.maxHeight = ''; menu.style.overflowY = 'auto';
+  menu.style.right = 'auto'; menu.style.bottom = 'auto';
+  const tr = toggle.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight, m = 8;
+  const w = menu.offsetWidth;
+  let left = Math.min(Math.max(m, tr.left), Math.max(m, vw - w - m));
+  let top = tr.bottom + 6;
+  const room = vh - top - m;
+  if (room < 160 && tr.top > room){ // little space below: open upward
+    const up = tr.top - 6 - m;
+    menu.style.maxHeight = up + 'px';
+    top = Math.max(m, tr.top - 6 - Math.min(menu.scrollHeight, up));
+  } else {
+    menu.style.maxHeight = Math.max(120, room) + 'px';
+  }
+  menu.style.left = left + 'px'; menu.style.top = top + 'px';
+}
 function wireDropdown(toggleId, menuId){
   const toggle = document.getElementById(toggleId);
   const menu = document.getElementById(menuId);
@@ -7573,7 +7645,7 @@ function wireDropdown(toggleId, menuId){
     e.stopPropagation();
     const wasOpen = menu.classList.contains('open');
     closeAllDropdowns();
-    if (!wasOpen){ menu.classList.add('open'); toggle.classList.add('open'); }
+    if (!wasOpen){ menu.classList.add('open'); toggle.classList.add('open'); placeWindowMenu(toggle, menu); }
   });
   menu.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -7678,6 +7750,7 @@ const BASE_COMMANDS = [
   { id: 'show-shortcuts', label: 'Show keyboard shortcuts', iconName: 'keyboard', run: () => openShortcuts() },
   { id: 'cycle-icon-colors', label: 'Cycle icon colors (Default / Rainbow)', iconName: 'palette', iconFill: true, def: '', run: () => studioCall('iconcolors', 'cycle') },
   { id: 'toggle-rainbow-border', label: 'Toggle rainbow border', iconName: 'sparkles', def: '', run: () => studioCall('borders', 'toggleBorder') },
+  { id: 'toggle-rainbow-all', label: 'Toggle rainbow border on all windows', iconName: 'sparkles', def: '', run: () => studioCall('borders', 'toggleAll') },
   { id: 'next-look', label: 'Next look', iconName: 'sparkles', def: '', run: () => studioCall('borders', 'nextLook') },
   { id: 'random-look', label: 'Random look', iconName: 'refresh-cw', def: '', run: () => studioCall('borders', 'randomLook') },
   { id: 'toggle-cursor-trail', label: 'Toggle cursor trail', iconName: 'target', def: '', run: () => studioCall('borders', 'toggleTrail') },
@@ -10065,7 +10138,7 @@ const divider = document.getElementById('divider');
 const editorsPane = document.getElementById('editors');
 let dragging = false;
 function resizeEditorsTo(clientX){
-  const mainRect = document.querySelector('#view-editor').getBoundingClientRect();
+  const mainRect = document.querySelector('#editor-main').getBoundingClientRect();
   let pct = ((clientX - mainRect.left) / mainRect.width) * 100;
   pct = Math.max(20, Math.min(80, pct));
   editorsPane.style.width = pct + '%';
@@ -15093,7 +15166,7 @@ document.getElementById('py-run-btn').addEventListener('click', pyRun);
   const pane = document.getElementById('python-editors');
   let dragging = false;
   function resizeTo(clientX){
-    const rect = document.querySelector('#view-python').getBoundingClientRect();
+    const rect = document.querySelector('#python-main').getBoundingClientRect();
     let pct = ((clientX - rect.left) / rect.width) * 100;
     pct = Math.max(20, Math.min(80, pct));
     pane.style.width = pct + '%';
@@ -16242,7 +16315,7 @@ function sCopy(text, okMsg){
     ['Big window buttons', 'Easier-to-hit minimize / maximize / close', '.win-titlebar button {\n  width: 30px !important;\n  height: 30px !important;\n}'],
     ['Transparent taskbar', 'See the wallpaper through the taskbar', '#taskbar {\n  background: transparent !important;\n  border-top-color: transparent !important;\n}'],
     ['Thick rainbow border', 'Wider ring for Borders & Effects (turn on a border first)', 'html {\n  --bd-w: 5px !important;\n}'],
-    ['Slow border flow', 'Slows the Rainbow flow rotation (--bd-dur)', 'html {\n  --bd-dur: 24s !important;\n  --bd-steps: 288 !important;\n}'],
+    ['Slow border flow', 'Slows the Rainbow spin rotation (--bd-dur)', 'html {\n  --bd-dur: 24s !important;\n  --bd-steps: 288 !important;\n}'],
     ['Accent ring on icons', 'Uses --bd-colors for your own ring', '.desktop-icon-glyph {\n  outline: 2px solid var(--accent);\n  outline-offset: 2px;\n}'],
     ['Monospace UI', 'Use a monospace font for the whole interface', 'html {\n  font-family: ui-monospace, Menlo, Consolas, monospace !important;\n}']
   ];
@@ -16562,7 +16635,7 @@ function sCopy(text, okMsg){
       speed: sClamp(o.speed, 1, 10, IC_DEF.speed), scope: o.scope === false ? false : true };
   }
   let ic = icClean(sJson(IC_KEY, {}));
-  let hueMap = {}, shift = 0, flowT = null;
+  let hueMap = {}, shift = 0, bshift = 0, bdRun = false, flowT = null;
   function orderIds(){
     const ids = DESKTOP_APPS.map(a => a.view).concat(customApps.map(a => 'custom:' + a.id));
     return ids.sort((x, y) => { const ix = iconOrder.indexOf(x), iy = iconOrder.indexOf(y); return (ix < 0 ? 1e6 : ix) - (iy < 0 ? 1e6 : iy); });
@@ -16586,13 +16659,21 @@ function sCopy(text, okMsg){
   const LIVE = [document.getElementsByClassName('desktop-icon-glyph'), document.getElementsByClassName('win-icon'), document.getElementsByClassName('tb-chip-icon')];
   function setShiftAll(v){ LIVE.forEach(c => { for (let i = 0; i < c.length; i++){ const el = c[i]; if (v === null) el.style.removeProperty('--rainbow-shift'); else el.style.setProperty('--rainbow-shift', String(v)); } }); }
   const flowWanted = () => ic.mode === 'flow' && !document.hidden && !spLocked && !calm();
-  function tick(){ shift = (shift + ic.speed * 2) % 360; setShiftAll(shift); }
+  /* ONE shared flow clock: Borders & Effects "Rainbow flow" registers spHooks.bdFlow and rides this timer
+     (same 200 ms tick, same speed * 2 degrees per tick, same hue palette); it is cleared when nothing wants it. */
+  const bdWant = () => !!(spHooks.bdFlow && spHooks.bdFlow.wanted());
+  function tick(){
+    if (ic.mode === 'flow'){ shift = (shift + ic.speed * 2) % 360; setShiftAll(shift); }
+    if (bdWant()){ bshift = (bshift + spHooks.bdFlow.speed() * 2) % 360; bdRun = true; spHooks.bdFlow.set(bshift); }
+  }
   function syncFlow(){
-    const want = flowWanted();
+    const icWant = flowWanted(), bw = bdWant(), want = icWant || bw;
     if (want && !flowT){ flowT = setInterval(tick, 200); }
     else if (!want && flowT){ clearInterval(flowT); flowT = null; }
-    if (!want && (ic.mode !== 'flow' || calm()) && shift !== 0){ shift = 0; setShiftAll(null); }
+    if (!icWant && (ic.mode !== 'flow' || calm()) && shift !== 0){ shift = 0; setShiftAll(null); }
+    if (!bw && bdRun && !(spHooks.bdFlow && spHooks.bdFlow.hold())){ bdRun = false; bshift = 0; if (spHooks.bdFlow) spHooks.bdFlow.set(null); }
   }
+  spHooks.flowSync = syncFlow;
   function icApply(){
     const on = ic.mode !== 'default';
     if (!on && shift !== 0){ shift = 0; setShiftAll(null); }
@@ -16770,7 +16851,7 @@ function sCopy(text, okMsg){
     cycle(){ icSet({ mode: ic.mode === 'default' ? 'rainbow' : 'default' }); showToast('Icon colors: ' + (IC_MODES.find(m => m[0] === ic.mode) || ['', ''])[1] + '.'); },
     get: () => Object.assign({}, ic), set: (p, quiet) => icSet(p, quiet),
     dayScenery: () => Object.assign({}, ds), setScenery: dsSet, chrome: () => chromeOn, setChrome: dcSet,
-    _hues: () => Object.assign({}, hueMap), _flowRunning: () => !!flowT, _shift: () => shift
+    _hues: () => Object.assign({}, hueMap), _flowRunning: () => !!flowT, _shift: () => shift, _bshift: () => bshift
   };
   syncAll();
 })();
@@ -16785,7 +16866,7 @@ function sCopy(text, okMsg){
    Animation: ONE registered custom property (--bd-angle) animated by a stepped CSS
    keyframe on the focused window's ::after and on the frame's ::after only (no timers, no
    filters). It is switched off (static ring) when the tab is hidden, Performance mode or
-   Reduce motion is on, the app is locked, the style is not "Rainbow flow", or (optionally)
+   Reduce motion is on, the app is locked, the style is not Rainbow spin / Rainbow flow, or (optionally)
    when the pointer and keyboard have been idle for 30 seconds.
    ========================================================================= */
 (function bordersApp(){
@@ -16797,9 +16878,9 @@ function sCopy(text, okMsg){
   const setCls = (n, on) => { if (root.classList.contains(n) !== !!on) root.classList.toggle(n, !!on); };
   const setAttr = (n, v) => { if (v === null || v === undefined || v === ''){ if (root.hasAttribute(n)) root.removeAttribute(n); } else if (root.getAttribute(n) !== String(v)) root.setAttribute(n, String(v)); };
   const setVar = (n, v) => { if (v === null){ if (root.style.getPropertyValue(n)) root.style.removeProperty(n); } else if (root.style.getPropertyValue(n) !== String(v)) root.style.setProperty(n, String(v)); };
-  const STYLES = [['rainbow', 'Rainbow'], ['flow', 'Rainbow flow'], ['gradient', 'Gradient (your colors)'], ['solid', 'Solid accent'], ['neon', 'Neon glow'], ['dashed', 'Dashed'], ['dotted', 'Dotted']];
+  const STYLES = [['rainbow', 'Rainbow'], ['hueflow', 'Rainbow flow'], ['flow', 'Rainbow spin'], ['gradient', 'Gradient (your colors)'], ['solid', 'Solid accent'], ['neon', 'Neon glow'], ['dashed', 'Dashed'], ['dotted', 'Dotted']];
   const SHADOWS = [['default', 'Default'], ['none', 'None'], ['soft', 'Soft'], ['deep', 'Deep'], ['neon', 'Neon accent glow'], ['rainbow', 'Rainbow glow']];
-  const DEF = { win: false, onlyFocus: true, frame: false, tbline: false, hdline: false, iconring: false, notes: false,
+  const DEF = { win: false, all: false, onlyFocus: true, frame: false, tbline: false, hdline: false, iconring: false, notes: false,
     style: 'rainbow', width: 2, glow: 6, sat: 85, light: 60, speed: 5, dir: 'cw', pauseIdle: false, g1: '#ff5f6d', g2: '#ffc371', g3: '#4facfe',
     wsh: 'default', tbH: 'normal', tbCenter: false, tbLeft: false, tbGrad: false,
     cur: 'default', trail: false, ripple: false, sb: 'off', sbw: 'thin', sel: 'default', fr: 'default', fw: 2, fo: 2, hc: false };
@@ -16809,7 +16890,7 @@ function sCopy(text, okMsg){
   function clean(o){
     o = o && typeof o === 'object' && !Array.isArray(o) ? o : {};
     return {
-      win: bool(o.win, DEF.win), onlyFocus: bool(o.onlyFocus, DEF.onlyFocus), frame: bool(o.frame, DEF.frame), tbline: bool(o.tbline, DEF.tbline), hdline: bool(o.hdline, DEF.hdline),
+      win: bool(o.win, DEF.win), all: bool(o.all, DEF.all), onlyFocus: bool(o.onlyFocus, DEF.onlyFocus), frame: bool(o.frame, DEF.frame), tbline: bool(o.tbline, DEF.tbline), hdline: bool(o.hdline, DEF.hdline),
       iconring: bool(o.iconring, DEF.iconring), notes: bool(o.notes, DEF.notes),
       style: oneOf(o.style, STYLES.map(s => s[0]), DEF.style), width: Math.round(sClamp(o.width, 1, 8, DEF.width)), glow: Math.round(sClamp(o.glow, 0, 20, DEF.glow)),
       sat: Math.round(sClamp(o.sat, 40, 100, DEF.sat)), light: Math.round(sClamp(o.light, 35, 80, DEF.light)), speed: Math.round(sClamp(o.speed, 1, 10, DEF.speed)),
@@ -16825,19 +16906,21 @@ function sCopy(text, okMsg){
   let idle = false, idleT = null, lastAct = 0, lastLook = -1, undoLook = null;
 
   /* ---------------------------- apply to the page ---------------------------- */
-  const animTargets = () => bd.win || bd.frame || bd.tbline || bd.hdline;
+  const winOn = () => bd.win || bd.all;
+  const animTargets = () => winOn() || bd.frame || bd.tbline || bd.hdline;
+  const litNow = () => Math.max(30, bd.light + (currentTheme === 'day' ? -16 : 0));
   function colorsFor(){
-    const L = Math.max(30, bd.light + (currentTheme === 'day' ? -16 : 0));
+    const L = litNow();
     const rb = [0, 60, 120, 180, 240, 300, 360].map(h => 'hsl(' + h + ' ' + bd.sat + '% ' + L + '%)');
-    if (bd.style === 'rainbow' || bd.style === 'flow') return rb;
+    if (bd.style === 'rainbow' || bd.style === 'flow' || bd.style === 'hueflow') return rb;
     if (bd.style === 'gradient') return [bd.g1, bd.g2, bd.g3, bd.g1];
     if (bd.style === 'neon') return ['var(--accent)', 'color-mix(in srgb, var(--accent) 35%, #ffffff)', 'var(--accent)'];
     return ['var(--accent)', 'var(--accent)'];
   }
   function glowFor(cols){
     const g = bd.style === 'neon' ? Math.max(bd.glow, 12) : bd.glow;
-    if (!g || !bd.win) return '0 0 0 transparent';
-    if (bd.style === 'rainbow' || bd.style === 'flow') return '-' + Math.round(g * 0.7) + 'px 0 ' + g + 'px -2px ' + cols[5] + ', ' + Math.round(g * 0.7) + 'px 0 ' + g + 'px -2px ' + cols[3] + ', 0 -' + Math.round(g * 0.6) + 'px ' + g + 'px -2px ' + cols[1] + ', 0 ' + Math.round(g * 0.6) + 'px ' + g + 'px -2px ' + cols[2];
+    if (!g || !winOn()) return '0 0 0 transparent';
+    if (bd.style === 'rainbow' || bd.style === 'flow' || bd.style === 'hueflow') return '-' + Math.round(g * 0.7) + 'px 0 ' + g + 'px -2px ' + cols[5] + ', ' + Math.round(g * 0.7) + 'px 0 ' + g + 'px -2px ' + cols[3] + ', 0 -' + Math.round(g * 0.6) + 'px ' + g + 'px -2px ' + cols[1] + ', 0 ' + Math.round(g * 0.6) + 'px ' + g + 'px -2px ' + cols[2];
     const c = bd.style === 'gradient' ? bd.g2 : 'color-mix(in srgb, var(--accent) 80%, transparent)';
     return '0 0 ' + g + 'px ' + Math.round(g / 4) + 'px ' + c;
   }
@@ -16849,18 +16932,38 @@ function sCopy(text, okMsg){
     return { defs: '', v: a };
   }
   const uri = svg => 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
-  function activeAnim(){ return bd.style === 'flow' && animTargets() && !calm() && !document.hidden && !spLocked && !(bd.pauseIdle && idle); }
+  const animOk = () => animTargets() && !calm() && !document.hidden && !spLocked && !(bd.pauseIdle && idle);
+  function activeAnim(){ return bd.style === 'flow' && animOk(); }
+  /* Rainbow flow (icon colors) rides the shared clock in Icon colors; these are its hooks */
+  const hfLive = [document.getElementsByClassName('app-window'), document.getElementsByClassName('sticky-note'), document.getElementsByClassName('sp-widget'), document.getElementsByClassName('desktop-icon')];
+  let hfCur = null;
+  function hfSet(v){
+    hfCur = v;
+    const put = el => { if (!el) return; if (v === null) el.style.removeProperty('--bd-shift'); else el.style.setProperty('--bd-shift', String(v)); };
+    hfLive.forEach(c => { for (let i = 0; i < c.length; i++) put(c[i]); });
+    put(document.getElementById('bd-frame')); put(document.querySelector('header')); put(document.getElementById('taskbar'));
+  }
+  spHooks.bdFlow = {
+    wanted: () => bd.style === 'hueflow' && animOk(),
+    hold: () => bd.style === 'hueflow' && animTargets() && !calm(),
+    speed: () => bd.speed, set: hfSet,
+    one: el => { if (hfCur !== null && el) el.style.setProperty('--bd-shift', String(hfCur)); }
+  };
+  function syncAnim(){ setCls('bd-anim', activeAnim()); if (spHooks.flowSync) spHooks.flowSync(); }
   function apply(){
     const cols = colorsFor();
-    const any = bd.win || bd.frame || bd.tbline || bd.hdline || bd.iconring || bd.notes;
-    setCls('bd-win', bd.win); setCls('bd-all', bd.win && !bd.onlyFocus); setCls('bd-frame-on', bd.frame && !spLocked);
+    const any = winOn() || bd.frame || bd.tbline || bd.hdline || bd.iconring || bd.notes;
+    setCls('bd-win', winOn()); setCls('bd-all', winOn() && (bd.all || !bd.onlyFocus)); setCls('bd-allfull', bd.all); setCls('bd-frame-on', bd.frame && !spLocked);
     setCls('bd-tb', bd.tbline); setCls('bd-hd', bd.hdline); setCls('bd-icon', bd.iconring); setCls('bd-notes', bd.notes);
     setAttr('data-bdstyle', any ? bd.style : null); setAttr('data-bddir', bd.dir === 'ccw' ? 'ccw' : null);
     setVar('--bd-w', any ? bd.width + 'px' : null);
     setVar('--bd-colors', any ? cols.join(', ') : null);
     setVar('--bd-line-colors', any ? cols.concat(cols.slice(1)).join(', ') : null);
     setVar('--bd-solid', any ? 'var(--accent)' : null); setVar('--bd-line', any ? (bd.style === 'dotted' ? 'dotted' : 'dashed') : null);
-    setVar('--bd-glow-sh', bd.win ? glowFor(cols) : null);
+    setVar('--bd-glow-sh', winOn() ? glowFor(cols) : null);
+    setVar('--bd-s', any && bd.style === 'hueflow' ? bd.sat + '%' : null); setVar('--bd-l', any && bd.style === 'hueflow' ? litNow() + '%' : null);
+    const hfg = bd.style === 'hueflow' && winOn() && bd.glow > 0; setCls('bd-hfglow', hfg);
+    setVar('--bd-gx', hfg ? Math.round(bd.glow * 0.7) + 'px' : null); setVar('--bd-gy', hfg ? Math.round(bd.glow * 0.6) + 'px' : null); setVar('--bd-gb', hfg ? bd.glow + 'px' : null);
     const dur = Math.round((14 - bd.speed * 1.2) * 10) / 10; setVar('--bd-dur', any ? dur + 's' : null); setVar('--bd-steps', any ? String(Math.max(8, Math.round(dur * 12))) : null);
     setCls('bd-anim', activeAnim());
     // window shadow + title bar
@@ -16880,18 +16983,19 @@ function sCopy(text, okMsg){
     setVar('--bd-fw', bd.fr !== 'default' ? bd.fw + 'px' : null); setVar('--bd-fo', bd.fr !== 'default' ? bd.fo + 'px' : null);
     setVar('--bd-fc', bd.fr === 'accent' ? 'var(--accent)' : (bd.fr === 'rainbow' ? 'hsl(' + fcHue + ' 90% 60%)' : null));
     idleHook();
+    if (spHooks.flowSync) spHooks.flowSync();
   }
   /* idle pause (listeners exist only while the option is on and Rainbow flow is the style) */
   function onAct(){
     const n = performance.now(); if (n - lastAct < 1000 && !idle) return; lastAct = n;
-    if (idle){ idle = false; setCls('bd-anim', activeAnim()); }
-    clearTimeout(idleT); idleT = setTimeout(() => { idleT = null; idle = true; setCls('bd-anim', activeAnim()); }, 30000);
+    if (idle){ idle = false; syncAnim(); }
+    clearTimeout(idleT); idleT = setTimeout(() => { idleT = null; idle = true; syncAnim(); }, 30000);
   }
   let idleOn = false;
   function idleHook(){
-    const want = bd.pauseIdle && bd.style === 'flow' && animTargets();
+    const want = bd.pauseIdle && (bd.style === 'flow' || bd.style === 'hueflow') && animTargets();
     if (want && !idleOn){ idleOn = true; ['pointermove', 'keydown', 'pointerdown'].forEach(t => document.addEventListener(t, onAct, { passive: true, capture: true })); lastAct = 0; onAct(); }
-    else if (!want && idleOn){ idleOn = false; ['pointermove', 'keydown', 'pointerdown'].forEach(t => document.removeEventListener(t, onAct, { capture: true })); clearTimeout(idleT); idleT = null; idle = false; setCls('bd-anim', activeAnim()); }
+    else if (!want && idleOn){ idleOn = false; ['pointermove', 'keydown', 'pointerdown'].forEach(t => document.removeEventListener(t, onAct, { capture: true })); clearTimeout(idleT); idleT = null; idle = false; syncAnim(); }
   }
   /* selection / focus hue steppers (listeners only while the "rainbow" option is chosen) */
   let selOn = false, frOn = false, selH = 300, fcHue = 200, selT = 0;
@@ -16914,7 +17018,7 @@ function sCopy(text, okMsg){
     g.clearRect(0, 0, cv.width, cv.height);
     const acc = (getComputedStyle(root).getPropertyValue('--accent') || '#8b7cf6').trim();
     dots = dots.filter(d => now - d.t < 520);
-    dots.forEach(d => { const a = 1 - (now - d.t) / 520; g.globalAlpha = a * 0.8; g.fillStyle = bd.cur === 'rainbow' || bd.style === 'flow' || bd.style === 'rainbow' ? 'hsl(' + d.h + ' 90% 62%)' : acc; g.beginPath(); g.arc(d.x, d.y, 2 + 4 * a, 0, 6.2832); g.fill(); });
+    dots.forEach(d => { const a = 1 - (now - d.t) / 520; g.globalAlpha = a * 0.8; g.fillStyle = bd.cur === 'rainbow' || bd.style === 'flow' || bd.style === 'hueflow' || bd.style === 'rainbow' ? 'hsl(' + d.h + ' 90% 62%)' : acc; g.beginPath(); g.arc(d.x, d.y, 2 + 4 * a, 0, 6.2832); g.fill(); });
     g.globalAlpha = 1;
     if (dots.length) raf = requestAnimationFrame(drawTrail); else g.clearRect(0, 0, cv.width, cv.height);
   }
@@ -17036,6 +17140,7 @@ function sCopy(text, okMsg){
       '<p class="studio-note" id="bd-note" role="status" aria-live="polite"></p></div>' +
     '<div class="settings-card"><h3>' + icon('layers') + ' Rainbow border</h3>' +
       '<div class="bd-grid2"><div>' +
+        '<div class="studio-row">' + sw('all', 'Rainbow border on all app windows') + '</div>' +
         '<div class="studio-row">' + sw('win', 'Focused window') + '</div>' +
         '<div class="studio-row">' + sw('onlyFocus', 'Only while the window is focused') + '</div>' +
         '<div class="studio-row">' + sw('frame', 'Screen frame') + '</div>' +
@@ -17054,7 +17159,7 @@ function sCopy(text, okMsg){
         '<div class="studio-row">' + sw('pauseIdle', 'Pause when idle') + '</div>' +
         '<div class="studio-row" data-bd-only="gradient"><span class="studio-label">Gradient colors</span><input type="color" data-bd="g1" aria-label="Gradient color 1"><input type="color" data-bd="g2" aria-label="Gradient color 2"><input type="color" data-bd="g3" aria-label="Gradient color 3"></div>' +
       '</div></div>' +
-      '<p class="studio-sub" style="margin:8px 0 0;">Corners follow the radius set in Appearance. Rings draw over the window edge and never block clicks, dragging or the resize handles. Flow stops in Performance mode, Reduce motion, a hidden tab and while locked.</p></div>' +
+      '<p class="studio-sub" style="margin:8px 0 0;">Corners follow the radius set in Appearance. Rings draw over the window edge and never block clicks, dragging or the resize handles. Rainbow flow cycles the same hues as Icon colors (Flow speed sets both borders and the shared clock rate); Rainbow spin turns the ring. Both stop in Performance mode, Reduce motion, a hidden tab and while locked.</p></div>' +
     '<div class="settings-card"><h3>' + icon('monitor') + ' Windows</h3>' +
       '<div class="studio-row">' + sel('wsh', 'Shadow', SHADOWS) + '</div>' +
       '<div class="studio-row">' + sel('tbH', 'Title bar height', [['normal', 'Normal'], ['compact', 'Compact'], ['tall', 'Tall']]) + '</div>' +
@@ -17169,10 +17274,11 @@ function sCopy(text, okMsg){
   const host = document.getElementById('set-visual-host');
   if (host) host.insertAdjacentHTML('beforeend', '<div class="settings-row" style="display:block;"><div class="settings-row-label">Borders &amp; effects</div><div class="settings-row-desc" style="margin-bottom:8px;">Rainbow border, shadows, cursor, scrollbars and one-click looks. The full set is in the Borders &amp; Effects app.</div>' +
     '<div class="studio-row">' + sw('win', 'Rainbow border on the focused window') + '</div>' +
+    '<div class="studio-row">' + sw('all', 'Rainbow border on all app windows') + '</div>' +
     '<div class="studio-row">' + sel('style', 'Border style', STYLES) + '</div>' +
     '<div class="studio-row"><button type="button" class="ghost-btn" data-open-borders="1">Open Borders &amp; Effects</button></div></div>');
 
-  document.addEventListener('visibilitychange', () => { setCls('bd-anim', activeAnim()); syncTrail(); });
+  document.addEventListener('visibilitychange', () => { syncAnim(); syncTrail(); });
   document.addEventListener('spacepad:lock', () => { setCls('bd-anim', false); setCls('bd-frame-on', false); syncTrail(); });
   document.addEventListener('spacepad:unlock', () => { apply(); });
   document.addEventListener('spacepad:settings', () => { apply(); syncControls(); });
@@ -17180,6 +17286,7 @@ function sCopy(text, okMsg){
 
   studioApps.borders = {
     refresh(){ draw(); },
+    toggleAll(){ set({ all: !bd.all }); showToast('Rainbow border on all windows ' + (bd.all ? 'on' : 'off') + '.'); },
     toggleBorder(){ set({ win: !bd.win }); showToast('Rainbow border ' + (bd.win ? 'on' : 'off') + '.'); },
     toggleTrail(){ if (calm()){ showToast('The cursor trail is not available in Performance mode or Reduce motion.', 'error'); return; } set({ trail: !bd.trail }); showToast('Cursor trail ' + (bd.trail ? 'on' : 'off') + '.'); },
     nextLook(){ nextLook(false); }, randomLook(){ nextLook(true); },
