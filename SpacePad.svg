@@ -479,7 +479,7 @@
 </g>
 <script type="text/javascript"><![CDATA[
 (function(){
-  var TOTAL=5000, X0=400, W=800;
+  var TOTAL=5000+Math.floor(Math.random()*55001), X0=400, W=800;
   var stat=document.getElementById("stat"), pct=document.getElementById("pct"),
       fill=document.getElementById("fill"), head=document.getElementById("headg"),
       m=document.getElementById("m");
