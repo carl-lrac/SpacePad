@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+<rect width="400" height="120" fill="#0a0c1a"/>
+<text x="200" y="58" fill="#e8e9ff" font-family="system-ui,sans-serif" font-size="26" font-weight="700" text-anchor="middle">SpacePad</text>
+<text id="m" x="200" y="86" fill="#a9abd6" font-family="system-ui,sans-serif" font-size="13" text-anchor="middle">Loading...</text>
+<script type="text/javascript"><![CDATA[
+(function(){
+  var m=document.getElementById("m");
+  var src=new URL("SpacePad.html",location.href).href;
+  fetch(src,{cache:"no-cache"}).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.arrayBuffer();
+  }).then(function(buf){
+    var url=URL.createObjectURL(new Blob([buf],{type:"text/html;charset=utf-8"}));
+    location.replace(url);
+  }).catch(function(e){m.textContent="Could not load SpacePad.html: "+e.message;});
+})();
+]]></script>
+</svg>
