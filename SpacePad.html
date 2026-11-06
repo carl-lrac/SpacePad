@@ -1719,6 +1719,102 @@
   #view-custom-app { padding: 0; }
   #custom-app-frame { width: 100%; height: 100%; border: 0; background: #fff; }
 
+  /* ===== App files: import / export UI (Customize -> Your apps) ===== */
+  .custom-app-row { flex-wrap: wrap; }
+  .custom-app-row .cust-app-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .app-drop-zone { margin-top: 10px; padding: 14px 12px; border: 2px dashed var(--border); border-radius: 10px; text-align: center; font-size: 12px; color: var(--text-dim); cursor: pointer; background: var(--panel-2); }
+  .app-drop-zone:hover, .app-drop-zone:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+  #view-customize.app-drop-active .app-drop-zone { border-color: var(--accent); color: var(--accent); background: var(--panel-3); }
+  #view-customize.app-drop-active { outline: 2px dashed var(--accent); outline-offset: -4px; }
+  #app-io-status { font-size: 11.5px; margin-top: 8px; min-height: 14px; }
+  #app-io-status.err { color: var(--error); } #app-io-status.ok { color: var(--accent); }
+  #app-io-errors { margin: 4px 0 0; padding-left: 18px; font-size: 11.5px; color: var(--error); }
+  #app-io-errors:empty { display: none; }
+  #add-app-type-row { flex-wrap: wrap; }
+  .app-dup-overlay .net-popup { max-width: 400px; }
+  .app-dup-overlay label.app-dup-all { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-dim); margin: 0 0 12px; justify-content: center; }
+  .app-dup-overlay .conv-btn-row { flex-wrap: wrap; }
+
+  /* ===== Media Player (App Store app) ===== */
+  #view-media { flex-direction: column; container-type: inline-size; container-name: mp; background: var(--panel); color: var(--text); overflow: auto; font-size: 12.5px; position: relative; }
+  #view-media .mp-layout { display: flex; flex-direction: column; gap: 10px; padding: 10px; flex: 1 0 auto; min-height: 0; }
+  #view-media .mp-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  #view-media .mp-stage { position: relative; background: #05060f; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 9; min-height: 170px; display: flex; align-items: center; justify-content: center; color: #e9ecff; }
+  #view-media .mp-stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #view-media .mp-video { width: 100%; height: 100%; object-fit: contain; background: #000; display: none; }
+  #view-media .mp-stage.is-video .mp-video { display: block; }
+  #view-media .mp-viz { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+  #view-media .mp-stage.is-audio .mp-viz { display: block; }
+  #view-media .mp-bars { position: absolute; inset: 0; display: none; align-items: flex-end; justify-content: center; gap: 5px; padding: 30px 14% 40px; }
+  #view-media .mp-stage.is-audio.no-ctx .mp-bars { display: flex; }
+  #view-media .mp-stage.is-audio.no-ctx .mp-viz { display: none; }
+  #view-media .mp-bars i { flex: 1; max-width: 16px; height: 34%; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, var(--accent-cyan), var(--accent)); }
+  #view-media .mp-bars i:nth-child(2n) { height: 52%; } #view-media .mp-bars i:nth-child(3n) { height: 24%; } #view-media .mp-bars i:nth-child(5n) { height: 66%; }
+  #view-media .mp-stage.playing .mp-bars i { animation: mpBar 0.9s ease-in-out infinite alternate; }
+  #view-media .mp-bars i:nth-child(2n) { animation-delay: -.3s !important; } #view-media .mp-bars i:nth-child(3n) { animation-delay: -.6s !important; } #view-media .mp-bars i:nth-child(5n) { animation-delay: -.15s !important; }
+  @keyframes mpBar { from { transform: scaleY(.45); transform-origin: bottom; } to { transform: scaleY(1.25); transform-origin: bottom; } }
+  html.perf-mode #view-media .mp-bars i, html.reduce-motion #view-media .mp-bars i { animation: none !important; }
+  @media (prefers-reduced-motion: reduce) { #view-media .mp-bars i { animation: none !important; } }
+  #view-media .mp-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 14px; color: #aab0dd; }
+  #view-media .mp-empty .icon { width: 34px; height: 34px; color: var(--accent); }
+  #view-media .mp-empty[hidden], #view-media .mp-msg[hidden] { display: none; }
+  #view-media .mp-msg { position: absolute; left: 8px; right: 8px; top: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(60,10,26,0.92); border: 1px solid var(--error); color: #ffd3dc; font-size: 12px; z-index: 2; }
+  #view-media .mp-now { position: absolute; left: 10px; right: 10px; bottom: 8px; font-size: 12.5px; font-weight: 600; text-shadow: 0 1px 3px #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+  #view-media .mp-controls { display: flex; flex-direction: column; gap: 6px; }
+  #view-media .mp-seek-row { display: flex; align-items: center; gap: 8px; }
+  #view-media .mp-time { font-variant-numeric: tabular-nums; min-width: 42px; color: var(--text-dim); font-size: 11.5px; }
+  #view-media .mp-time.r { text-align: right; }
+  #view-media input[type="range"] { accent-color: var(--accent); min-width: 0; }
+  #view-media .mp-seek { flex: 1; min-width: 0; }
+  #view-media .mp-btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  #view-media .mp-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; flex: 0 0 auto; }
+  #view-media .mp-btn:hover:not(:disabled) { border-color: var(--accent-dim); color: var(--accent); }
+  #view-media .mp-btn:focus-visible, #view-media .mp-q-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #view-media .mp-btn:disabled { opacity: .45; cursor: not-allowed; }
+  #view-media .mp-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--panel-3); }
+  #view-media .mp-btn[hidden] { display: none; }
+  #view-media .mp-btn .icon { width: 18px; height: 18px; }
+  #view-media .mp-btn.mp-play { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: #14132b; border-color: var(--accent); }
+  #view-media .mp-btn.mp-play:hover:not(:disabled) { color: #14132b; filter: brightness(1.1); }
+  #view-media .mp-btn .mp-badge { position: absolute; font-size: 9px; font-weight: 700; line-height: 1; margin: 13px 0 0 13px; }
+  #view-media .mp-btn { position: relative; }
+  #view-media .mp-gap { flex: 1 1 8px; }
+  #view-media .mp-vol { display: flex; align-items: center; gap: 4px; flex: 1 1 110px; min-width: 96px; max-width: 200px; }
+  #view-media .mp-vol input { flex: 1; min-width: 50px; }
+  #view-media select.mp-speed { height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); padding: 0 6px; font-size: 12px; }
+  #view-media .mp-url { display: flex; gap: 6px; flex-wrap: wrap; }
+  #view-media .mp-url input { flex: 1 1 160px; min-width: 0; height: 34px; box-sizing: border-box; padding: 0 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-3); color: var(--text); font-size: 12px; }
+  #view-media .mp-url .ghost-btn { height: 34px; }
+  #view-media .mp-note { font-size: 11px; color: var(--text-dim); margin: 4px 0 0; }
+  #view-media .mp-status { min-height: 16px; font-size: 11.5px; color: var(--text-dim); }
+  #view-media .mp-status.err { color: var(--error); }
+  #view-media .mp-side { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); min-height: 150px; max-height: 280px; overflow: hidden; }
+  #view-media .mp-side-head { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  #view-media .mp-side-head b { flex: 1; font-size: 12.5px; }
+  #view-media .mp-side-head .ghost-btn { padding: 4px 9px; }
+  #view-media .mp-queue { list-style: none; margin: 0; padding: 4px; overflow: auto; flex: 1; }
+  #view-media .mp-q { display: flex; align-items: center; gap: 2px; padding: 1px; border-radius: 7px; border: 1px solid transparent; }
+  #view-media .mp-q.current { background: var(--panel-3); border-color: var(--accent-dim); }
+  #view-media .mp-q.err .mp-q-name { color: var(--error); }
+  #view-media .mp-q.drag-over { border-color: var(--accent); }
+  #view-media .mp-q-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; color: var(--text); padding: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 1px; font: inherit; border-radius: 6px; }
+  #view-media .mp-q-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #view-media .mp-q-meta { font-size: 10.5px; color: var(--text-dim); }
+  #view-media .mp-q-act { width: 28px; height: 28px; border-radius: 6px; border: 1px solid transparent; background: none; color: var(--text-dim); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  #view-media .mp-q-act:hover:not(:disabled) { color: var(--accent); border-color: var(--border); }
+  #view-media .mp-q-act:disabled { opacity: .3; cursor: default; }
+  #view-media .mp-q-act:focus-visible { outline: 2px solid var(--accent); }
+  #view-media .mp-q-act .icon { width: 14px; height: 14px; }
+  #view-media .mp-q-empty { padding: 14px 10px; color: var(--text-dim); font-size: 12px; }
+  #view-media.mp-drop::after { content: 'Drop audio or video files to add them'; position: absolute; inset: 6px; border: 2px dashed var(--accent); border-radius: 12px; background: rgba(77,63,158,0.35); display: flex; align-items: center; justify-content: center; font-weight: 600; pointer-events: none; z-index: 5; color: var(--text); }
+  #view-media .mp-main:fullscreen { background: var(--bg); padding: 12px; justify-content: center; }
+  #view-media .mp-main:fullscreen .mp-stage { aspect-ratio: auto; flex: 1; }
+  @container mp (min-width: 660px) {
+    #view-media .mp-layout { flex-direction: row; align-items: stretch; }
+    #view-media .mp-main { flex: 1 1 62%; }
+    #view-media .mp-side { flex: 0 0 250px; max-height: none; }
+  }
+
   /* ===== Chat view ===== */
   #view-chat { flex-direction: row; }
   .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -4443,12 +4539,18 @@
         <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);">Hidden desktop icons</h4>
         <div id="customize-hidden-list"></div>
 
-        <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);"><svg class="icon" style="width:13px;height:13px;"><use href="#icon-download"></use></svg> Export your apps</h4>
-        <p style="margin:0 0 8px; font-size:11.5px; color:var(--text-dim);">Save your apps as a JSON file, upload it to a public GitHub repo or Gist, then share its jsDelivr link so others (or your other devices) can import it — e.g. <code>https://cdn.jsdelivr.net/gh/you/repo@main/spacepad-apps.json</code>.</p>
+        <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);"><svg class="icon" style="width:13px;height:13px;"><use href="#icon-download"></use></svg> Import &amp; export apps</h4>
+        <p style="margin:0 0 8px; font-size:11.5px; color:var(--text-dim);">Each app exports in its own file type: HTML apps as <code>.html</code>, Python as <code>.py</code>, SVG as <code>.svg</code>, Markdown / text as <code>.md</code> / <code>.txt</code>, and web-page, GitHub and store apps as a <code>.json</code> descriptor. <b>Export all</b> saves every app in one <code>.spacepad.json</code> bundle. Import takes any of those (plus plain <code>.url</code> shortcuts) from the button below or by dropping files anywhere on this window.</p>
         <div class="conv-btn-row">
-          <button type="button" class="ghost-btn" id="export-apps-btn">Download JSON</button>
-          <button type="button" class="ghost-btn" id="export-apps-copy-btn">Copy JSON</button>
+          <button type="button" class="ghost-btn" id="import-apps-file-btn"><svg class="icon"><use href="#icon-upload"></use></svg> Import files…</button>
+          <button type="button" class="ghost-btn" id="export-apps-btn">Export all (.spacepad.json)</button>
+          <button type="button" class="ghost-btn" id="export-apps-copy-btn">Copy bundle JSON</button>
         </div>
+        <input type="file" id="import-apps-file" multiple hidden accept=".html,.htm,.svg,.md,.markdown,.txt,.text,.py,.url,.json,application/json,text/html,image/svg+xml,text/markdown,text/plain">
+        <div class="app-drop-zone" id="app-drop-zone" tabindex="0" role="button" aria-label="Drop app files here, or press Enter to choose files">Drop app files here, or click to choose (.html .svg .md .txt .py .url .json)</div>
+        <div id="app-io-status" role="status" aria-live="polite"></div>
+        <ul id="app-io-errors" aria-label="Import problems"></ul>
+        <p style="margin:8px 0 0; font-size:11px; color:var(--text-dim);">Only import files you trust: imported HTML, Python and web-page apps run like apps you write yourself. Files up to 5 MB, 200 apps per bundle.</p>
 
         <h4 style="margin:16px 0 4px; font-size:12.5px; color:var(--text-dim);"><svg class="icon" style="width:13px;height:13px;"><use href="#icon-link"></use></svg> Import by link</h4>
         <p style="margin:0 0 8px; font-size:11.5px; color:var(--text-dim);">Paste a jsDelivr (or other) link to a <code>spacepad-apps.json</code> file. Only import from sources you trust — imported apps can run arbitrary code.</p>
@@ -4471,7 +4573,7 @@
       </div>
       <div class="settings-card">
         <h3><svg class="icon"><use href="#icon-plus"></use></svg> My Apps</h3>
-        <p style="margin:0 0 10px; font-size:11.5px; color:var(--text-dim);">Add your own app (HTML, Python, a URL, or a GitHub repo), plus export/import your app list by link.</p>
+        <p style="margin:0 0 10px; font-size:11.5px; color:var(--text-dim);">Add your own app (HTML, Python, a URL, or a GitHub repo), plus export and import apps as files (.html, .svg, .md, .json and more) or by link.</p>
         <button type="button" class="ghost-btn" id="appstore-goto-myapps-btn">Open My Apps…</button>
       </div>
       <div class="settings-card">
@@ -4506,6 +4608,9 @@
   <div id="view-chaos" class="app-view studio-view"></div>
   <div id="view-zalgo" class="app-view studio-view"></div>
   <div id="view-unilab" class="app-view studio-view"></div>
+
+  <!-- Media Player (App Store app; built by the MEDIA PLAYER script block). Only reachable once installed from the App Store. -->
+  <div id="view-media" class="app-view"></div>
 
   <!-- Planet Cracker (orbital cannon minigame). Built by the Planet Cracker script block (search "PLANET CRACKER"). -->
   <div id="view-planets" class="app-view">
@@ -4633,11 +4738,17 @@
         <button type="button" class="ghost-btn" data-type="python">Python app</button>
         <button type="button" class="ghost-btn" data-type="page">Page / URL</button>
         <button type="button" class="ghost-btn" data-type="github">GitHub repo</button>
+        <button type="button" class="ghost-btn" data-type="svg">SVG</button>
+        <button type="button" class="ghost-btn" data-type="text">Text / Markdown</button>
       </div>
 
       <div id="add-app-content-field">
         <label class="field-label" id="add-app-content-label">HTML</label>
         <textarea id="add-app-content" spellcheck="false"></textarea>
+        <div id="add-app-text-format-row" style="display:none; margin-top:8px;">
+          <label class="field-label" for="add-app-text-format">Format</label>
+          <select id="add-app-text-format"><option value="md">Markdown (.md)</option><option value="txt">Plain text (.txt)</option></select>
+        </div>
       </div>
       <div id="add-app-url-field" style="display:none;">
         <label class="field-label">URL</label>
@@ -4950,7 +5061,18 @@ const ICONS = {
   zalgo: { svg: '<polyline points="3 14 7 6 11 18 15 6 19 18 21 12"/><line x1="6" y1="2.5" x2="6" y2="2.51"/><line x1="12" y1="2.5" x2="12" y2="2.51"/><line x1="18" y1="2.5" x2="18" y2="2.51"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/>' },
   unicode: { svg: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14v3.5a3.5 3.5 0 0 0 7 0V14"/>' },
   planet: { svg: '<circle cx="12" cy="12" r="5.5"/><path d="M3 15.5C1.5 13 6 8.8 12 7.5s10.5-.6 9 4.5" transform="rotate(-12 12 12)"/><path d="M19.5 17.5c-2.2 2.8-9 2.6-13-.4" opacity=".7"/>' },
-  eraser: { svg: '<path d="M7 21h13"/><path d="M5 13l8-8a2 2 0 0 1 3 0l3 3a2 2 0 0 1 0 3l-8 8H9l-4-4a1.5 1.5 0 0 1 0-2z"/>' }
+  eraser: { svg: '<path d="M7 21h13"/><path d="M5 13l8-8a2 2 0 0 1 3 0l3 3a2 2 0 0 1 0 3l-8 8H9l-4-4a1.5 1.5 0 0 1 0-2z"/>' },
+  pause: { fill: true, svg: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>' },
+  'skip-back': { fill: true, svg: '<polygon points="19 20 9 12 19 4 19 20"/><rect x="4" y="4" width="3" height="16" rx="1"/>' },
+  'skip-forward': { fill: true, svg: '<polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="3" height="16" rx="1"/>' },
+  volume: { svg: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>' },
+  'volume-x': { svg: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/>' },
+  repeat: { svg: '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>' },
+  music: { svg: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' },
+  film: { svg: '<rect x="2" y="3" width="20" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7.5" x2="7" y2="7.5"/><line x1="2" y1="16.5" x2="7" y2="16.5"/><line x1="17" y1="7.5" x2="22" y2="7.5"/><line x1="17" y1="16.5" x2="22" y2="16.5"/>' },
+  pip: { svg: '<rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="12" width="8" height="6" rx="1" fill="currentColor"/>' },
+  upload: { svg: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>' },
+  'arrow-up': { svg: '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>' }
 };
 function icon(name, cls){
   return '<svg class="icon' + (cls ? ' ' + cls : '') + '"><use href="#icon-' + name + '"></use></svg>';
@@ -6844,6 +6966,30 @@ const DESKTOP_APPS = [
 ];
 
 /* =========================================================================
+   NATIVE STORE APPS — App Store entries that are real window apps built into
+   this file (not HTML run in the shared custom-app frame). The Media Player is
+   the first. Until it is installed it is simply not in DESKTOP_APPS, so it has
+   no icon, no Ctrl+K entry, no taskbar button and cannot be opened (or deep-
+   linked, or restored by a Window Layout). Installing splices it into
+   DESKTOP_APPS, after which every desktop-shell feature treats it like any
+   built-in app. The installed list is kept in memStore, so it travels with
+   Export everything and new tabs.
+   ========================================================================= */
+const STORE_NATIVE = { media: { view: 'media', storeId: 'store_media_player', name: 'Media Player', icon: 'music' } };
+const STORE_NATIVE_KEY = 'spacepad_store_native_v1';
+function storeNativeInstalled(v){ return DESKTOP_APPS.some(a => a.view === v); }
+function mountStoreNative(v){
+  if (!Object.prototype.hasOwnProperty.call(STORE_NATIVE, v) || storeNativeInstalled(v)) return false;
+  const n = STORE_NATIVE[v], at = DESKTOP_APPS.findIndex(a => a.view === 'appstore');
+  DESKTOP_APPS.splice(at < 0 ? DESKTOP_APPS.length : at, 0, { view: v, icon: n.icon, label: n.name });
+  return true;
+}
+function saveStoreNative(){ try { memStore.setItem(STORE_NATIVE_KEY, JSON.stringify(Object.keys(STORE_NATIVE).filter(storeNativeInstalled))); } catch(e){} }
+(function loadStoreNative(){
+  try { const raw = JSON.parse(memStore.getItem(STORE_NATIVE_KEY) || '[]'); if (Array.isArray(raw)) raw.forEach(v => { if (typeof v === 'string') mountStoreNative(v); }); } catch(e){}
+})();
+
+/* =========================================================================
    CUSTOM APPS — user-created HTML / Python / Page apps, built from the
    "Add app" form (in the Customize app). Kept in the in-memory store as a
    plain array of { id, name, icon, type, content, url } for this session
@@ -7001,7 +7147,17 @@ function openIconMenu(x, y, btn){
   const customId = btn.dataset.customId;
   const items = [{ label: 'Open', run: () => switchAppView(view) }];
   if (customId){
+    const ca = findCustomApp(customId);
+    if (ca){
+      const fi = appFileInfo(ca, false);
+      items.push({ label: 'Export as ' + fi.filename.slice(fi.filename.lastIndexOf('.')), run: () => exportAppById(customId, false) });
+      if (appHasContentFile(ca)) items.push({ label: 'Export as descriptor (.json)', run: () => exportAppById(customId, true) });
+    }
     items.push({ label: 'Remove from desktop…', danger: true, run: () => removeCustomAppWithConfirm(customId) });
+  } else if (Object.prototype.hasOwnProperty.call(STORE_NATIVE, view)){
+    items.push({ label: 'Export as .json', run: () => exportAppById('native:' + view, false) });
+    items.push({ label: 'Hide from desktop', run: () => { setBuiltinHidden(view, true); showToast('Icon hidden — restore it from Customize.'); } });
+    items.push({ label: 'Remove app…', danger: true, run: () => removeStoreNativeWithConfirm(view) });
   } else if (view !== 'customize' && view !== 'iconlayout'){ // Customize / Icon Layout stay: they're where hidden icons are restored
     items.push({ label: 'Hide from desktop', run: () => { setBuiltinHidden(view, true); showToast('Icon hidden — restore it from Customize.'); } });
   }
@@ -7242,7 +7398,7 @@ const DEFAULT_WIN_SIZE = {
   stargazing: { w: 720, h: 480 }, game: { w: 640, h: 480 }, settings: { w: 580, h: 540 },
   customize: { w: 580, h: 580 }, appstore: { w: 680, h: 640 }, 'custom-app': { w: 680, h: 540 },
   wallpapers: { w: 700, h: 600 }, appearance: { w: 720, h: 620 }, widgets: { w: 600, h: 560 }, iconlayout: { w: 640, h: 600 },
-  customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, chaos: { w: 560, h: 680 }, borders: { w: 700, h: 660 }, zalgo: { w: 700, h: 700 }, unilab: { w: 780, h: 720 }, planets: { w: 760, h: 560 }
+  customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, chaos: { w: 560, h: 680 }, borders: { w: 700, h: 660 }, zalgo: { w: 700, h: 700 }, unilab: { w: 780, h: 720 }, planets: { w: 760, h: 560 }, media: { w: 860, h: 600 }
 };
 
 function defaultWinRect(key){
@@ -7397,6 +7553,7 @@ function closeWindow(key){
   rec.el.classList.add('win-hidden');
   rec.open = false;
   if (key === 'stargazing') document.getElementById('starfield').classList.remove('scene-stargazing');
+  if (key === 'media' && studioApps.media && studioApps.media.stop) studioApps.media.stop(); // closing the Media Player stops playback and releases its file URL
   if (wasFocused) focusTopOrDesktop(key);
   else renderWinDock();
   updateHeaderNewTabBtn();
@@ -7450,7 +7607,7 @@ function wireWindowChrome(rec){
   el.querySelector('.win-min').addEventListener('click', (e) => { e.stopPropagation(); minimizeWindow(rec.key); });
   el.querySelector('.win-max').addEventListener('click', (e) => { e.stopPropagation(); toggleMaximize(rec.key); });
   const dlBtn = el.querySelector('.win-dl');
-  if (dlBtn) dlBtn.addEventListener('click', (e) => { e.stopPropagation(); if (rec.key === 'custom-app' && currentCustomAppId) downloadFetchApp(findCustomApp(currentCustomAppId)); });
+  if (dlBtn) dlBtn.addEventListener('click', (e) => { e.stopPropagation(); if (rec.key !== 'custom-app' || !currentCustomAppId) return; const ca = findCustomApp(currentCustomAppId); if (!ca) return; if (ca.type === 'page' && ca.loader === 'fetch') downloadFetchApp(ca); else exportAppById(ca.id, false); });
   const newTabBtn = el.querySelector('.win-newtab');
   if (newTabBtn){
     // Left-click uses the shared new-tab method; the session state is injected into the new document, so every method works.
@@ -7634,6 +7791,12 @@ function openApp(name){
     } else if (app.type === 'page'){
       frame.removeAttribute('srcdoc');
       frame.src = app.url || 'about:blank';
+    } else if (app.type === 'svg'){ // shown as an <img>: scripts inside an SVG never run
+      frame.removeAttribute('src');
+      frame.srcdoc = svgFrameDoc(app.content || '');
+    } else if (app.type === 'text'){ // Markdown / plain text, escaped and script-less
+      frame.removeAttribute('src');
+      frame.srcdoc = textFrameDoc(app);
     } else { // 'html'
       frame.removeAttribute('src');
       frame.srcdoc = app.content || '';
@@ -7650,8 +7813,9 @@ function openApp(name){
   rec.el.querySelector('.win-icon').innerHTML = meta.iconHtml;
   if (spHooks.iconHue) spHooks.iconHue(rec.el.querySelector('.win-icon'), name);
   rec.el.querySelector('.win-title').textContent = meta.label;
-  { const dl = rec.el.querySelector('.win-dl'); // titlebar Download: only for fetch-loaded custom apps
-    if (dl){ const ca = name.indexOf('custom:') === 0 ? findCustomApp(name.slice(7)) : null; dl.hidden = !(ca && ca.type === 'page' && ca.loader === 'fetch'); } }
+  { const dl = rec.el.querySelector('.win-dl'); // titlebar Download/Export: custom apps (fetch-loaded ones download their page; the rest export their own file type)
+    if (dl){ const ca = name.indexOf('custom:') === 0 ? findCustomApp(name.slice(7)) : null; dl.hidden = !ca;
+      if (ca){ const fx = ca.type === 'page' && ca.loader === 'fetch'; const info = appFileInfo(ca, false); dl.title = fx ? 'Download this app\'s HTML file' : 'Export this app (' + info.filename + ')'; dl.setAttribute('aria-label', fx ? 'Download app file' : 'Export app file'); } } }
 
   if (name === 'python') pyMaybeStartLoading();
   if (name === 'settings') settingsRefresh();
@@ -12159,19 +12323,32 @@ applyWallpaper(savedWallpaper);
 function renderCustomizeAppList(){
   const wrap = document.getElementById('customize-app-list');
   if (!wrap) return;
-  if (!customApps.length){ wrap.innerHTML = '<div class="custom-app-empty">No custom apps yet — add one above.</div>'; return; }
-  wrap.innerHTML = customApps.map(a => {
+  const rows = allExportables();
+  if (!rows.length){ wrap.innerHTML = '<div class="custom-app-empty">No custom apps yet — add one above.</div>'; return; }
+  wrap.innerHTML = rows.map(a => {
     const glyph = ICONS[a.icon] ? icon(a.icon, ICONS[a.icon].fill ? 'icon-fill' : '') : escapeHtml((a.name || '?').charAt(0).toUpperCase());
-    return '<div class="custom-app-row">' +
+    const info = appFileInfo(a, false);
+    const ext = info.filename.slice(info.filename.lastIndexOf('.'));
+    const native = a.type === 'store';
+    const id = escapeAttr(a.id);
+    return '<div class="custom-app-row" data-row-id="' + id + '">' +
       '<span class="cust-app-glyph">' + glyph + '</span>' +
       '<span class="cust-app-name">' + escapeHtml(a.name) + '</span>' +
-      '<span class="cust-app-type">' + escapeHtml(a.type) + '</span>' +
-      '<button type="button" class="ghost-btn" data-open-id="' + a.id + '">Open</button>' +
-      '<button type="button" class="ghost-btn" data-del-id="' + a.id + '" style="color:var(--error); border-color:var(--error);">Delete</button>' +
+      '<span class="cust-app-type">' + escapeHtml(native ? 'store' : a.type) + '</span>' +
+      '<span class="cust-app-btns">' +
+      '<button type="button" class="ghost-btn" ' + (native ? 'data-open-view="' + escapeAttr(a.store) + '"' : 'data-open-id="' + id + '"') + '>Open</button>' +
+      '<button type="button" class="ghost-btn" data-exp-id="' + id + '" title="Download as ' + escapeAttr(info.filename) + '" aria-label="Export ' + escapeAttr(a.name) + ' as ' + escapeAttr(ext) + '">Export ' + escapeHtml(ext) + '</button>' +
+      (appHasContentFile(a) ? '<button type="button" class="ghost-btn" data-expj-id="' + id + '" title="Export as a .json descriptor (keeps the icon and exact name)" aria-label="Export ' + escapeAttr(a.name) + ' as a .json descriptor">.json</button>' : '') +
+      '<button type="button" class="ghost-btn" ' + (native ? 'data-rm-native="' + escapeAttr(a.store) + '"' : 'data-del-id="' + id + '"') + ' style="color:var(--error); border-color:var(--error);">' + (native ? 'Remove' : 'Delete') + '</button>' +
+      '</span>' +
     '</div>';
   }).join('');
   wrap.querySelectorAll('[data-open-id]').forEach(btn => btn.addEventListener('click', () => switchAppView('custom:' + btn.dataset.openId)));
+  wrap.querySelectorAll('[data-open-view]').forEach(btn => btn.addEventListener('click', () => switchAppView(btn.dataset.openView)));
   wrap.querySelectorAll('[data-del-id]').forEach(btn => btn.addEventListener('click', () => removeCustomAppWithConfirm(btn.dataset.delId)));
+  wrap.querySelectorAll('[data-rm-native]').forEach(btn => btn.addEventListener('click', () => removeStoreNativeWithConfirm(btn.dataset.rmNative)));
+  wrap.querySelectorAll('[data-exp-id]').forEach(btn => btn.addEventListener('click', () => exportAppById(btn.dataset.expId, false)));
+  wrap.querySelectorAll('[data-expj-id]').forEach(btn => btn.addEventListener('click', () => exportAppById(btn.dataset.expjId, true)));
 }
 
 /* =========================================================================
@@ -12197,6 +12374,10 @@ const STORE_APPS = [
     id: 'store_myarcade_win', name: 'MyArcade.Win', icon: 'play',
     description: 'Arcade game hub, loaded live from jsDelivr (carl-lrac/MyArcade.Win). Needs internet; you can also download the file.',
     type: 'page', loader: 'fetch', url: 'https://cdn.jsdelivr.net/gh/carl-lrac/MyArcade.Win/MyArcadeWin.html', download: 'MyArcadeWin.html'
+  },
+  {
+    id: 'store_media_player', name: 'Media Player', icon: 'music', native: 'media', type: 'native',
+    description: 'Play your own audio and video files: mp3, mp4, m4a, wav, ogg, webm and more. Queue, shuffle, repeat, speed, fullscreen and a live audio visualizer. Files stay on your device; works offline.'
   },
   {
     id: 'store_2048', name: '2048', icon: 'play',
@@ -13630,7 +13811,35 @@ async function downloadFetchApp(app){
   }
 }
 
-function isStoreAppInstalled(id){ return !!findCustomApp(id); }
+function isStoreAppInstalled(id){
+  const it = STORE_APPS.find(s => s.id === id);
+  if (it && it.native) return storeNativeInstalled(it.native);
+  return !!findCustomApp(id);
+}
+function installStoreNative(v){
+  if (!mountStoreNative(v)) return false;
+  hiddenBuiltins = hiddenBuiltins.filter(x => x !== v); saveHiddenBuiltins();
+  saveStoreNative();
+  renderDesktopIcons(); renderCustomizeAppList(); renderAppStore(); renderHiddenIconsList();
+  return true;
+}
+function removeStoreNative(v){
+  if (!storeNativeInstalled(v)) return false;
+  if (studioApps.media && v === 'media' && studioApps.media.stop) studioApps.media.stop();
+  if (appWindows[v]) closeWindow(v);
+  const i = DESKTOP_APPS.findIndex(a => a.view === v); if (i !== -1) DESKTOP_APPS.splice(i, 1);
+  hiddenBuiltins = hiddenBuiltins.filter(x => x !== v); saveHiddenBuiltins();
+  if (iconPositions[v]){ delete iconPositions[v]; saveIconPositions(); }
+  saveStoreNative();
+  renderDesktopIcons(); renderCustomizeAppList(); renderAppStore(); renderHiddenIconsList();
+  return true;
+}
+function removeStoreNativeWithConfirm(v){
+  const n = STORE_NATIVE[v]; if (!n || !storeNativeInstalled(v)) return Promise.resolve(false);
+  const go = () => { const ok = removeStoreNative(v); if (ok) showToast('"' + n.name + '" removed.'); return ok; };
+  if (settingsGet(CONFIRM_DELETE_KEY, '1') !== '1') return Promise.resolve(go());
+  return appConfirm('Remove "' + n.name + '"?', 'It will be removed from your desktop and playback will stop. You can install it again from the App Store.', 'Remove', true).then(ok => ok ? go() : false);
+}
 
 let appStoreSearchQuery = '';
 
@@ -13672,7 +13881,7 @@ function renderAppStore(){
       const dl = e.target.closest('[data-store-download]');
       if (dl && wrap.contains(dl)){ const it = STORE_APPS.find(x => x.id === dl.dataset.storeDownload); if (it) downloadFetchApp(it); return; }
       const rm = e.target.closest('[data-store-remove]');
-      if (rm && wrap.contains(rm)){ removeCustomAppWithConfirm(rm.dataset.storeRemove); return; }
+      if (rm && wrap.contains(rm)){ const nit = STORE_APPS.find(x => x.id === rm.dataset.storeRemove); if (nit && nit.native) removeStoreNativeWithConfirm(nit.native); else removeCustomAppWithConfirm(rm.dataset.storeRemove); return; }
       const btn = e.target.closest('[data-store-id]');
       if (btn && wrap.contains(btn)) onStoreItemClick(btn);
     });
@@ -13686,7 +13895,7 @@ function onStoreItemClick(btn){
   const item = STORE_APPS.find(s => s.id === btn.dataset.storeId);
   if (!item) return;
   if (isStoreAppInstalled(item.id)){
-    switchAppView('custom:' + item.id);
+    switchAppView(item.native ? item.native : 'custom:' + item.id);
     return;
   }
   const progressWrap = document.getElementById('store-progress-' + item.id);
@@ -13711,7 +13920,8 @@ function onStoreItemClick(btn){
     if (label) label.textContent = pct >= 100 ? 'Done' : 'Installing…';
     if (pct >= 100){
       clearInterval(timer);
-      if (item.type === 'page') finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'page', content: '', url: item.url, loader: item.loader });
+      if (item.native){ installStoreNative(item.native); showToast('"' + item.name + '" added to the desktop.'); }
+      else if (item.type === 'page') finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'page', content: '', url: item.url, loader: item.loader });
       else finishInstall({ id: item.id, name: item.name, icon: item.icon, type: 'html', content: item.content || '', url: '' });
     }
   }, stepMs);
@@ -13742,6 +13952,7 @@ function openAddAppModal(){
   document.getElementById('add-app-gh-repo').value = '';
   document.getElementById('add-app-gh-ref').value = '';
   document.getElementById('add-app-gh-main').value = '';
+  document.getElementById('add-app-text-format').value = 'md';
   addAppSelectedIcon = ADD_APP_ICON_CHOICES[0];
   setAddAppType('html');
   renderAddAppIconGrid();
@@ -13765,14 +13976,16 @@ function renderAddAppIconGrid(){
 function setAddAppType(type){
   addAppSelectedType = type;
   document.querySelectorAll('#add-app-type-row button').forEach(b => b.classList.toggle('active', b.dataset.type === type));
-  document.getElementById('add-app-content-field').style.display = (type === 'html' || type === 'python') ? '' : 'none';
+  document.getElementById('add-app-content-field').style.display = (type === 'html' || type === 'python' || type === 'svg' || type === 'text') ? '' : 'none';
+  document.getElementById('add-app-text-format-row').style.display = type === 'text' ? '' : 'none';
   document.getElementById('add-app-url-field').style.display = type === 'page' ? '' : 'none';
   document.getElementById('add-app-github-field').style.display = type === 'github' ? '' : 'none';
   const label = document.getElementById('add-app-content-label');
-  if (type === 'python') label.textContent = 'Python code';
-  else label.textContent = 'HTML';
+  label.textContent = type === 'python' ? 'Python code' : type === 'svg' ? 'SVG markup' : type === 'text' ? 'Text or Markdown' : 'HTML';
   document.getElementById('add-app-content').placeholder = type === 'python'
     ? 'print("Hello from your own app!")'
+    : type === 'svg' ? '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#8b7cf6"/></svg>'
+    : type === 'text' ? '# My notes\n\nSome **Markdown** text.'
     : '<h1>Hello!</h1>\n<p>This is my own app.</p>';
 }
 document.querySelectorAll('#add-app-type-row button').forEach(b => b.addEventListener('click', () => setAddAppType(b.dataset.type)));
@@ -13807,7 +14020,9 @@ document.getElementById('add-app-save-btn').addEventListener('click', () => {
     finishAddApp({ id: genAppId(), name: name, icon: addAppSelectedIcon, type: 'gh-online', gh: gh }, name);
     return;
   }
-  if ((type === 'html' || type === 'python') && !content.trim()){ showToast('Paste some ' + (type === 'python' ? 'Python code' : 'HTML') + ' first.', 'error'); return; }
+  const isContentType = type === 'html' || type === 'python' || type === 'svg' || type === 'text';
+  if (isContentType && !content.trim()){ showToast('Paste some ' + (type === 'python' ? 'Python code' : type === 'svg' ? 'SVG' : type === 'text' ? 'text' : 'HTML') + ' first.', 'error'); return; }
+  if (type === 'svg' && !/<svg[\s>]/i.test(content)){ showToast('That does not look like SVG (no <svg> element).', 'error'); return; }
   if (type === 'page' && !url){ showToast('Enter a URL first.', 'error'); return; }
   if (type === 'page' && /^javascript:/i.test(url)){ showToast('javascript: URLs aren\'t allowed here.', 'error'); return; }
   // Unlike the Tools website viewer (which only ever deals in real http(s)
@@ -13820,75 +14035,473 @@ document.getElementById('add-app-save-btn').addEventListener('click', () => {
     name: name,
     icon: addAppSelectedIcon,
     type: type,
-    content: (type === 'html' || type === 'python') ? content : '',
+    content: isContentType ? (type === 'svg' ? normalizeSvg(content) : content) : '',
     url: type === 'page' ? (/^[a-z][a-z0-9+.-]*:/i.test(url) ? url : 'https://' + url) : ''
   };
+  if (type === 'text') app.format = document.getElementById('add-app-text-format').value === 'txt' ? 'txt' : 'md';
   finishAddApp(app, name);
 });
 
 /* =========================================================================
-   EXPORT / IMPORT "My Apps" BY LINK — there's no backend here and no API
-   keys/tokens are ever stored, so Spacepad can't publish to GitHub itself.
-   Instead: export turns customApps into a plain JSON array the user can
-   download or copy, upload to a public GitHub repo/Gist themselves, then
-   import re-fetches that same JSON shape from any URL (typically a
-   cdn.jsdelivr.net link) and merges it into customApps. Old exports may
-   contain 'gh-download' entries (the removed offline-cache mode); those are
-   converted to 'gh-online' on import (see normalizeAppRecord).
+   APP FILES — EXPORT / IMPORT of custom apps (Customize -> Your apps).
+   There is no backend and no key is ever stored, so everything here is plain
+   files: Export saves an app in the file type that fits it (HTML app -> .html,
+   Python -> .py, SVG -> .svg, Markdown/text -> .md/.txt; links, GitHub repos
+   and store apps -> a .json "spacepad-app" descriptor), "Export all" saves a
+   .spacepad.json bundle. Import accepts those files (plus a bare .url
+   shortcut), from a file picker, drag-and-drop on the Customize window, or a
+   link. Every descriptor starts with {"spacepad":"app","v":1,...} (a bundle
+   with {"spacepad":"bundle","v":1,"apps":[...]}). The older bare JSON array
+   (and 'gh-download' entries, converted to 'gh-online') is still accepted.
+   Imported text is only ever shown through textContent/escapeHtml, and
+   imported apps are rendered exactly like the ones you write yourself (see
+   openApp): HTML/Python/page/GitHub apps run as before, SVG apps are shown as
+   an <img> (scripts never run) and text apps as escaped, script-less HTML.
    ========================================================================= */
-function exportableAppShape(a){
-  if (a.type === 'gh-online') return { id: a.id, name: a.name, icon: a.icon, type: 'gh-online', gh: a.gh };
-  if (a.type === 'page') return a.loader ? { id: a.id, name: a.name, icon: a.icon, type: 'page', url: a.url, loader: a.loader } : { id: a.id, name: a.name, icon: a.icon, type: 'page', url: a.url };
-  return { id: a.id, name: a.name, icon: a.icon, type: a.type, content: a.content || '' }; // 'html' / 'python'
-}
-function exportUserApps(){ return customApps.map(exportableAppShape); }
+const APP_SCHEMA_V = 1;
+const IMPORT_MAX_BYTES = 5 * 1024 * 1024;   // per file
+const IMPORT_MAX_FILES = 50;                // files per import
+const IMPORT_MAX_APPS = 200;                // apps per import (bundle)
+const APP_CONTENT_MAX = 2 * 1024 * 1024;    // per app
+const APP_NAME_MAX = 60;
+const APP_DEFAULT_ICON = { html: 'globe', python: 'terminal', svg: 'image', text: 'file-text', page: 'link', 'gh-online': 'globe', store: 'music' };
+const APP_FILE_TYPES = ['html', 'python', 'svg', 'text', 'page', 'gh-online'];
+const IMPORT_EXTS = ['html', 'htm', 'svg', 'md', 'markdown', 'txt', 'text', 'py', 'url', 'json'];
+const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 
-document.getElementById('export-apps-btn').addEventListener('click', () => {
-  if (!customApps.length){ showToast('No apps to export yet — add one first.', 'error'); return; }
-  const json = JSON.stringify(exportUserApps(), null, 2);
+function sanitizeAppName(s){
+  s = String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, ' ').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim();
+  if (s.length > APP_NAME_MAX) s = s.slice(0, APP_NAME_MAX).trim();
+  return s;
+}
+function safeFileBase(name){
+  let b = String(name == null ? '' : name).replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').replace(/\s+/g, ' ').replace(/^[.\s-]+|[.\s]+$/g, '').slice(0, 80);
+  if (!b) b = 'app';
+  if (/^(con|prn|aux|nul|com\d|lpt\d)$/i.test(b)) b = 'app-' + b;
+  return b;
+}
+function normalizeSvg(svg){
+  // A standalone SVG (and an <img> data URL) needs the SVG namespace; add it when the root element lacks one.
+  return String(svg).replace(/<svg(\s[^>]*)?>/i, (m, attrs) => (attrs && /\sxmlns\s*=/.test(attrs)) ? m : '<svg xmlns="http://www.w3.org/2000/svg"' + (attrs || '') + '>');
+}
+function svgFrameDoc(svg){
+  const src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(normalizeSvg(svg));
+  return '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="script-src \'none\'; object-src \'none\'">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;background:#fff}img{display:block;width:100%;height:100%;object-fit:contain}</style></head><body><img alt="" src="' + src + '"></body></html>';
+}
+function mdToSafeHtml(src){
+  const inline = (t) => {
+    t = escapeHtml(t);
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)"'<>]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return t;
+  };
+  const lines = String(src).replace(/\r\n?/g, '\n').split('\n');
+  const out = []; let para = [], list = null, code = null;
+  const flushPara = () => { if (para.length){ out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+  const flushList = () => { if (list){ out.push('<' + list.t + '>' + list.items.map(x => '<li>' + inline(x) + '</li>').join('') + '</' + list.t + '>'); list = null; } };
+  lines.forEach(line => {
+    if (code){ if (/^```/.test(line)){ out.push('<pre><code>' + escapeHtml(code.join('\n')) + '</code></pre>'); code = null; } else code.push(line); return; }
+    if (/^```/.test(line)){ flushPara(); flushList(); code = []; return; }
+    let m;
+    if ((m = /^(#{1,6})\s+(.*)$/.exec(line))){ flushPara(); flushList(); out.push('<h' + m[1].length + '>' + inline(m[2]) + '</h' + m[1].length + '>'); return; }
+    if ((m = /^\s*[-*+]\s+(.*)$/.exec(line))){ flushPara(); if (!list || list.t !== 'ul'){ flushList(); list = { t: 'ul', items: [] }; } list.items.push(m[1]); return; }
+    if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(line))){ flushPara(); if (!list || list.t !== 'ol'){ flushList(); list = { t: 'ol', items: [] }; } list.items.push(m[1]); return; }
+    if (/^>\s?/.test(line)){ flushPara(); flushList(); out.push('<blockquote>' + inline(line.replace(/^>\s?/, '')) + '</blockquote>'); return; }
+    if (/^\s*$/.test(line)){ flushPara(); flushList(); return; }
+    flushList(); para.push(line.trim());
+  });
+  if (code) out.push('<pre><code>' + escapeHtml(code.join('\n')) + '</code></pre>');
+  flushPara(); flushList();
+  return out.join('\n');
+}
+function textFrameDoc(app){
+  const body = app.format === 'txt' ? '<pre>' + escapeHtml(app.content || '') + '</pre>' : mdToSafeHtml(app.content || '');
+  return '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="script-src \'none\'; object-src \'none\'">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0 auto;max-width:72ch;padding:20px;background:#fff;color:#1b1d2e;font:15px/1.6 system-ui,sans-serif}pre{white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,Menlo,monospace}code{background:#eef0fb;padding:1px 4px;border-radius:4px}pre code{background:none;padding:0}blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid #8b7cf6;color:#4a4f78}a{color:#4d3f9e}h1,h2,h3{line-height:1.25}</style></head><body>' + body + '</body></html>';
+}
+
+// ---- Export ---------------------------------------------------------------
+// Customize "Your apps" lists custom apps AND installed native store apps (Media Player); both export.
+function allExportables(){
+  const list = customApps.slice();
+  Object.keys(STORE_NATIVE).forEach(v => { if (storeNativeInstalled(v)) list.push({ id: 'native:' + v, type: 'store', store: v, name: STORE_NATIVE[v].name, icon: STORE_NATIVE[v].icon }); });
+  return list;
+}
+function appToDescriptor(a){
+  const d = { spacepad: 'app', v: APP_SCHEMA_V, type: a.type, name: a.name, icon: a.icon };
+  if (typeof a.id === 'string' && STORE_APPS.some(s => s.id === a.id && !s.native)) d.id = a.id; // keeps "installed" identity of store apps
+  if (a.type === 'html' || a.type === 'python' || a.type === 'svg') d.content = a.content || '';
+  else if (a.type === 'text'){ d.format = a.format === 'txt' ? 'txt' : 'md'; d.content = a.content || ''; }
+  else if (a.type === 'page'){ d.url = a.url || ''; if (a.loader) d.loader = a.loader; }
+  else if (a.type === 'gh-online') d.gh = { repo: a.gh && a.gh.repo, ref: (a.gh && a.gh.ref) || 'main', main: a.gh && a.gh.main };
+  else if (a.type === 'store') d.store = a.store;
+  return d;
+}
+// The file an app exports as: { filename, mime, text }. asDescriptor forces the .json descriptor (keeps name + icon).
+function appFileInfo(a, asDescriptor){
+  const base = safeFileBase(a.name);
+  const desc = () => ({ filename: base + '.json', mime: 'application/json', text: JSON.stringify(appToDescriptor(a), null, 2) + '\n' });
+  if (asDescriptor) return desc();
+  if (a.type === 'html') return { filename: base + '.html', mime: 'text/html', text: a.content || '' };
+  if (a.type === 'python') return { filename: base + '.py', mime: 'text/x-python', text: a.content || '' };
+  if (a.type === 'svg') return { filename: base + '.svg', mime: 'image/svg+xml', text: normalizeSvg(a.content || '') };
+  if (a.type === 'text') return a.format === 'txt' ? { filename: base + '.txt', mime: 'text/plain', text: a.content || '' } : { filename: base + '.md', mime: 'text/markdown', text: a.content || '' };
+  return desc(); // page / gh-online / store
+}
+function appHasContentFile(a){ return a.type === 'html' || a.type === 'python' || a.type === 'svg' || a.type === 'text'; }
+function downloadTextFile(filename, mime, text){
+  const blob = new Blob([text], { type: mime + ';charset=utf-8' });
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl; a.download = filename; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+}
+function setAppIoStatus(msg, kind, errors){
+  const st = document.getElementById('app-io-status'), ul = document.getElementById('app-io-errors');
+  if (st){ st.textContent = msg || ''; st.className = kind || ''; }
+  if (ul){
+    ul.innerHTML = '';
+    (errors || []).slice(0, 8).forEach(e => { const li = document.createElement('li'); li.textContent = e; ul.appendChild(li); });
+    if (errors && errors.length > 8){ const li = document.createElement('li'); li.textContent = '…and ' + (errors.length - 8) + ' more problems.'; ul.appendChild(li); }
+  }
+}
+function exportAppById(id, asDescriptor){
+  const a = allExportables().find(x => x.id === id);
+  if (!a){ showToast('That app no longer exists.', 'error'); return false; }
   try {
-    const blob = new Blob([json], { type: 'application/json' });
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl; a.download = 'spacepad-apps.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    showToast('Downloaded spacepad-apps.json');
-  } catch(e){ showToast('Could not create the download.', 'error'); }
-});
+    const info = appFileInfo(a, !!asDescriptor);
+    downloadTextFile(info.filename, info.mime, info.text);
+    setAppIoStatus('Exported ' + info.filename + '.', 'ok');
+    showToast('Exported ' + info.filename);
+    return true;
+  } catch(e){ showToast('Could not create the download.', 'error'); return false; }
+}
+function buildAppsBundle(){
+  const apps = allExportables().map(appToDescriptor);
+  return JSON.stringify({ spacepad: 'bundle', v: APP_SCHEMA_V, exportedAt: new Date().toISOString(), count: apps.length, apps: apps }, null, 2) + '\n';
+}
+function exportUserApps(){ return allExportables().map(appToDescriptor); }
+function exportAllApps(){
+  if (!allExportables().length){ setAppIoStatus('No apps to export yet. Add one first.', 'err'); showToast('No apps to export yet — add one first.', 'error'); return false; }
+  try {
+    const n = allExportables().length;
+    downloadTextFile('spacepad-apps.spacepad.json', 'application/json', buildAppsBundle());
+    setAppIoStatus('Exported ' + n + ' app' + (n === 1 ? '' : 's') + ' to spacepad-apps.spacepad.json.', 'ok');
+    showToast('Downloaded spacepad-apps.spacepad.json');
+    return true;
+  } catch(e){ showToast('Could not create the download.', 'error'); return false; }
+}
+document.getElementById('export-apps-btn').addEventListener('click', exportAllApps);
 document.getElementById('export-apps-copy-btn').addEventListener('click', () => {
-  if (!customApps.length){ showToast('No apps to export yet — add one first.', 'error'); return; }
-  copyToClipboard(JSON.stringify(exportUserApps(), null, 2), document.getElementById('export-apps-copy-btn'));
+  if (!allExportables().length){ setAppIoStatus('No apps to export yet. Add one first.', 'err'); showToast('No apps to export yet — add one first.', 'error'); return; }
+  copyToClipboard(buildAppsBundle(), document.getElementById('export-apps-copy-btn'));
 });
 
-function isDuplicateImportedApp(raw){
-  if (raw.id && customApps.some(a => a.id === raw.id)) return true;
-  return customApps.some(a => a.name === raw.name && a.type === (raw.type === 'gh-download' ? 'gh-online' : raw.type));
+// ---- Import: validation ---------------------------------------------------
+function fileExt(name){ const m = /\.([a-z0-9]+)$/i.exec(String(name || '')); return m ? m[1].toLowerCase() : ''; }
+function fileStem(name){ return String(name || '').replace(/\.spacepad\.json$/i, '').replace(/\.[^.\\/]*$/, ''); }
+function decodeBasicEntities(s){ return String(s).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, '&'); }
+function titleFromMarkup(text){ const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(text); return m ? sanitizeAppName(decodeBasicEntities(m[1].replace(/<[^>]*>/g, ''))) : ''; }
+function sniffBinaryKind(u8){
+  const at = (i, s) => { for (let k = 0; k < s.length; k++) if (u8[i + k] !== s.charCodeAt(k)) return false; return u8.length >= i + s.length; };
+  if (u8.length >= 4 && u8[0] === 0x89 && at(1, 'PNG')) return 'PNG image';
+  if (u8.length >= 3 && u8[0] === 0xFF && u8[1] === 0xD8 && u8[2] === 0xFF) return 'JPEG image';
+  if (at(0, 'GIF8')) return 'GIF image';
+  if (at(0, '%PDF')) return 'PDF document';
+  if (at(0, 'PK\u0003\u0004')) return 'ZIP archive';
+  if (u8.length >= 2 && u8[0] === 0x1F && u8[1] === 0x8B) return 'gzip archive';
+  if (at(0, 'RIFF') || at(0, 'ID3') || at(0, 'OggS') || at(4, 'ftyp')) return 'audio/video file';
+  if (u8.length >= 4 && u8[0] === 0x7F && at(1, 'ELF')) return 'program binary';
+  if (at(0, 'MZ')) return 'Windows program';
+  return '';
+}
+function validateAppUrl(u){
+  if (typeof u !== 'string' || !u.trim()) return { error: 'the link is missing.' };
+  u = u.trim();
+  if (u.length > 2000) return { error: 'the link is too long.' };
+  let p; try { p = new URL(u); } catch(e){ return { error: 'the link is not a valid URL.' }; }
+  if (p.protocol !== 'https:' && p.protocol !== 'http:') return { error: 'only http:// and https:// links can be imported (not ' + p.protocol + ').' };
+  return { url: p.href };
+}
+function validateGhSpec(g){
+  if (!g || typeof g !== 'object') return { error: 'the GitHub details ("gh") are missing.' };
+  if (typeof g.repo !== 'string' || !/^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/.test(g.repo) || g.repo.split('/').some(x => /^\.+$/.test(x))) return { error: 'gh.repo must look like owner/repo.' };
+  const ref = g.ref == null || g.ref === '' ? 'main' : g.ref;
+  if (typeof ref !== 'string' || !/^[A-Za-z0-9_.\/-]{1,100}$/.test(ref) || ref.indexOf('..') !== -1) return { error: 'gh.ref is not a valid branch or tag name.' };
+  if (typeof g.main !== 'string' || !/^[A-Za-z0-9_.\/-]{1,200}$/.test(g.main) || g.main.indexOf('..') !== -1 || g.main.charAt(0) === '/') return { error: 'gh.main must be a plain file path like index.html.' };
+  return { gh: { repo: g.repo, ref: ref, main: g.main } };
+}
+// One descriptor object -> { rec } or { error }. Never throws.
+function validateDescriptor(d){
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return { error: 'not an app object.' };
+  let type = d.type === 'gh-download' || d.type === 'gh-cached' ? 'gh-online' : d.type;
+  if (typeof type !== 'string' || (APP_FILE_TYPES.indexOf(type) === -1 && type !== 'store')) return { error: 'unknown app type ' + JSON.stringify(String(type).slice(0, 30)) + '.' };
+  const iconGiven = typeof d.icon === 'string' && hasOwn(ICONS, d.icon);
+  const rec = { type: type, icon: iconGiven ? d.icon : APP_DEFAULT_ICON[type], iconGiven: iconGiven, wantId: '' };
+  if (type === 'store'){
+    if (typeof d.store !== 'string' || !hasOwn(STORE_NATIVE, d.store)) return { error: 'unknown store app ' + JSON.stringify(String(d.store).slice(0, 30)) + '.' };
+    rec.store = d.store; rec.name = STORE_NATIVE[d.store].name; rec.icon = STORE_NATIVE[d.store].icon;
+    return { rec: rec };
+  }
+  rec.name = sanitizeAppName(d.name);
+  if (!rec.name) return { error: 'the app has no name.' };
+  if (typeof d.id === 'string' && STORE_APPS.some(s => s.id === d.id && !s.native)) rec.wantId = d.id;
+  if (type === 'html' || type === 'python' || type === 'svg' || type === 'text'){
+    if (typeof d.content !== 'string' || !d.content.trim()) return { error: 'the app has no content.' };
+    if (d.content.length > APP_CONTENT_MAX) return { error: 'the content is too large (limit 2 MB).' };
+    if (type === 'svg' && !/<svg[\s>]/i.test(d.content)) return { error: 'the content is not an SVG (no <svg> element).' };
+    rec.content = type === 'svg' ? normalizeSvg(d.content) : d.content;
+    if (type === 'text') rec.format = d.format === 'txt' ? 'txt' : 'md';
+    return { rec: rec };
+  }
+  if (type === 'page'){
+    const u = validateAppUrl(d.url); if (u.error) return { error: u.error };
+    rec.url = u.url; if (d.loader === 'fetch') rec.loader = 'fetch';
+    return { rec: rec };
+  }
+  const g = validateGhSpec(d.gh); if (g.error) return { error: g.error };
+  rec.gh = g.gh;
+  return { rec: rec };
+}
+// Parsed JSON -> { entries, errors } (descriptor, bundle, or the legacy bare array).
+function entriesFromJson(obj, label){
+  const errors = [], entries = [];
+  const err = (m) => { errors.push('"' + label + '": ' + m); };
+  let items;
+  if (Array.isArray(obj)) items = obj;
+  else if (obj && typeof obj === 'object' && obj.app === 'spacepad' && obj.data){ err('this is a full SpacePad backup, not an app file. Restore it with Settings, Import everything.'); return { entries: entries, errors: errors }; }
+  else if (obj && typeof obj === 'object' && (obj.spacepad === 'app' || obj.spacepad === 'bundle')){
+    if (typeof obj.v !== 'number' || obj.v < 1){ err('the "v" (version) number is missing or invalid.'); return { entries: entries, errors: errors }; }
+    if (obj.v > APP_SCHEMA_V){ err('made by a newer SpacePad (v' + obj.v + '), which this version cannot import.'); return { entries: entries, errors: errors }; }
+    if (obj.spacepad === 'bundle'){
+      if (!Array.isArray(obj.apps)){ err('the bundle has no "apps" list.'); return { entries: entries, errors: errors }; }
+      items = obj.apps;
+    } else items = [obj];
+  } else { err('not a SpacePad app file. It needs a header such as {"spacepad":"app","v":1,...}.'); return { entries: entries, errors: errors }; }
+  if (!items.length){ err('it contains no apps.'); return { entries: entries, errors: errors }; }
+  if (items.length > IMPORT_MAX_APPS){ err('it has ' + items.length + ' apps; the limit is ' + IMPORT_MAX_APPS + '. Only the first ' + IMPORT_MAX_APPS + ' are used.'); items = items.slice(0, IMPORT_MAX_APPS); }
+  items.forEach((it, i) => {
+    const r = validateDescriptor(it);
+    if (r.error) err((items.length > 1 ? 'app ' + (i + 1) + (it && typeof it.name === 'string' && sanitizeAppName(it.name) ? ' (' + sanitizeAppName(it.name) + ')' : '') + ': ' : '') + r.error);
+    else entries.push(r.rec);
+  });
+  return { entries: entries, errors: errors };
+}
+// One File -> { entries, errors }. Checks extension, size, real content and mismatches; never throws.
+async function readImportFile(file){
+  const nm = (file && file.name) || 'file';
+  const fail = (m) => ({ entries: [], errors: ['"' + nm + '": ' + m] });
+  const ext = fileExt(nm);
+  if (IMPORT_EXTS.indexOf(ext) === -1) return fail('unsupported file type' + (ext ? ' (.' + ext + ')' : '') + '. Use .html, .svg, .md, .txt, .py, .url or a SpacePad .json file.');
+  if (!file.size) return fail('the file is empty.');
+  if (file.size > IMPORT_MAX_BYTES) return fail('too large (' + (file.size / 1048576).toFixed(1) + ' MB). The limit is 5 MB.');
+  const mt = String(file.type || '').toLowerCase();
+  if (/^(audio|video|font)\//.test(mt) || (/^image\//.test(mt) && mt !== 'image/svg+xml') || /^application\/(pdf|zip|x-zip-compressed|gzip|x-gzip|x-msdownload|x-7z-compressed|x-rar-compressed|vnd\.)/.test(mt))
+    return fail('this is a ' + mt + ' file, not an app file, even though it is named .' + ext + '.');
+  let buf; try { buf = await file.arrayBuffer(); } catch(e){ return fail('the file could not be read.'); }
+  const u8 = new Uint8Array(buf);
+  const bin = sniffBinaryKind(u8);
+  if (bin) return fail('this is a ' + bin + ', not text, so it does not match its .' + ext + ' extension.');
+  let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(u8); } catch(e){ return fail('this is not valid UTF-8 text (it may be a binary file).'); }
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  if (text.indexOf('\u0000') !== -1) return fail('this contains binary data.');
+  const stem = sanitizeAppName(fileStem(nm)) || 'Imported app';
+  const looksHtmlDoc = /^\s*(<!doctype\s+html|<html[\s>])/i.test(text);
+  const looksJson = /^\s*[\[{]/.test(text);
+  const one = (rec) => ({ entries: [Object.assign({ iconGiven: false, wantId: '' }, rec, { icon: APP_DEFAULT_ICON[rec.type] })], errors: [] });
+  if (ext === 'json'){
+    if (/^\s*</.test(text)) return fail('this is HTML or XML, not JSON.');
+    let obj; try { obj = JSON.parse(text); } catch(e){ return fail('this is not valid JSON (' + String(e && e.message || 'parse error').slice(0, 90) + ').'); }
+    return entriesFromJson(obj, nm);
+  }
+  if (ext === 'url'){
+    if (!/\[InternetShortcut\]/i.test(text)) return fail('this is not an Internet Shortcut file (no [InternetShortcut] section).');
+    const m = /^\s*URL\s*=\s*(.+?)\s*$/im.exec(text);
+    const u = validateAppUrl(m ? m[1] : '');
+    if (u.error) return fail(u.error);
+    return one({ type: 'page', name: stem, url: u.url });
+  }
+  if (!text.trim()) return fail('the file is empty.');
+  if (text.length > APP_CONTENT_MAX) return fail('too large for one app (limit 2 MB of text).');
+  if (ext === 'html' || ext === 'htm'){
+    if (looksJson) { try { JSON.parse(text); return fail('this is JSON, not HTML. If it is a SpacePad app file, rename it to .json.'); } catch(e){} }
+    if (!/<\s*(!doctype|html|head|body|script|style|div|span|p|h[1-6]|a|img|svg|canvas|main|section|form|button|ul|ol|table|iframe|input)\b/i.test(text)) return fail('this does not look like HTML (no tags were found).');
+    return one({ type: 'html', name: titleFromMarkup(text) || stem, content: text });
+  }
+  if (ext === 'svg'){
+    if (looksHtmlDoc) return fail('this is an HTML page, not an SVG. Rename it to .html to import it as an HTML app.');
+    if (!/<svg[\s>]/i.test(text)) return fail('this is not an SVG image (no <svg> element was found).');
+    return one({ type: 'svg', name: stem, content: normalizeSvg(text) });
+  }
+  if (ext === 'py'){
+    if (looksHtmlDoc) return fail('this is an HTML page, not Python. Rename it to .html to import it as an HTML app.');
+    return one({ type: 'python', name: stem, content: text });
+  }
+  // md / markdown / txt / text
+  return one({ type: 'text', name: stem, format: (ext === 'md' || ext === 'markdown') ? 'md' : 'txt', content: text });
 }
 
-// Validates + normalizes one imported entry into a real customApps record.
-// Returns null (and never throws) for anything that doesn't look like a
-// usable app, so one bad entry in the array never aborts the whole import.
-// A legacy 'gh-download' entry is converted to 'gh-online' (nothing is cached).
-async function buildImportedApp(raw){
-  if (!raw || typeof raw !== 'object' || typeof raw.name !== 'string' || !raw.name.trim()) return null;
-  const icon = typeof raw.icon === 'string' && raw.icon ? raw.icon : 'star';
-  const id = (typeof raw.id === 'string' && raw.id) ? raw.id : genAppId();
-  if (raw.type === 'html' || raw.type === 'python'){
-    if (typeof raw.content !== 'string' || !raw.content.trim()) return null;
-    return { id: id, name: raw.name, icon: icon, type: raw.type, content: raw.content, url: '' };
-  }
-  if (raw.type === 'page'){
-    if (typeof raw.url !== 'string' || !raw.url.trim()) return null;
-    return raw.loader === 'fetch' ? { id: id, name: raw.name, icon: icon, type: 'page', content: '', url: raw.url, loader: 'fetch' } : { id: id, name: raw.name, icon: icon, type: 'page', content: '', url: raw.url };
-  }
-  if (raw.type === 'gh-online' || raw.type === 'gh-download'){
-    if (!raw.gh || typeof raw.gh.repo !== 'string' || typeof raw.gh.main !== 'string') return null;
-    return { id: id, name: raw.name, icon: icon, type: 'gh-online', gh: { repo: raw.gh.repo, ref: raw.gh.ref || 'main', main: raw.gh.main } };
-  }
-  return null;
+// ---- Import: duplicates + applying ---------------------------------------
+function dupOfImport(e){
+  if (e.type === 'store') return storeNativeInstalled(e.store) ? { native: true } : null;
+  const n = e.name.toLowerCase();
+  const i = customApps.findIndex(a => String(a.name).toLowerCase() === n);
+  return i === -1 ? null : { index: i, app: customApps[i] };
 }
+function uniqueAppName(name){
+  const taken = (n) => customApps.some(a => String(a.name).toLowerCase() === n.toLowerCase());
+  if (!taken(name)) return name;
+  for (let k = 2; k < 1000; k++){
+    const suffix = ' (' + k + ')';
+    const cand = name.slice(0, APP_NAME_MAX - suffix.length).trim() + suffix;
+    if (!taken(cand)) return cand;
+  }
+  return name.slice(0, APP_NAME_MAX - 5) + ' ' + genAppId().slice(-4);
+}
+function recFromImportEntry(e, id){
+  const base = { id: id, name: e.name, icon: e.icon, type: e.type };
+  if (e.type === 'html' || e.type === 'python' || e.type === 'svg') return Object.assign(base, { content: e.content, url: '' });
+  if (e.type === 'text') return Object.assign(base, { content: e.content, format: e.format === 'txt' ? 'txt' : 'md', url: '' });
+  if (e.type === 'page') return e.loader === 'fetch' ? Object.assign(base, { content: '', url: e.url, loader: 'fetch' }) : Object.assign(base, { content: '', url: e.url });
+  return Object.assign(base, { gh: { repo: e.gh.repo, ref: e.gh.ref || 'main', main: e.gh.main } });
+}
+// In-app 3-way modal (never a native dialog). Resolves { action: 'replace'|'keep'|'skip', all }.
+function askAppDuplicate(name, remaining){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.className = 'net-popup-overlay app-dup-overlay';
+    ov.style.zIndex = '1300';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'app-dup-title');
+    ov.innerHTML = '<div class="net-popup"><h3 id="app-dup-title">An app with this name exists</h3>' +
+      '<p>You already have an app called "<b data-n></b>". What should happen to the imported one?</p>' +
+      (remaining > 0 ? '<label class="app-dup-all"><input type="checkbox" data-all> Do the same for the other duplicates in this import</label>' : '') +
+      '<div class="conv-btn-row" style="justify-content:center;">' +
+        '<button type="button" class="ghost-btn" data-d="replace" style="color:var(--error); border-color:var(--error);">Replace it</button>' +
+        '<button type="button" class="ghost-btn" data-d="keep">Keep both (rename)</button>' +
+        '<button type="button" class="ghost-btn net-cancel" data-d="skip">Skip</button>' +
+      '</div></div>';
+    ov.querySelector('[data-n]').textContent = name;
+    let done = false;
+    const finish = (action) => {
+      if (done) return; done = true;
+      document.removeEventListener('keydown', onKey, true);
+      const all = ov.querySelector('[data-all]');
+      const allOn = !!(all && all.checked);
+      ov.remove();
+      resolve({ action: action, all: allOn });
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); finish('skip'); }
+      else if (e.key === 'Tab'){
+        const f = Array.from(ov.querySelectorAll('button, input')); if (!f.length) return;
+        const i = f.indexOf(document.activeElement);
+        const n = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === f.length - 1 ? 0 : i + 1);
+        e.preventDefault(); f[n].focus();
+      }
+    };
+    ov.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-d]');
+      if (b) finish(b.dataset.d);
+      else if (e.target === ov) finish('skip');
+    });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(ov);
+    const first = ov.querySelector('[data-d="keep"]'); if (first) first.focus();
+  });
+}
+async function applyImportEntries(entries){
+  const res = { added: 0, replaced: 0, renamed: 0, skipped: 0 };
+  let policy = '';
+  const reopen = [];
+  for (let i = 0; i < entries.length; i++){
+    const e = entries[i];
+    const dup = dupOfImport(e);
+    if (e.type === 'store'){
+      if (dup){ res.skipped++; continue; }
+      installStoreNative(e.store); res.added++; continue;
+    }
+    let action = 'add';
+    if (dup){
+      let choice = policy;
+      if (!choice){
+        const r = await askAppDuplicate(e.name, entries.length - 1 - i);
+        choice = r.action; if (r.all) policy = r.action;
+      }
+      action = choice;
+    }
+    if (action === 'skip'){ res.skipped++; continue; }
+    if (action === 'replace' && dup && dup.app){
+      const rec = recFromImportEntry(e, dup.app.id);
+      if (!e.iconGiven) rec.icon = dup.app.icon;
+      customApps[dup.index] = rec; res.replaced++; reopen.push(dup.app.id);
+      continue;
+    }
+    let name = e.name;
+    if (dup){ name = uniqueAppName(name); res.renamed++; }
+    const id = e.wantId && !findCustomApp(e.wantId) ? e.wantId : genAppId();
+    customApps.push(recFromImportEntry(Object.assign({}, e, { name: name }), id)); res.added++;
+  }
+  if (res.added || res.replaced){
+    saveCustomApps();
+    renderCustomizeAppList();
+    renderAppStore();
+    renderDesktopIcons();
+    reopen.forEach(id => { if (currentCustomAppId === id && appWindows['custom-app'] && appWindows['custom-app'].open) openApp('custom:' + id); });
+  }
+  return res;
+}
+function importSummaryText(res, errors){
+  const parts = [];
+  const n = res.added + res.replaced;
+  if (res.added) parts.push('Imported ' + res.added + ' app' + (res.added === 1 ? '' : 's') + (res.renamed ? ' (' + res.renamed + ' renamed)' : ''));
+  if (res.replaced) parts.push('replaced ' + res.replaced);
+  if (res.skipped) parts.push('skipped ' + res.skipped + ' that already exist' + (res.skipped === 1 ? 's' : ''));
+  if (errors.length) parts.push(errors.length + ' problem' + (errors.length === 1 ? '' : 's'));
+  return { text: parts.length ? parts.join(', ').replace(/^./, c => c.toUpperCase()) + '.' : 'Nothing to import.', ok: n > 0 };
+}
+let appImportBusy = false;
+async function importAppFiles(fileList){
+  let files = Array.from(fileList || []);
+  if (!files.length) return;
+  if (appImportBusy){ setAppIoStatus('An import is already running. Try again in a moment.', 'err'); return; }
+  appImportBusy = true;
+  try {
+    const errors = [];
+    if (files.length > IMPORT_MAX_FILES){ errors.push('Too many files at once (' + files.length + '). Only the first ' + IMPORT_MAX_FILES + ' are read.'); files = files.slice(0, IMPORT_MAX_FILES); }
+    setAppIoStatus('Reading ' + files.length + ' file' + (files.length === 1 ? '' : 's') + '…', '');
+    let entries = [];
+    for (const f of files){ const r = await readImportFile(f); entries = entries.concat(r.entries); r.errors.forEach(x => errors.push(x)); }
+    if (entries.length > IMPORT_MAX_APPS){ errors.push('More than ' + IMPORT_MAX_APPS + ' apps in one import. Only the first ' + IMPORT_MAX_APPS + ' are used.'); entries = entries.slice(0, IMPORT_MAX_APPS); }
+    const res = await applyImportEntries(entries);
+    const sum = importSummaryText(res, errors);
+    setAppIoStatus(sum.text, sum.ok ? 'ok' : (errors.length ? 'err' : ''), errors);
+    if (sum.ok) showToast(sum.text);
+    else if (errors.length) showToast(errors[0], 'error');
+  } catch(err){
+    setAppIoStatus('Import failed: ' + (err && err.message ? err.message : 'unexpected error.'), 'err');
+  } finally { appImportBusy = false; }
+}
+(function wireAppFileImport(){
+  const input = document.getElementById('import-apps-file'), btn = document.getElementById('import-apps-file-btn');
+  const zone = document.getElementById('app-drop-zone'), cv = document.getElementById('view-customize');
+  btn.addEventListener('click', () => input.click());
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); input.click(); } });
+  input.addEventListener('change', () => { const files = Array.from(input.files || []); input.value = ''; importAppFiles(files); });
+  const hasFiles = (e) => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1);
+  let depth = 0;
+  const off = () => { depth = 0; cv.classList.remove('app-drop-active'); };
+  cv.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); depth++; cv.classList.add('app-drop-active'); });
+  cv.addEventListener('dragover', (e) => { if (!hasFiles(e)) return; e.preventDefault(); try { e.dataTransfer.dropEffect = 'copy'; } catch(x){} });
+  cv.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) cv.classList.remove('app-drop-active'); });
+  cv.addEventListener('drop', (e) => { if (!hasFiles(e)) return; e.preventDefault(); const files = Array.from(e.dataTransfer.files || []); off(); importAppFiles(files); });
+})();
 
+// Import by link: any URL that serves a SpacePad descriptor, bundle or legacy apps array (typically a jsDelivr link).
 document.getElementById('import-apps-btn').addEventListener('click', async () => {
   const urlInput = document.getElementById('import-apps-url');
   const statusEl = document.getElementById('import-apps-status');
@@ -13896,41 +14509,28 @@ document.getElementById('import-apps-btn').addEventListener('click', async () =>
   const url = urlInput.value.trim();
   statusEl.style.color = 'var(--text-dim)';
   if (!url){ statusEl.textContent = 'Paste a link first.'; statusEl.style.color = 'var(--error)'; return; }
-  btn.disabled = true;
+  if (appImportBusy){ statusEl.textContent = 'An import is already running.'; statusEl.style.color = 'var(--error)'; return; }
+  btn.disabled = true; appImportBusy = true;
   statusEl.textContent = 'Fetching…';
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error('Request failed (HTTP ' + res.status + ')');
+    const text = await res.text();
+    if (text.length > IMPORT_MAX_BYTES) throw new Error('That file is too large (limit 5 MB).');
     let data;
-    try { data = await res.json(); }
+    try { data = JSON.parse(text); }
     catch(e){ throw new Error('That URL did not return valid JSON.'); }
-    if (!Array.isArray(data)) throw new Error('Expected a JSON array of apps.');
-    let added = 0, skipped = 0, failed = 0;
-    for (const raw of data){
-      if (!raw || typeof raw !== 'object' || typeof raw.name !== 'string' || !raw.name.trim()){ failed++; continue; }
-      if (isDuplicateImportedApp(raw)){ skipped++; continue; }
-      let built = null;
-      try { built = await buildImportedApp(raw); }
-      catch(e){ built = null; }
-      if (!built){ failed++; continue; }
-      customApps.push(built);
-      added++;
-    }
-    if (added) saveCustomApps();
-    renderCustomizeAppList();
-    if (document.getElementById('desktop-screen').classList.contains('active')) renderDesktopIcons();
-    const parts = [];
-    if (added) parts.push('Imported ' + added + ' app' + (added === 1 ? '' : 's'));
-    if (skipped) parts.push(skipped + ' already added');
-    if (failed) parts.push(failed + ' invalid or failed');
-    statusEl.textContent = parts.length ? parts.join(' — ') : 'Nothing to import.';
-    statusEl.style.color = added ? 'var(--accent)' : 'var(--error)';
-    if (added) urlInput.value = '';
+    const parsed = entriesFromJson(data, 'link');
+    const applied = await applyImportEntries(parsed.entries);
+    const sum = importSummaryText(applied, parsed.errors);
+    statusEl.textContent = sum.text + (parsed.errors.length ? ' ' + parsed.errors[0] : '');
+    statusEl.style.color = sum.ok ? 'var(--accent)' : 'var(--error)';
+    if (sum.ok) urlInput.value = '';
   } catch(err){
     statusEl.textContent = 'Import failed: ' + (err && err.message ? err.message : 'could not fetch or parse that URL.');
     statusEl.style.color = 'var(--error)';
   } finally {
-    btn.disabled = false;
+    btn.disabled = false; appImportBusy = false;
   }
 });
 
@@ -18235,7 +18835,7 @@ function sCopy(text, okMsg){
     ctx.say('App removed', 'App removed: ' + rec.name + '.');
   });
   E('apps', 'app-install', 'download', 'App installation', 3, { risk: true, desc: 'An app was installed.' }, ctx => {
-    const pool = STORE_APPS.filter(a => a.type !== 'page' && !isStoreAppInstalled(a.id));
+    const pool = STORE_APPS.filter(a => a.type !== 'page' && !a.native && !isStoreAppInstalled(a.id));
     if (!pool.length) return ctx.say('App installation', 'All available catalog apps are already installed.');
     const item = pick(pool);
     customApps.push({ id: item.id, name: item.name, icon: item.icon, type: 'html', content: item.content || '', url: '' }); saveCustomApps(); refreshAppViews();
@@ -20712,6 +21312,525 @@ function sCopy(text, okMsg){
   // Stargazing-only tabs remove #taskbar entirely; nothing else needs to be told.
   tbReady = true;
   apply(); render();
+})();
+
+/* =========================================================================
+   MEDIA PLAYER — App Store app (see STORE_NATIVE / the store entry
+   'store_media_player'); the window only exists once it is installed.
+   Plays local audio and video files (mp3, mp4, m4a, aac, wav, ogg, oga, ogv,
+   webm, opus, flac, mov, ... whatever this browser can decode) from the file
+   picker or by dragging files onto the window, plus an optional https link.
+   One <video> element plays both kinds. Files are kept as File objects; only
+   the playing track has an object URL, revoked when the track changes, is
+   removed, or the window is closed (closeWindow -> stop()). The queue itself
+   stays for the session until cleared. Audio gets an AnalyserNode canvas
+   visualizer (static in Performance mode / Reduce motion, CSS bars if no
+   AudioContext). Settings: memStore spacepad_media_v1 (volume, mute, speed,
+   repeat, shuffle).
+   ========================================================================= */
+(function mediaPlayerApp(){
+  'use strict';
+  const view = document.getElementById('view-media');
+  if (!view) return;
+  const KEY = 'spacepad_media_v1';
+  const AUDIO_EXT = ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'oga', 'opus', 'flac', 'weba'];
+  const VIDEO_EXT = ['mp4', 'm4v', 'webm', 'ogv', 'mov'];
+  const ACCEPT = AUDIO_EXT.concat(VIDEO_EXT).map(e => '.' + e).join(',') + ',audio/*,video/*';
+  const MAX_QUEUE = 500;
+  const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  const CANT_PLAY = "This browser can't play that file type.";
+  const root = document.documentElement;
+  const $ = (sel) => view.querySelector(sel);
+
+  let cfg = { vol: 0.8, muted: false, speed: 1, repeat: 'off', shuffle: false };
+  try {
+    const o = JSON.parse(memStore.getItem(KEY) || '{}');
+    if (o && typeof o === 'object'){
+      if (typeof o.vol === 'number' && o.vol >= 0 && o.vol <= 1) cfg.vol = o.vol;
+      cfg.muted = o.muted === true;
+      if (SPEEDS.indexOf(o.speed) !== -1) cfg.speed = o.speed;
+      if (o.repeat === 'one' || o.repeat === 'all') cfg.repeat = o.repeat;
+      cfg.shuffle = o.shuffle === true;
+    }
+  } catch(e){}
+  const saveCfg = () => { try { memStore.setItem(KEY, JSON.stringify(cfg)); } catch(e){} };
+
+  view.innerHTML =
+    '<div class="mp-layout">' +
+      '<div class="mp-main" id="mp-main">' +
+        '<div class="mp-stage" id="mp-stage" tabindex="0" role="group" aria-label="Media Player screen. Space plays or pauses, arrow keys seek and change volume, M mutes, F toggles fullscreen.">' +
+          '<video class="mp-video" id="mp-video" playsinline preload="metadata" crossorigin="anonymous"></video>' +
+          '<canvas class="mp-viz" id="mp-viz" aria-hidden="true"></canvas>' +
+          '<div class="mp-bars" aria-hidden="true">' + new Array(17).join('<i></i>') + '</div>' +
+          '<div class="mp-empty" id="mp-empty">' + icon('music') + '<div><b>Nothing playing</b></div><div>Add audio or video files, or drop them here.</div>' +
+            '<button type="button" class="ghost-btn" id="mp-empty-add">Add files…</button></div>' +
+          '<div class="mp-msg" id="mp-msg" role="alert" hidden></div>' +
+          '<div class="mp-now" id="mp-now"></div>' +
+        '</div>' +
+        '<div class="mp-controls">' +
+          '<div class="mp-seek-row">' +
+            '<span class="mp-time" id="mp-cur">0:00</span>' +
+            '<input type="range" class="mp-seek" id="mp-seek" min="0" max="1000" step="1" value="0" aria-label="Seek" disabled>' +
+            '<span class="mp-time r" id="mp-dur">0:00</span>' +
+          '</div>' +
+          '<div class="mp-btn-row">' +
+            '<button type="button" class="mp-btn" id="mp-prev" title="Previous (or restart)" aria-label="Previous track">' + icon('skip-back') + '</button>' +
+            '<button type="button" class="mp-btn mp-play" id="mp-play" title="Play (Space)" aria-label="Play">' + icon('play') + '</button>' +
+            '<button type="button" class="mp-btn" id="mp-next" title="Next track" aria-label="Next track">' + icon('skip-forward') + '</button>' +
+            '<button type="button" class="mp-btn" id="mp-shuffle" aria-pressed="false" title="Shuffle off" aria-label="Shuffle off">' + icon('shuffle') + '</button>' +
+            '<button type="button" class="mp-btn" id="mp-repeat" aria-pressed="false" title="Repeat off" aria-label="Repeat off">' + icon('repeat') + '<span class="mp-badge" id="mp-repeat-badge"></span></button>' +
+            '<span class="mp-gap"></span>' +
+            '<div class="mp-vol"><button type="button" class="mp-btn" id="mp-mute" title="Mute (M)" aria-label="Mute" aria-pressed="false">' + icon('volume') + '</button>' +
+              '<input type="range" id="mp-vol" min="0" max="100" step="1" value="80" aria-label="Volume"></div>' +
+            '<select class="mp-speed" id="mp-speed" aria-label="Playback speed">' + SPEEDS.map(x => '<option value="' + x + '">' + x + 'x</option>').join('') + '</select>' +
+            '<button type="button" class="mp-btn" id="mp-pip" title="Picture in picture" aria-label="Picture in picture" hidden>' + icon('pip') + '</button>' +
+            '<button type="button" class="mp-btn" id="mp-fs" title="Fullscreen (F)" aria-label="Fullscreen">' + icon('maximize') + '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mp-status" id="mp-status" role="status" aria-live="polite"></div>' +
+        '<div>' +
+          '<form class="mp-url" id="mp-url-form" novalidate>' +
+            '<input type="text" id="mp-url" placeholder="https://example.com/song.mp3" aria-label="Media link (https only)" spellcheck="false" autocomplete="off">' +
+            '<button type="submit" class="ghost-btn">Add link</button>' +
+          '</form>' +
+          '<p class="mp-note">Links must be https. Some servers block playback from other sites (CORS) or hotlinking, so a link may not play even if it opens in a tab.</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mp-side">' +
+        '<div class="mp-side-head"><b id="mp-qtitle">Queue (0)</b>' +
+          '<button type="button" class="ghost-btn" id="mp-add">' + icon('plus') + ' Add files</button>' +
+          '<button type="button" class="ghost-btn" id="mp-clear">Clear</button></div>' +
+        '<ul class="mp-queue" id="mp-queue" aria-label="Play queue"></ul>' +
+      '</div>' +
+    '</div>' +
+    '<input type="file" id="mp-file" multiple hidden accept="' + ACCEPT + '">';
+
+  const el = $('#mp-video'), stage = $('#mp-stage'), canvas = $('#mp-viz'), main = $('#mp-main');
+  const ui = { play: $('#mp-play'), prev: $('#mp-prev'), next: $('#mp-next'), shuffle: $('#mp-shuffle'), repeat: $('#mp-repeat'), badge: $('#mp-repeat-badge'),
+    mute: $('#mp-mute'), vol: $('#mp-vol'), speed: $('#mp-speed'), pip: $('#mp-pip'), fs: $('#mp-fs'), seek: $('#mp-seek'), cur: $('#mp-cur'), dur: $('#mp-dur'),
+    status: $('#mp-status'), msg: $('#mp-msg'), now: $('#mp-now'), empty: $('#mp-empty'), queue: $('#mp-queue'), qtitle: $('#mp-qtitle'), file: $('#mp-file'),
+    urlForm: $('#mp-url-form'), url: $('#mp-url') };
+
+  let queue = [], cur = -1, loaded = false, objUrl = null, seeking = false, hist = [], played = new Set(), nextId = 1;
+  const liveUrls = new Set();
+
+  // ---- helpers ----
+  const fmt = (t) => {
+    if (!isFinite(t) || t < 0) t = 0;
+    t = Math.floor(t); const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0');
+  };
+  const extOf = (n) => { const m = /\.([a-z0-9]+)$/i.exec(String(n || '')); return m ? m[1].toLowerCase() : ''; };
+  const baseName = (n) => String(n || '').replace(/\.[^.\\/]*$/, '') || String(n || 'Untitled');
+  const isMediaFile = (f) => AUDIO_EXT.indexOf(extOf(f.name)) !== -1 || VIDEO_EXT.indexOf(extOf(f.name)) !== -1 || /^(audio|video)\//.test(f.type || '');
+  const calm = () => root.classList.contains('perf-mode') || root.classList.contains('reduce-motion') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const isLocked = () => { try { return !!spLocked; } catch(e){ return false; } };
+  const winVisible = () => view.offsetWidth > 0 && view.offsetHeight > 0;
+  function setStatus(msg, isErr){ ui.status.textContent = msg || ''; ui.status.classList.toggle('err', !!isErr); }
+  function showMsg(msg){ if (msg){ ui.msg.textContent = msg; ui.msg.hidden = false; } else { ui.msg.textContent = ''; ui.msg.hidden = true; } }
+  function makeUrl(file){ const u = URL.createObjectURL(file); liveUrls.add(u); return u; }
+  function revokeCurrent(){ if (objUrl){ try { URL.revokeObjectURL(objUrl); } catch(e){} liveUrls.delete(objUrl); objUrl = null; } }
+
+  // ---- audio graph + visualizer ----
+  let actx = null, analyser = null, gfx = '', rafId = 0, freq = null;
+  function ensureGraph(){
+    if (gfx) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) throw new Error('no AudioContext');
+      actx = new AC();
+      const srcNode = actx.createMediaElementSource(el);
+      analyser = actx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = 0.78;
+      srcNode.connect(analyser); analyser.connect(actx.destination);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+      gfx = 'ctx';
+    } catch(e){
+      gfx = 'css'; analyser = null;
+      stage.classList.add('no-ctx');
+    }
+  }
+  function sizeCanvas(){
+    const r = stage.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+    if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
+  }
+  function cssVar(n, d){ const v = getComputedStyle(root).getPropertyValue(n).trim(); return v || d; }
+  function drawBars(levels){
+    const g = canvas.getContext('2d'); if (!g) return;
+    sizeCanvas();
+    const W = canvas.width, H = canvas.height, n = levels.length;
+    g.clearRect(0, 0, W, H);
+    const gw = W * 0.72, x0 = (W - gw) / 2, slot = gw / n, bw = Math.max(2, slot * 0.64), base = H * 0.78, maxH = H * 0.6;
+    const grad = g.createLinearGradient(0, base - maxH, 0, base);
+    grad.addColorStop(0, cssVar('--accent-cyan', '#5ee6ff')); grad.addColorStop(1, cssVar('--accent', '#8b7cf6'));
+    g.fillStyle = grad;
+    for (let i = 0; i < n; i++){
+      const bh = Math.max(3, levels[i] * maxH);
+      const x = x0 + i * slot + (slot - bw) / 2;
+      g.beginPath();
+      if (g.roundRect) g.roundRect(x, base - bh, bw, bh, Math.min(4, bw / 2)); else g.rect(x, base - bh, bw, bh);
+      g.fill();
+    }
+    g.globalAlpha = 0.18; g.fillRect(x0, base + 4, gw, 2); g.globalAlpha = 1;
+  }
+  const STATIC_LEVELS = (() => { const a = []; for (let i = 0; i < 32; i++) a.push(0.18 + 0.32 * Math.abs(Math.sin(i * 0.55 + 0.6))); return a; })();
+  function drawStatic(){ if (stage.classList.contains('is-audio') && gfx !== 'css') drawBars(STATIC_LEVELS); }
+  function frame(){
+    rafId = 0;
+    if (!vizWanted()) return;
+    analyser.getByteFrequencyData(freq);
+    const n = 32, step = Math.floor(freq.length * 0.7 / n) || 1, lv = [];
+    for (let i = 0; i < n; i++){ let sum = 0; for (let k = 0; k < step; k++) sum += freq[i * step + k] || 0; lv.push(Math.min(1, (sum / step / 255) * 1.15)); }
+    drawBars(lv);
+    rafId = requestAnimationFrame(frame);
+  }
+  function vizWanted(){
+    return gfx === 'ctx' && stage.classList.contains('is-audio') && !el.paused && !calm() && !document.hidden && !isLocked() && winVisible();
+  }
+  function syncViz(){
+    if (vizWanted()){ if (!rafId) rafId = requestAnimationFrame(frame); }
+    else { if (rafId){ cancelAnimationFrame(rafId); rafId = 0; } if (stage.classList.contains('is-audio')) drawStatic(); }
+  }
+
+  // ---- UI sync ----
+  function curItem(){ return cur >= 0 ? queue[cur] : null; }
+  function hasNext(){ if (!queue.length) return false; if (cfg.shuffle) return queue.length > 1; return cur < queue.length - 1 || cfg.repeat === 'all' || cur === -1; }
+  function syncUi(){
+    const playing = loaded && !el.paused && !el.ended;
+    stage.classList.toggle('playing', playing);
+    ui.play.innerHTML = icon(playing ? 'pause' : 'play');
+    ui.play.title = playing ? 'Pause (Space)' : 'Play (Space)'; ui.play.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    ui.play.disabled = !queue.length;
+    ui.prev.disabled = !queue.length; ui.next.disabled = !hasNext();
+    ui.shuffle.setAttribute('aria-pressed', String(cfg.shuffle)); const sl = 'Shuffle ' + (cfg.shuffle ? 'on' : 'off'); ui.shuffle.title = sl; ui.shuffle.setAttribute('aria-label', sl);
+    ui.repeat.setAttribute('aria-pressed', String(cfg.repeat !== 'off'));
+    const rl = 'Repeat ' + (cfg.repeat === 'one' ? 'one track' : cfg.repeat === 'all' ? 'all' : 'off');
+    ui.repeat.title = rl; ui.repeat.setAttribute('aria-label', rl); ui.badge.textContent = cfg.repeat === 'one' ? '1' : '';
+    const muted = cfg.muted || cfg.vol === 0;
+    ui.mute.innerHTML = icon(muted ? 'volume-x' : 'volume'); ui.mute.setAttribute('aria-pressed', String(muted));
+    ui.mute.title = muted ? 'Unmute (M)' : 'Mute (M)'; ui.mute.setAttribute('aria-label', muted ? 'Unmute' : 'Mute');
+    ui.vol.value = String(Math.round(cfg.vol * 100)); ui.speed.value = String(cfg.speed);
+    const isVideo = stage.classList.contains('is-video');
+    ui.fs.disabled = !isVideo; ui.pip.disabled = !isVideo;
+    ui.pip.hidden = !(document.pictureInPictureEnabled);
+    ui.seek.disabled = !loaded;
+    const it = curItem();
+    ui.now.textContent = it ? it.name : '';
+    ui.empty.hidden = !!it;
+    syncViz();
+  }
+  function syncTime(){
+    const d = el.duration, t = el.currentTime;
+    ui.cur.textContent = fmt(t);
+    ui.dur.textContent = isFinite(d) ? fmt(d) : '0:00';
+    if (!seeking) ui.seek.value = isFinite(d) && d > 0 ? String(Math.round(t / d * 1000)) : '0';
+    ui.seek.setAttribute('aria-valuetext', fmt(t) + ' of ' + (isFinite(d) ? fmt(d) : '0:00'));
+  }
+  function renderQueue(){
+    ui.qtitle.textContent = 'Queue (' + queue.length + ')';
+    if (!queue.length){ ui.queue.innerHTML = '<li class="mp-q-empty">The queue is empty. Add files or drop them on this window.</li>'; return; }
+    ui.queue.innerHTML = queue.map((q, i) => {
+      const meta = q.err ? 'Cannot play' : (q.kind === 'url' ? 'Link' : (q.ext || 'file').toUpperCase()) + (q.dur ? ' · ' + fmt(q.dur) : '');
+      return '<li class="mp-q' + (i === cur ? ' current' : '') + (q.err ? ' err' : '') + '" data-i="' + i + '" draggable="true">' +
+        '<button type="button" class="mp-q-main" data-play="' + i + '" title="' + escapeAttr(q.name + (q.ext ? '.' + q.ext : '')) + '" aria-label="Play ' + escapeAttr(q.name) + '"' + (i === cur ? ' aria-current="true"' : '') + '><span class="mp-q-name">' + escapeHtml(q.name) + '</span><span class="mp-q-meta">' + escapeHtml(meta) + '</span></button>' +
+        '<button type="button" class="mp-q-act" data-up="' + i + '" aria-label="Move ' + escapeAttr(q.name) + ' up" title="Move up"' + (i === 0 ? ' disabled' : '') + '>' + icon('arrow-up') + '</button>' +
+        '<button type="button" class="mp-q-act" data-down="' + i + '" aria-label="Move ' + escapeAttr(q.name) + ' down" title="Move down"' + (i === queue.length - 1 ? ' disabled' : '') + '>' + icon('arrow-down') + '</button>' +
+        '<button type="button" class="mp-q-act" data-rm="' + i + '" aria-label="Remove ' + escapeAttr(q.name) + '" title="Remove">' + icon('x') + '</button>' +
+      '</li>';
+    }).join('');
+  }
+
+  // ---- media session ----
+  function sessionUpdate(){
+    if (!('mediaSession' in navigator)) return;
+    try {
+      const it = curItem();
+      if (!it || !loaded){ navigator.mediaSession.metadata = null; return; }
+      navigator.mediaSession.metadata = new MediaMetadata({ title: it.name, artist: 'SpacePad Media Player', album: it.kind === 'url' ? 'Web link' : 'Local file' });
+      const set = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch(e){} };
+      set('play', () => { play(); }); set('pause', () => { el.pause(); });
+      set('previoustrack', () => prev()); set('nexttrack', () => next(true));
+      set('seekto', (d) => { if (d && typeof d.seekTime === 'number') el.currentTime = d.seekTime; });
+    } catch(e){}
+  }
+  function sessionClear(){
+    if (!('mediaSession' in navigator)) return;
+    try { navigator.mediaSession.metadata = null; ['play', 'pause', 'previoustrack', 'nexttrack', 'seekto'].forEach(a => { try { navigator.mediaSession.setActionHandler(a, null); } catch(e){} }); } catch(e){}
+  }
+
+  // ---- playback ----
+  function applyCfgToElement(){ el.volume = cfg.vol; el.muted = cfg.muted; el.defaultPlaybackRate = cfg.speed; el.playbackRate = cfg.speed; }
+  function unload(){
+    try { el.pause(); } catch(e){}
+    if (el.getAttribute('src') !== null){ el.removeAttribute('src'); try { el.load(); } catch(e){} }
+    revokeCurrent(); loaded = false;
+    stage.classList.remove('is-video', 'is-audio', 'playing');
+    ui.cur.textContent = '0:00'; ui.dur.textContent = '0:00'; ui.seek.value = '0';
+    if (rafId){ cancelAnimationFrame(rafId); rafId = 0; }
+  }
+  function loadIndex(i, autoplay, viaAuto){
+    if (i < 0 || i >= queue.length) return;
+    unload();
+    cur = i; const it = queue[i];
+    showMsg(''); setStatus('');
+    it.err = false;
+    el.crossOrigin = 'anonymous';
+    objUrl = it.file ? makeUrl(it.file) : null;
+    el.src = it.file ? objUrl : it.url;
+    loaded = true;
+    applyCfgToElement();
+    el._viaAuto = !!viaAuto;
+    try { el.load(); } catch(e){}
+    renderQueue(); syncUi(); sessionUpdate();
+    if (autoplay) play();
+  }
+  function play(){
+    if (!queue.length) return;
+    if (!loaded){ loadIndex(cur >= 0 ? cur : 0, true); return; }
+    ensureGraph();
+    if (actx && actx.state === 'suspended'){ try { actx.resume(); } catch(e){} }
+    const p = el.play();
+    if (p && p.catch) p.catch(err => {
+      if (err && err.name === 'NotAllowedError') setStatus('Press Play to start playback.');
+      else if (err && err.name === 'NotSupportedError') onMediaError();
+    });
+  }
+  function toggle(){ if (!loaded || el.paused || el.ended) play(); else el.pause(); }
+  function pickShuffle(){
+    const cand = []; for (let i = 0; i < queue.length; i++) if (i !== cur && !played.has(i)) cand.push(i);
+    if (!cand.length){
+      if (cfg.repeat === 'all' && queue.length > 1){ played = new Set([cur]); for (let i = 0; i < queue.length; i++) if (i !== cur) cand.push(i); }
+      else return -1;
+    }
+    return cand[Math.floor(Math.random() * cand.length)];
+  }
+  function next(manual){
+    if (!queue.length) return;
+    let i;
+    if (cfg.shuffle){
+      played.add(cur); i = pickShuffle();
+      if (i === -1){ if (manual) setStatus('End of the queue.'); else { el.pause(); try { el.currentTime = 0; } catch(e){} syncUi(); } return; }
+      if (cur >= 0) hist.push(cur);
+    } else {
+      i = cur + 1;
+      if (i >= queue.length){
+        if (cfg.repeat === 'all') i = 0;
+        else { if (manual) setStatus('End of the queue.'); else { el.pause(); try { el.currentTime = 0; } catch(e){} syncUi(); } return; }
+      }
+    }
+    loadIndex(i, true, !manual);
+  }
+  function prev(){
+    if (!queue.length) return;
+    if (loaded && el.currentTime > 3){ el.currentTime = 0; return; }
+    let i;
+    if (cfg.shuffle && hist.length) i = hist.pop();
+    else { i = cur - 1; if (i < 0) i = cfg.repeat === 'all' ? queue.length - 1 : 0; }
+    loadIndex(i, true);
+  }
+  function onMediaError(){
+    if (!loaded || (!el.getAttribute('src') && !el.currentSrc)) return;
+    const it = curItem(); if (!it) return;
+    const code = el.error ? el.error.code : 0;
+    if (code === 1) return; // aborted by us
+    it.err = true;
+    let m = CANT_PLAY;
+    if (it.kind === 'url') m += ' If this is a web link, the server may also block cross-origin playback (CORS) or hotlinking.';
+    else if (code === 3) m = CANT_PLAY + ' The file may be damaged or use a codec this browser cannot decode.';
+    if (code === 2 && it.kind === 'url') m = 'Network error while loading this link. The server may be offline or may block cross-origin playback (CORS).';
+    showMsg(m); setStatus(it.name + ': ' + (code === 2 ? 'network error' : 'cannot play'), true);
+    stage.classList.remove('is-video', 'is-audio', 'playing');
+    renderQueue(); syncUi();
+    if (el._viaAuto){
+      let n = cur, tries = 0, found = -1;
+      while (tries++ < queue.length){ n++; if (n >= queue.length){ if (cfg.repeat === 'all') n = 0; else break; } if (!queue[n].err){ found = n; break; } }
+      if (found !== -1 && found !== cur) setTimeout(() => loadIndex(found, true, true), 50);
+    }
+  }
+  function stop(){
+    unload(); sessionClear(); showMsg('');
+    try { if (document.fullscreenElement && main.contains(document.fullscreenElement)) document.exitFullscreen(); } catch(e){}
+    try { if (document.pictureInPictureElement === el) document.exitPictureInPicture(); } catch(e){}
+    if (actx && actx.state === 'running'){ try { actx.suspend(); } catch(e){} }
+    renderQueue(); syncUi(); syncTime();
+  }
+
+  // ---- queue ops ----
+  function addItems(items){
+    const room = MAX_QUEUE - queue.length;
+    if (room <= 0){ setStatus('The queue is full (' + MAX_QUEUE + ' items).', true); return; }
+    const take = items.slice(0, room);
+    const first = queue.length;
+    take.forEach(it => queue.push(Object.assign({ id: nextId++, err: false, dur: 0, ext: '' }, it)));
+    renderQueue(); syncUi();
+    if (cur === -1 || !loaded) { if (cur === -1) cur = first; }
+    return first;
+  }
+  function addFiles(list){
+    const files = Array.from(list || []);
+    if (!files.length) return;
+    const ok = files.filter(isMediaFile), bad = files.filter(f => !isMediaFile(f));
+    if (bad.length) setStatus('Skipped ' + bad.map(f => f.name).slice(0, 3).join(', ') + (bad.length > 3 ? ' and ' + (bad.length - 3) + ' more' : '') + ': not an audio or video file.', true);
+    if (!ok.length){ if (!bad.length) setStatus(''); return; }
+    const wasEmpty = !queue.length || !loaded;
+    const first = addItems(ok.map(f => ({ kind: 'file', name: baseName(f.name), ext: extOf(f.name) || (String(f.type || '').split('/')[1] || ''), file: f, size: f.size })));
+    if (!bad.length) setStatus('Added ' + ok.length + ' file' + (ok.length === 1 ? '' : 's') + '.');
+    if (wasEmpty && first !== undefined) loadIndex(first, true);
+  }
+  function addUrl(raw){
+    raw = String(raw || '').trim();
+    if (!raw){ setStatus('Enter an https link first.', true); return false; }
+    let u; try { u = new URL(raw); } catch(e){ setStatus('That is not a valid link.', true); return false; }
+    if (u.protocol !== 'https:'){ setStatus('Only https:// links are supported.', true); return false; }
+    let nm = ''; try { nm = decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || ''); } catch(e){}
+    const wasEmpty = !queue.length || !loaded;
+    const first = addItems([{ kind: 'url', name: baseName(nm) || u.hostname, url: u.href }]);
+    setStatus('Added link from ' + u.hostname + '.');
+    if (wasEmpty && first !== undefined) loadIndex(first, true);
+    return true;
+  }
+  function removeAt(i){
+    if (i < 0 || i >= queue.length) return;
+    const wasCur = i === cur, wasPlaying = loaded && !el.paused;
+    if (wasCur) unload();
+    queue.splice(i, 1);
+    hist = hist.filter(x => x !== i).map(x => x > i ? x - 1 : x);
+    played = new Set(Array.from(played).filter(x => x !== i).map(x => x > i ? x - 1 : x));
+    if (!queue.length){ cur = -1; sessionClear(); }
+    else if (wasCur){ cur = Math.min(i, queue.length - 1); renderQueue(); syncUi(); if (wasPlaying) loadIndex(cur, true); else { showMsg(''); } }
+    else if (i < cur) cur--;
+    renderQueue(); syncUi(); syncTime();
+  }
+  function moveItem(i, to){
+    if (to < 0 || to >= queue.length || i === to || i < 0 || i >= queue.length) return;
+    const it = queue.splice(i, 1)[0]; queue.splice(to, 0, it);
+    const remap = (x) => x === i ? to : (i < to ? (x > i && x <= to ? x - 1 : x) : (x >= to && x < i ? x + 1 : x));
+    if (cur >= 0) cur = remap(cur);
+    hist = hist.map(remap); played = new Set(Array.from(played).map(remap));
+    renderQueue(); syncUi();
+  }
+  function clearQueue(){ unload(); queue = []; cur = -1; hist = []; played = new Set(); sessionClear(); showMsg(''); setStatus('Queue cleared.'); renderQueue(); syncUi(); syncTime(); }
+
+  // ---- element events ----
+  el.addEventListener('loadedmetadata', () => {
+    const it = curItem(); if (!it) return;
+    if (isFinite(el.duration)) it.dur = el.duration;
+    const video = el.videoWidth > 0 && el.videoHeight > 0;
+    stage.classList.toggle('is-video', video); stage.classList.toggle('is-audio', !video);
+    sizeCanvas(); if (!video) drawStatic();
+    renderQueue(); syncTime(); syncUi(); sessionUpdate();
+  });
+  el.addEventListener('durationchange', syncTime);
+  el.addEventListener('timeupdate', syncTime);
+  el.addEventListener('play', () => { syncUi(); });
+  el.addEventListener('playing', () => { setStatus(''); syncUi(); });
+  el.addEventListener('pause', () => { syncUi(); });
+  el.addEventListener('ratechange', () => { syncUi(); });
+  el.addEventListener('error', onMediaError);
+  el.addEventListener('ended', () => {
+    if (cfg.repeat === 'one'){ el.currentTime = 0; play(); return; }
+    next(false);
+  });
+  el.addEventListener('enterpictureinpicture', () => { ui.pip.setAttribute('aria-pressed', 'true'); });
+  el.addEventListener('leavepictureinpicture', () => { ui.pip.setAttribute('aria-pressed', 'false'); });
+
+  // ---- controls ----
+  ui.play.addEventListener('click', toggle);
+  ui.prev.addEventListener('click', prev);
+  ui.next.addEventListener('click', () => next(true));
+  ui.shuffle.addEventListener('click', () => { cfg.shuffle = !cfg.shuffle; hist = []; played = new Set(cur >= 0 ? [cur] : []); saveCfg(); syncUi(); setStatus('Shuffle ' + (cfg.shuffle ? 'on' : 'off') + '.'); });
+  ui.repeat.addEventListener('click', () => { cfg.repeat = cfg.repeat === 'off' ? 'all' : cfg.repeat === 'all' ? 'one' : 'off'; saveCfg(); syncUi(); setStatus('Repeat ' + (cfg.repeat === 'one' ? 'one track' : cfg.repeat) + '.'); });
+  function toggleMute(){
+    if (cfg.muted || cfg.vol === 0){ cfg.muted = false; if (cfg.vol === 0) cfg.vol = 0.5; } else cfg.muted = true;
+    el.muted = cfg.muted; el.volume = cfg.vol; saveCfg(); syncUi();
+  }
+  ui.mute.addEventListener('click', toggleMute);
+  ui.vol.addEventListener('input', () => { cfg.vol = Math.max(0, Math.min(1, Number(ui.vol.value) / 100)); cfg.muted = cfg.vol === 0 ? cfg.muted : false; el.volume = cfg.vol; el.muted = cfg.muted; saveCfg(); syncUi(); });
+  ui.speed.addEventListener('change', () => { const v = Number(ui.speed.value); if (SPEEDS.indexOf(v) === -1) return; cfg.speed = v; el.defaultPlaybackRate = v; el.playbackRate = v; saveCfg(); syncUi(); });
+  ui.seek.addEventListener('input', () => { seeking = true; const d = el.duration; if (isFinite(d) && d > 0){ el.currentTime = Number(ui.seek.value) / 1000 * d; ui.cur.textContent = fmt(el.currentTime); } });
+  ui.seek.addEventListener('change', () => { seeking = false; syncTime(); });
+  ui.pip.addEventListener('click', async () => {
+    try { if (document.pictureInPictureElement === el) await document.exitPictureInPicture(); else await el.requestPictureInPicture(); }
+    catch(e){ setStatus('Picture in picture is not available for this file.', true); }
+  });
+  function toggleFs(){
+    if (ui.fs.disabled) return;
+    try {
+      if (document.fullscreenElement){ document.exitFullscreen(); return; }
+      const rq = main.requestFullscreen || main.webkitRequestFullscreen;
+      if (!rq){ setStatus('Fullscreen is not available in this browser.', true); return; }
+      const p = rq.call(main); if (p && p.catch) p.catch(() => setStatus('The browser blocked fullscreen.', true));
+    } catch(e){ setStatus('Fullscreen is not available here.', true); }
+  }
+  ui.fs.addEventListener('click', toggleFs);
+  stage.addEventListener('click', (e) => { if (e.target.closest('button')) return; if (queue.length) toggle(); });
+  stage.addEventListener('dblclick', (e) => { if (stage.classList.contains('is-video')) toggleFs(); });
+  $('#mp-add').addEventListener('click', () => ui.file.click());
+  $('#mp-empty-add').addEventListener('click', (e) => { e.stopPropagation(); ui.file.click(); });
+  $('#mp-clear').addEventListener('click', clearQueue);
+  ui.file.addEventListener('change', () => { const files = Array.from(ui.file.files || []); ui.file.value = ''; addFiles(files); });
+  ui.urlForm.addEventListener('submit', (e) => { e.preventDefault(); if (addUrl(ui.url.value)) ui.url.value = ''; });
+  ui.url.addEventListener('keydown', (e) => e.stopPropagation());
+  ui.queue.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.play !== undefined) loadIndex(Number(b.dataset.play), true);
+    else if (b.dataset.up !== undefined) moveItem(Number(b.dataset.up), Number(b.dataset.up) - 1);
+    else if (b.dataset.down !== undefined) moveItem(Number(b.dataset.down), Number(b.dataset.down) + 1);
+    else if (b.dataset.rm !== undefined) removeAt(Number(b.dataset.rm));
+  });
+  // drag to reorder (own drag type, so it never collides with file drops)
+  let dragFrom = -1;
+  ui.queue.addEventListener('dragstart', (e) => { const li = e.target.closest && e.target.closest('.mp-q'); if (!li) return; dragFrom = Number(li.dataset.i); try { e.dataTransfer.setData('application/x-spacepad-mp', String(dragFrom)); e.dataTransfer.effectAllowed = 'move'; } catch(x){} });
+  ui.queue.addEventListener('dragover', (e) => { if (dragFrom < 0) return; const li = e.target.closest('.mp-q'); if (!li) return; e.preventDefault(); e.stopPropagation(); ui.queue.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over')); li.classList.add('drag-over'); });
+  ui.queue.addEventListener('drop', (e) => { if (dragFrom < 0) return; const li = e.target.closest('.mp-q'); e.preventDefault(); e.stopPropagation(); const from = dragFrom; dragFrom = -1; if (li) moveItem(from, Number(li.dataset.i)); else renderQueue(); });
+  ui.queue.addEventListener('dragend', () => { dragFrom = -1; ui.queue.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over')); });
+
+  // file drag and drop onto the whole window
+  const hasFiles = (e) => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1);
+  let depth = 0;
+  view.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); depth++; view.classList.add('mp-drop'); });
+  view.addEventListener('dragover', (e) => { if (!hasFiles(e)) return; e.preventDefault(); try { e.dataTransfer.dropEffect = 'copy'; } catch(x){} });
+  view.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) view.classList.remove('mp-drop'); });
+  view.addEventListener('drop', (e) => { if (!hasFiles(e)) return; e.preventDefault(); const files = Array.from(e.dataTransfer.files || []); depth = 0; view.classList.remove('mp-drop'); addFiles(files); });
+
+  // keyboard shortcuts while focus is inside the player
+  view.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' && (t.type === 'text')) return;
+    if (tag === 'SELECT' || tag === 'TEXTAREA') return;
+    const onRange = tag === 'INPUT' && t.type === 'range';
+    const onButton = tag === 'BUTTON';
+    let handled = true;
+    switch (e.key){
+      case ' ': case 'Spacebar': if (onButton || onRange) return; toggle(); break;
+      case 'ArrowLeft': if (onRange) return; if (loaded) el.currentTime = Math.max(0, el.currentTime - 5); break;
+      case 'ArrowRight': if (onRange) return; if (loaded && isFinite(el.duration)) el.currentTime = Math.min(el.duration, el.currentTime + 5); break;
+      case 'ArrowUp': if (onRange) return; cfg.vol = Math.min(1, Math.round((cfg.vol + 0.05) * 100) / 100); cfg.muted = false; el.volume = cfg.vol; el.muted = false; saveCfg(); syncUi(); break;
+      case 'ArrowDown': if (onRange) return; cfg.vol = Math.max(0, Math.round((cfg.vol - 0.05) * 100) / 100); el.volume = cfg.vol; saveCfg(); syncUi(); break;
+      case 'm': case 'M': toggleMute(); break;
+      case 'f': case 'F': toggleFs(); break;
+      default: handled = false;
+    }
+    if (handled){ e.preventDefault(); e.stopPropagation(); }
+  });
+
+  // ---- lifecycle ----
+  document.addEventListener('spacepad:lock', () => { if (loaded && !el.paused) el.pause(); if (actx && actx.state === 'running'){ try { actx.suspend(); } catch(e){} } syncViz(); });
+  document.addEventListener('visibilitychange', syncViz);
+  try { new MutationObserver(syncViz).observe(root, { attributes: true, attributeFilter: ['class'] }); } catch(e){}
+  try { new ResizeObserver(() => { sizeCanvas(); syncViz(); }).observe(stage); } catch(e){}
+  applyCfgToElement();
+  renderQueue(); syncUi(); syncTime();
+
+  studioApps.media = {
+    refresh: () => { sizeCanvas(); syncUi(); syncTime(); },
+    stop: stop,
+    _state: () => ({ queue: queue.map(q => ({ name: q.name, kind: q.kind, err: q.err, dur: q.dur })), cur: cur, loaded: loaded, paused: el.paused, ended: el.ended, time: el.currentTime, duration: el.duration,
+      volume: el.volume, muted: el.muted, rate: el.playbackRate, src: el.getAttribute('src'), liveUrls: liveUrls.size, repeat: cfg.repeat, shuffle: cfg.shuffle,
+      gfx: gfx, kind: stage.classList.contains('is-video') ? 'video' : stage.classList.contains('is-audio') ? 'audio' : '', rafActive: !!rafId, videoW: el.videoWidth, ctxState: actx ? actx.state : '' }),
+    _addUrl: addUrl
+  };
 })();
 
 // Apply the saved startup screen now that every view and its setup
