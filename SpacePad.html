@@ -1670,6 +1670,11 @@
     border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 12.5px;
   }
   .store-search-row input:focus { outline: none; border-color: var(--accent-dim); background: var(--panel-3); }
+  .store-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 4px; }
+  .store-chips .ghost-btn { padding: 3px 10px; font-size: 11.5px; min-height: 0; border-radius: 999px; }
+  .store-chips .ghost-btn[aria-pressed="true"] { border-color: var(--accent-dim); color: var(--accent); background: var(--panel-3); }
+  .store-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border: 1px solid var(--border); border-radius: 999px; font-size: 10px; font-weight: 500; color: var(--text-dim); vertical-align: 1px; line-height: 15px; white-space: nowrap; }
+  .store-tag.bi { color: var(--accent-cyan); }
   .store-empty-msg { font-size: 12px; color: var(--text-dim); padding: 12px 0; text-align: center; }
   .accent-swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .accent-swatch {
@@ -1700,6 +1705,7 @@
   .store-item-name { font-size: 13px; font-weight: 600; }
   .store-item-desc { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; line-height: 1.35; }
   .store-item-btn { flex-shrink: 0; min-width: 74px; }
+  @media (max-width: 520px){ .store-item-body { flex: 1 1 calc(100% - 52px); } .store-item > .store-item-btn:first-of-type { margin-left: 52px; } }
   .store-item-progress-wrap { flex-basis: 100%; display: none; margin-top: 2px; }
   .store-item-progress-wrap.active { display: block; }
   .store-item-progress-track { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; }
@@ -2495,6 +2501,104 @@
   .ul-hist { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; align-items: flex-start; }
   html[data-theme="day"]:not(.day-plain) .ul-go { background: var(--day-btn-bg); color: var(--day-btn-text); border-color: var(--day-edge); }
   html[data-theme="day"]:not(.day-plain) .ul-cell.sel { background: var(--day-btn-bg); color: var(--day-btn-text); }
+  /* ---- Accessories: compact utility apps ---- */
+  .acc-view { flex-direction: column; overflow: auto; padding: 8px 10px 12px; font-size: 12.5px; color: var(--text); }
+  .acc-wrap { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: none; margin: 0; box-sizing: border-box; align-self: flex-start; }
+  .acc-wrap [hidden] { display: none !important; }
+  .acc-wrap :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input[type="time"], input[type="datetime-local"], select, textarea) { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 12px; max-width: 100%; box-sizing: border-box; min-width: 0; color-scheme: dark; }
+  html[data-theme="day"] .acc-wrap :is(input, select, textarea) { color-scheme: light; }
+  .acc-wrap textarea:focus-visible, .acc-wrap input:focus-visible, .acc-wrap select:focus-visible, .acc-wrap button:focus-visible, .acc-wrap summary:focus-visible, .acc-wrap [tabindex]:focus-visible, .acc-wrap canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .acc-wrap input[type="range"] { accent-color: var(--accent); width: 100%; }
+  .acc-wrap input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; }
+  .acc-wrap details > summary { cursor: pointer; font-size: 12px; font-weight: 600; padding: 2px 0; }
+  .ac-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .ac-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ac-sp { flex: 1 1 auto; }
+  .ac-seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ac-seg .ghost-btn { flex: 1 1 auto; padding: 4px 6px; font-size: 11.5px; white-space: nowrap; }
+  .ac-b { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; font-size: 11.5px; min-height: 28px; }
+  .ac-i { display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 28px; height: 28px; flex: 0 0 auto; }
+  .ac-b .icon, .ac-i .icon { width: 14px; height: 14px; flex-shrink: 0; }
+  .ac-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; min-width: 0; box-sizing: border-box; }
+  .ac-lbl { font-size: 11px; color: var(--text-dim); }
+  .ac-lbl.ok, .jt-msg.ok { color: #22c55e; } .ac-lbl.err, .jt-msg.err, .cc-res.err, .acc-wrap .err { color: var(--error); }
+  html[data-theme="day"] .ac-lbl.ok, html[data-theme="day"] .jt-msg.ok { color: #15803d; }
+  .ac-f { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .ac-f.ac-g { flex: 1 1 110px; } .ac-f.ac-s { flex: 0 1 74px; } .ac-g { flex: 1 1 90px; min-width: 0; }
+  .ac-chk { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+  .ac-hide { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .ac-btnfile { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; font-size: 11.5px; cursor: pointer; position: relative; }
+  .ac-btnfile:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .ac-btnfile .icon { width: 14px; height: 14px; }
+  .ac-ta { width: 100%; resize: vertical; min-height: 70px; font: 12px/1.45 ui-monospace, Menlo, Consolas, monospace !important; user-select: text; -webkit-user-select: text; }
+  .ac-hashes { display: flex; flex-direction: column; gap: 5px; }
+  .ac-hash { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .ac-hash .ac-lbl { width: 70px; flex-shrink: 0; } .ac-hash code { flex: 1 1 140px; min-width: 0; font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace; word-break: break-all; user-select: text; }
+  .dc-r { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; align-items: baseline; } .dc-r b { text-align: right; font-variant-numeric: tabular-nums; user-select: text; }
+  .dc-out { display: flex; flex-direction: column; } .fc-big { font-size: 18px; }
+  .uc-pair { display: flex; gap: 8px; flex-wrap: wrap; } .uc-mid { margin: -2px 0; }
+  .uc-tbl { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 3px 10px; margin-top: 4px; }
+  .uc-row { display: flex; justify-content: space-between; gap: 8px; background: none; border: 0; border-bottom: 1px solid var(--border); color: var(--text); font: inherit; font-size: 12px; padding: 4px 2px; cursor: pointer; text-align: left; }
+  .uc-row:hover { color: var(--accent); } .uc-row b { font-variant-numeric: tabular-nums; }
+  /* calculator */
+  .cc-screen { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; text-align: right; position: relative; min-height: 64px; }
+  .cc-ex { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-x: auto; overflow-y: hidden; white-space: nowrap; line-height: 1.3; outline-offset: 2px; }
+  .cc-res { font-size: 12px; color: var(--text-dim); min-height: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cc-m { position: absolute; left: 8px; top: 6px; font-size: 10.5px; font-weight: 700; color: var(--accent); }
+  .cc-keys, .cc-mem, .cc-sci { display: grid; gap: 4px; } .cc-keys { grid-template-columns: repeat(4, 1fr); } .cc-mem { grid-template-columns: repeat(5, 1fr); } .cc-sci { grid-template-columns: repeat(5, 1fr); display: none; }
+  .cc-is-sci .cc-sci { display: grid; }
+  .cc-k { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 0; min-height: 36px; font: inherit; font-size: 15px; cursor: pointer; transition: none; }
+  .cc-mem .cc-k, .cc-sci .cc-k { min-height: 28px; font-size: 12px; } .cc-k.fn { font-size: 13px; color: var(--accent-cyan); } .cc-k.op { color: var(--accent); font-weight: 700; } .cc-k.cl { color: var(--error); }
+  .cc-k:hover { border-color: var(--accent-dim); background: var(--panel-3); } .cc-k:active { transform: scale(.96); }
+  .cc-k.eq { background: var(--accent); color: #14132b; border-color: var(--accent); font-weight: 700; }
+  .cc-k[aria-pressed="true"] { border-color: var(--accent); background: var(--panel-3); color: var(--accent); }
+  .cc-k:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .cc-tape { max-height: 140px; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+  .cc-t { display: flex; justify-content: space-between; gap: 10px; background: none; border: 0; border-bottom: 1px solid var(--border); color: var(--text); font: inherit; font-size: 12px; padding: 4px 2px; cursor: pointer; } .cc-t:hover { color: var(--accent); } .cc-t span { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* clock tools */
+  .ck-big { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; padding: 6px 0; }
+  .ck-time { font-size: 20px; font-variant-numeric: tabular-nums; } .ck-tl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; } .ck-lb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .ck-bar { height: 5px; background: var(--panel-3); border-radius: 3px; overflow: hidden; margin: 5px 0; } .ck-bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+  .ck-list { display: flex; flex-direction: column; gap: 6px; } .ck-a { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .ck-a .ck-lb { flex: 1; }
+  .ck-ph { text-align: center; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--accent); font-size: 12px; }
+  .ck-laps { list-style: none; margin: 0; padding: 0; max-height: 190px; overflow: auto; font-variant-numeric: tabular-nums; } .ck-laps li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 2px; border-bottom: 1px solid var(--border); }
+  /* color picker */
+  .cp-top { display: flex; gap: 8px; align-items: stretch; } .cp-top input[type="color"].cp-nat { width: 44px; height: auto; min-height: 44px; }
+  .cp-sw { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid var(--border); } .cp-top .ac-col { flex: 0 0 130px; }
+  .cp-sl { display: grid; gap: 3px; } .cp-s { display: grid; grid-template-columns: 14px 1fr 30px; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); } .cp-s output { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+  .cp-demo { margin: 6px 0; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 15px; font-weight: 600; } .cp-ratio { font-size: 22px; font-weight: 700; } .cp-wcag { display: flex; flex-wrap: wrap; gap: 4px; }
+  .cp-b { font-size: 11px; padding: 2px 7px; border-radius: 10px; border: 1px solid var(--border); } .cp-b.ok { border-color: #22c55e; color: #22c55e; } .cp-b.no { border-color: var(--error); color: var(--error); }
+  html[data-theme="day"] .cp-b.ok { color: #15803d; border-color: #15803d; }
+  .cp-pal { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; } .cp-chip { flex: 1 1 62px; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; cursor: pointer; }
+    /* text / json / encoder */
+  .tt-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--text-dim); } .tt-stats b { color: var(--text); }
+  .tt-ops .ghost-btn { flex: 0 1 auto; }
+  .jt-msg { font-size: 11.5px; min-height: 14px; word-break: break-word; }
+  .jt-tree { max-height: 260px; overflow: auto; font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; user-select: text; } .jt-tree details > .jt-in { margin-left: 14px; border-left: 1px dashed var(--border); padding-left: 8px; } .jt-leaf { padding-left: 14px; word-break: break-word; }
+  .jt-k { color: var(--accent-cyan); } .jt-d { color: var(--text-dim); } .jt-string { color: #22c55e; } .jt-number { color: #f59e0b; } .jt-boolean { color: #ec4899; } .jt-null { color: var(--text-dim); }
+  html[data-theme="day"] .jt-k { color: #0b6a8a; } html[data-theme="day"] .jt-string { color: #15803d; } html[data-theme="day"] .jt-number { color: #b45309; } html[data-theme="day"] .jt-boolean { color: #be185d; }
+  /* world clock, todo, paint, scratchpad, launcher */
+  .wc-list { display: flex; flex-direction: column; } .wc-row { display: flex; align-items: center; gap: 8px; padding: 6px 2px; border-bottom: 1px solid var(--border); } .wc-n { flex: 1; min-width: 0; display: flex; flex-direction: column; } .wc-n b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wc-t { text-align: right; display: flex; flex-direction: column; } .wc-t b { font-size: 20px; font-variant-numeric: tabular-nums; }
+  .wc-plan { overflow-x: auto; margin-top: 6px; } .wc-ph, .wc-pr { display: grid; grid-template-columns: 74px repeat(24, minmax(11px, 1fr)); gap: 1px; min-width: 360px; align-items: center; } .wc-ph i { font: normal 9px/1 inherit; color: var(--text-dim); text-align: left; overflow: visible; white-space: nowrap; } .wc-plan { padding-right: 10px; }
+  .wc-pr { margin-top: 2px; } .wc-pr span { font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 4px; } .wc-pr i { height: 16px; background: var(--panel-3); border-radius: 2px; }
+  .wc-pr i.w { background: var(--accent-dim); } .wc-pr i.n { background: repeating-linear-gradient(135deg, transparent 0 3px, var(--border) 3px 5px); opacity: .8; } .wc-pr i.o { background: var(--accent); box-shadow: 0 0 0 1px var(--accent-cyan); }
+  .td-prog { display: flex; align-items: center; gap: 8px; } .td-prog .ck-bar { flex: 1; margin: 0; }
+  .td-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; } .td-i { display: flex; align-items: center; gap: 6px; padding: 4px 2px; border-bottom: 1px solid var(--border); } .td-i.done .td-t { text-decoration: line-through; color: var(--text-dim); }
+  .td-i.drag { opacity: .45; } .td-i.over { box-shadow: 0 -2px 0 var(--accent); } .td-h { cursor: grab; color: var(--text-dim); display: flex; } .td-t { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: text; } .td-ed { flex: 1; }
+  .td-due { font-size: 10.5px; color: var(--text-dim); white-space: nowrap; } .td-due.od { color: var(--error); font-weight: 700; } .td-i .ac-i { width: 22px; height: 22px; } .td-add input[type="text"] { flex: 1 1 140px; }
+  .pt-stage { overflow: auto; border: 1px solid var(--border); border-radius: 6px; background: #fff; line-height: 0; } .pt-stage canvas { width: 100%; height: auto; touch-action: none; cursor: crosshair; display: block; }
+  .pt-pal { display: flex; flex-wrap: wrap; gap: 3px; flex: 1; } .pt-c { width: 20px; height: 20px; border: 1px solid var(--border); border-radius: 4px; padding: 0; cursor: pointer; } .acc-wrap input[type="color"] { width: 34px; height: 28px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); cursor: pointer; flex-shrink: 0; }
+  .sp-list { display: flex; flex-direction: column; gap: 6px; } .sp-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; font-size: 12px; } .sp-n .ac-ta { min-height: 52px; margin-top: 4px; }
+  .ax-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 6px; } .ax-t { display: flex; flex-direction: column; gap: 2px; } .ax-more { margin-top: 0; } .ax-h { margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; font-size: 10.5px; }
+  .ax-open { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px; color: var(--text); font: inherit; cursor: pointer; text-align: left; min-height: 74px; width: 100%; }
+  .ax-open:hover { border-color: var(--accent-dim); background: var(--panel-3); } .ax-open .icon { width: 20px; height: 20px; color: var(--accent-cyan); } .ax-open b { font-size: 12.5px; } .ax-open span { font-size: 10.5px; color: var(--text-dim); line-height: 1.3; }
+  .ax-desk { padding: 0 2px; font-size: 11px; color: var(--text-dim); }
+  .dv-bits { display: flex; flex-wrap: wrap; gap: 2px; } .dv-bits i { width: 6px; } .dv-bit { width: 20px; height: 24px; padding: 0; font: 11px ui-monospace, Menlo, monospace; background: var(--panel); color: var(--text-dim); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; } .dv-bit[aria-pressed="true"] { background: var(--accent); color: #14132b; border-color: var(--accent); font-weight: 700; }
+  html[data-theme="day"]:not(.day-plain) .cc-k.eq, html[data-theme="day"]:not(.day-plain) .dv-bit[aria-pressed="true"] { background: var(--day-btn-bg); color: var(--day-btn-text); border-color: var(--day-edge); }
+  html[data-theme="day"]:not(.day-plain) .acc-wrap .ghost-btn[aria-pressed="true"] { background: var(--day-chrome); color: #fff; border-color: var(--day-chrome-2); }
+  html.perf-mode .acc-view *, html.reduce-motion .acc-view * { transition: none !important; animation: none !important; }
+  @media (max-width: 480px) { .acc-view { padding: 6px 6px 10px; } .cp-top .ac-col { flex-basis: 110px; } .cc-ex { font-size: 22px; } }
   #view-unilab > .studio-wrap, #view-zalgo > .studio-wrap { align-self: flex-start; width: 100%; box-sizing: border-box; }
   /* ---- Planet Cracker (the scene stays dark in Day and Night themes) ---- */
   #view-planets { flex-direction: column; background: #03040d; color: #e9ecff; overflow: hidden; font-size: 12px; }
@@ -4263,6 +4367,21 @@
             <option value="zalgo">Zalgo Text</option>
             <option value="unilab">Unicode Lab</option>
             <option value="planets">Planet Cracker</option>
+            <option value="calc">Calculator</option>
+            <option value="clock">Clock Tools</option>
+            <option value="unitconv">Unit Converter</option>
+            <option value="colorpick">Color Picker</option>
+            <option value="texttools">Text Tools</option>
+            <option value="jsontools">JSON Tools</option>
+            <option value="encoder">Encoder / Hash</option>
+            <option value="worldclock">World Clock</option>
+            <option value="todo">To-Do</option>
+            <option value="datecalc">Date Calculator</option>
+            <option value="paint">Quick Paint</option>
+            <option value="scratch">Scratchpad</option>
+            <option value="finance">Finance Calc</option>
+            <option value="devcalc">Dev Calc</option>
+            <option value="accessories">Accessories</option>
             <option value="settings">Settings</option>
           </select>
         </div>
@@ -4569,7 +4688,7 @@
     <div class="settings-wrap">
       <div>
         <h2><svg class="icon"><use href="#icon-download"></use></svg> App Store</h2>
-        <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. Everything here is self-contained and works offline, except MyArcade.Win, which loads live from jsDelivr. Use Remove to take one off your desktop again.</p>
+        <p class="settings-intro">Extra mini-apps and games — click Install and they show up on the Desktop like any other app. Everything here is self-contained and works offline, except MyArcade.Win, which loads live from jsDelivr. Use Remove to take one off your desktop again. Cards tagged Built in are small tools that ship with Spacepad: Install shows their desktop icon, Remove only hides it, and they stay reachable from Accessories and Ctrl+K.</p>
       </div>
       <div class="settings-card">
         <h3><svg class="icon"><use href="#icon-plus"></use></svg> My Apps</h3>
@@ -4582,6 +4701,7 @@
           <svg class="icon"><use href="#icon-search"></use></svg>
           <input type="text" id="appstore-search" placeholder="Search the App Store…" autocomplete="off">
         </div>
+        <div id="appstore-chips" class="store-chips" role="group" aria-label="Filter by category"></div>
         <div id="appstore-list"></div>
         <div id="appstore-empty" class="store-empty-msg" style="display:none;">No apps match your search.</div>
       </div>
@@ -4608,6 +4728,22 @@
   <div id="view-chaos" class="app-view studio-view"></div>
   <div id="view-zalgo" class="app-view studio-view"></div>
   <div id="view-unilab" class="app-view studio-view"></div>
+  <!-- Accessories: compact utility apps, built by the ACCESSORIES script block -->
+  <div id="view-calc" class="app-view"></div>
+  <div id="view-clock" class="app-view"></div>
+  <div id="view-unitconv" class="app-view"></div>
+  <div id="view-colorpick" class="app-view"></div>
+  <div id="view-texttools" class="app-view"></div>
+  <div id="view-jsontools" class="app-view"></div>
+  <div id="view-encoder" class="app-view"></div>
+  <div id="view-worldclock" class="app-view"></div>
+  <div id="view-todo" class="app-view"></div>
+  <div id="view-datecalc" class="app-view"></div>
+  <div id="view-paint" class="app-view"></div>
+  <div id="view-scratch" class="app-view"></div>
+  <div id="view-finance" class="app-view"></div>
+  <div id="view-devcalc" class="app-view"></div>
+  <div id="view-accessories" class="app-view"></div>
 
   <!-- Media Player (App Store app; built by the MEDIA PLAYER script block). Only reachable once installed from the App Store. -->
   <div id="view-media" class="app-view"></div>
@@ -5072,7 +5208,24 @@ const ICONS = {
   film: { svg: '<rect x="2" y="3" width="20" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7.5" x2="7" y2="7.5"/><line x1="2" y1="16.5" x2="7" y2="16.5"/><line x1="17" y1="7.5" x2="22" y2="7.5"/><line x1="17" y1="16.5" x2="22" y2="16.5"/>' },
   pip: { svg: '<rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="12" width="8" height="6" rx="1" fill="currentColor"/>' },
   upload: { svg: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>' },
-  'arrow-up': { svg: '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>' }
+  'arrow-up': { svg: '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>' },
+  calculator: { svg: '<rect x="5" y="2" width="14" height="20" rx="2"/><rect x="8" y="5" width="8" height="4" rx=".5"/><line x1="8" y1="13" x2="8" y2="13.01"/><line x1="12" y1="13" x2="12" y2="13.01"/><line x1="16" y1="13" x2="16" y2="13.01"/><line x1="8" y1="17" x2="8" y2="17.01"/><line x1="12" y1="17" x2="12" y2="17.01"/><line x1="16" y1="17" x2="16" y2="17.01"/>' },
+  stopwatch: { svg: '<circle cx="12" cy="14" r="7.5"/><line x1="12" y1="14" x2="15" y2="11"/><line x1="9.5" y1="2" x2="14.5" y2="2"/><line x1="12" y1="2" x2="12" y2="6.5"/><line x1="19" y1="6" x2="20.5" y2="4.5"/>' },
+  ruler: { svg: '<path d="M3 17L17 3l4 4L7 21z"/><line x1="7" y1="13" x2="9" y2="15"/><line x1="10" y1="10" x2="12" y2="12"/><line x1="13" y1="7" x2="15" y2="9"/>' },
+  pipette: { svg: '<path d="M20.5 3.5a2.1 2.1 0 0 0-3 0L14 7l-1-1-2 2 1 1-7.5 7.5V20h3.5L16 12.5l1 1 2-2-1-1 3.5-3.5a2.1 2.1 0 0 0 0-3z"/>' },
+  braces: { svg: '<path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/>' },
+  hash: { svg: '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>' },
+  checklist: { svg: '<polyline points="3 6 5 8 9 4"/><line x1="12" y1="6" x2="21" y2="6"/><polyline points="3 13 5 15 9 11"/><line x1="12" y1="13" x2="21" y2="13"/><line x1="3" y1="19" x2="9" y2="19"/><line x1="12" y1="19" x2="21" y2="19"/>' },
+  brush: { svg: '<path d="M18.4 2.6a2 2 0 0 1 2.9 2.9L12 14.8 9.2 12z"/><path d="M9 13c-2.5 0-4 1.6-4 4 0 1.3-.7 2.3-2 3 3 1.5 8 .5 8-3.5"/>' },
+  notepad: { svg: '<rect x="5" y="3" width="14" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>' },
+  binary: { svg: '<rect x="3" y="3" width="7" height="8" rx="3.5"/><polyline points="14 6 17 3 17 11"/><polyline points="4 15 7 12 7 21"/><rect x="14" y="13" width="7" height="8" rx="3.5"/>' },
+  apps: { svg: '<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>' },
+  redo: { svg: '<polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h16"/>' },
+  square: { svg: '<rect x="4" y="4" width="16" height="16" rx="1"/>' },
+  circle: { svg: '<circle cx="12" cy="12" r="8"/>' },
+  slash: { svg: '<line x1="5" y1="19" x2="19" y2="5"/>' },
+  bucket: { svg: '<path d="M5 11l6-6 8 8-6 6z"/><line x1="5" y1="11" x2="13" y2="19"/><path d="M20 14s2 2.5 2 4a2 2 0 0 1-4 0c0-1.5 2-4 2-4z"/>' },
+  pencil: { svg: '<path d="M4 20l1-5L16 4l4 4L9 19z"/><line x1="13" y1="7" x2="17" y2="11"/>' }
 };
 function icon(name, cls){
   return '<svg class="icon' + (cls ? ' ' + cls : '') + '"><use href="#icon-' + name + '"></use></svg>';
@@ -6938,6 +7091,24 @@ let hiddenViewsUnlocked = true;
    exactly like the desktop icons' .disabled handling — this
    is no longer a password/unlock gate, just an offline-availability flag.
    ========================================================================= */
+// Accessories: small utility apps (see ACCESSORIES near the end). desk = shown on the desktop by default.
+const ACC_APPS = [
+  { view: 'calc', icon: 'calculator', label: 'Calculator', desc: 'Standard and scientific, with history', desk: true, w: 330, h: 520 },
+  { view: 'clock', icon: 'stopwatch', label: 'Clock Tools', desc: 'Timers, stopwatch, alarms, Pomodoro', desk: true, w: 350, h: 460 },
+  { view: 'unitconv', icon: 'ruler', label: 'Unit Converter', desc: 'Length, mass, temperature and more', desk: true, w: 340, h: 420 },
+  { view: 'colorpick', icon: 'pipette', label: 'Color Picker', desc: 'Sliders, contrast checker, palettes', desk: true, w: 370, h: 600 },
+  { view: 'texttools', icon: 'notepad', label: 'Text Tools', desc: 'Counts, case, sort, find and replace', desk: true, w: 420, h: 520 },
+  { view: 'jsontools', icon: 'braces', label: 'JSON Tools', desc: 'Format, validate, tree, CSV', desk: false, w: 440, h: 520 },
+  { view: 'encoder', icon: 'hash', label: 'Encoder / Hash', desc: 'Base64, URL, JWT, SHA hashes', desk: false, w: 420, h: 540 },
+  { view: 'worldclock', icon: 'globe', label: 'World Clock', desc: 'Time zones and meeting planner', desk: false, w: 380, h: 500 },
+  { view: 'todo', icon: 'checklist', label: 'To-Do', desc: 'Lists with due dates and reordering', desk: false, w: 340, h: 480 },
+  { view: 'datecalc', icon: 'calendar', label: 'Date Calculator', desc: 'Differences, age, countdown', desk: false, w: 360, h: 480 },
+  { view: 'paint', icon: 'brush', label: 'Quick Paint', desc: 'Small canvas with shapes and fill', desk: false, w: 460, h: 520 },
+  { view: 'scratch', icon: 'clipboard', label: 'Scratchpad', desc: 'Quick snippets with copy buttons', desk: false, w: 340, h: 440 },
+  { view: 'finance', icon: 'coin', label: 'Finance Calc', desc: 'Loan, tip split, percent, savings', desk: false, w: 350, h: 480 },
+  { view: 'devcalc', icon: 'binary', label: 'Dev Calc', desc: 'Number bases, bitwise, Unix time', desk: false, w: 370, h: 500 },
+  { view: 'accessories', icon: 'apps', label: 'Accessories', desc: 'All the small tools in one place', desk: true, w: 360, h: 520 }
+];
 const DESKTOP_APPS = [
   { view: 'editor', icon: 'edit', label: 'Editor' },
   { view: 'chat', icon: 'message-circle', label: 'Chat', gated: true },
@@ -6961,9 +7132,12 @@ const DESKTOP_APPS = [
   { view: 'zalgo', icon: 'zalgo', label: 'Zalgo Text' },
   { view: 'unilab', icon: 'unicode', label: 'Unicode Lab' },
   { view: 'planets', icon: 'planet', label: 'Planet Cracker' },
+  // Accessories (calculator, clocks, converters...). Added from ACC_APPS right after this literal.
   { view: 'appstore', icon: 'download', label: 'App Store' },
   { view: 'settings', icon: 'settings', label: 'Settings' }
 ];
+
+ACC_APPS.forEach(a => DESKTOP_APPS.splice(DESKTOP_APPS.findIndex(x => x.view === 'appstore'), 0, { view: a.view, icon: a.icon, label: a.label }));
 
 /* =========================================================================
    NATIVE STORE APPS — App Store entries that are real window apps built into
@@ -7114,7 +7288,8 @@ try {
   hiddenBuiltins = raw ? JSON.parse(raw) : [];
   if (!Array.isArray(hiddenBuiltins)) hiddenBuiltins = [];
 } catch(e){ hiddenBuiltins = []; }
-function saveHiddenBuiltins(){ try { memStore.setItem(HIDDEN_BUILTINS_KEY, JSON.stringify(hiddenBuiltins)); } catch(e){} }
+function saveHiddenBuiltins(){ try { memStore.setItem(HIDDEN_BUILTINS_KEY, JSON.stringify(hiddenBuiltins)); } catch(e){}
+  try { renderAppStore(); } catch(e){} } // keeps App Store Installed/Remove state in step with every desktop-icon toggle
 function setBuiltinHidden(view, hidden){
   hiddenBuiltins = hiddenBuiltins.filter(v => v !== view);
   if (hidden) hiddenBuiltins.push(view);
@@ -7400,6 +7575,7 @@ const DEFAULT_WIN_SIZE = {
   wallpapers: { w: 700, h: 600 }, appearance: { w: 720, h: 620 }, widgets: { w: 600, h: 560 }, iconlayout: { w: 640, h: 600 },
   customcss: { w: 720, h: 640 }, shortcuts: { w: 640, h: 600 }, layouts: { w: 600, h: 560 }, chaos: { w: 560, h: 680 }, borders: { w: 700, h: 660 }, zalgo: { w: 700, h: 700 }, unilab: { w: 780, h: 720 }, planets: { w: 760, h: 560 }, media: { w: 860, h: 600 }
 };
+ACC_APPS.forEach(a => { DEFAULT_WIN_SIZE[a.view] = { w: a.w, h: a.h }; });
 
 function defaultWinRect(key){
   const layer = document.getElementById('windows-layer');
@@ -7554,6 +7730,7 @@ function closeWindow(key){
   rec.open = false;
   if (key === 'stargazing') document.getElementById('starfield').classList.remove('scene-stargazing');
   if (key === 'media' && studioApps.media && studioApps.media.stop) studioApps.media.stop(); // closing the Media Player stops playback and releases its file URL
+  if (studioApps[key] && studioApps[key].onClose) { try { studioApps[key].onClose(); } catch(e){} } // Accessories stop their tickers on close
   if (wasFocused) focusTopOrDesktop(key);
   else renderWinDock();
   updateHeaderNewTabBtn();
@@ -7998,6 +8175,7 @@ const BASE_COMMANDS = [
   { id: 'open-zalgo', label: 'Open Zalgo Text Generator', iconName: 'zalgo', def: '', run: () => switchAppView('zalgo') },
   { id: 'open-unilab', label: 'Open Random Unicode Generator', iconName: 'unicode', def: '', run: () => switchAppView('unilab') },
   { id: 'open-planets', label: 'Play Planet Cracker', iconName: 'planet', def: '', run: () => switchAppView('planets') },
+  ...ACC_APPS.map(a => ({ id: 'open-' + a.view, label: 'Open ' + a.label, iconName: a.icon, def: '', run: () => switchAppView(a.view) })),
   { id: 'chaos-fire', label: 'Chaos: run a random action', iconName: 'zap', def: '', run: () => studioCall('chaos', 'fire') },
   { id: 'lock-spacepad', label: 'Lock SpacePad', iconName: 'lock', def: 'Alt+L', run: () => lockNow() },
   { id: 'reset-all', label: 'Reset everything…', iconName: 'x', run: () => clearAllAppData() }
@@ -13811,8 +13989,50 @@ async function downloadFetchApp(app){
   }
 }
 
+/* ---- Built-in small apps in the store ----
+   Calculator, Clock Tools, Zalgo Text and the other compact built-ins have real
+   windows that always exist; the store only controls their desktop icon.
+   Install = icon shown, Remove = icon hidden (same single setting as the
+   Accessories 'Desktop' tick, hiddenBuiltins). The app stays reachable through
+   Accessories, Ctrl+K and the store's Open button. */
+const STORE_BUILTIN_CATS = { calc: 'Utilities', clock: 'Time', unitconv: 'Utilities', colorpick: 'Design', texttools: 'Text', jsontools: 'Dev', encoder: 'Dev',
+  worldclock: 'Time', todo: 'Utilities', datecalc: 'Time', paint: 'Design', scratch: 'Text', finance: 'Utilities', devcalc: 'Dev' };
+const STORE_EXTRA_BUILTINS = [
+  { view: 'zalgo', icon: 'zalgo', name: 'Zalgo Text', cat: 'Fun', desc: 'Glitchy cursed text with combining marks above and below' },
+  { view: 'unilab', icon: 'unicode', name: 'Unicode Lab', cat: 'Text', desc: 'Random Unicode by character set; inspect and copy' },
+  { view: 'planets', icon: 'planet', name: 'Planet Cracker', cat: 'Games', desc: 'Orbital cannon minigame: crack the crystal planets' }
+];
+(function addBuiltinStoreItems(){
+  const items = ACC_APPS.filter(a => STORE_BUILTIN_CATS[a.view]).map(a => ({ view: a.view, icon: a.icon, name: a.label, cat: STORE_BUILTIN_CATS[a.view], desc: a.desc }))
+    .concat(STORE_EXTRA_BUILTINS)
+    .map(b => ({ id: 'store_b_' + b.view, name: b.name, icon: b.icon, builtin: b.view, type: 'builtin', cat: b.cat, description: b.desc + '. Built in, works offline.' }));
+  const MAP = { store_myarcade_win: 'Games', store_media_player: 'Media', store_2048: 'Games', store_snake: 'Games', store_memorymatch: 'Games', store_maze: 'Games',
+    store_dodger: 'Games', store_tictactoe: 'Games', store_breakout: 'Games', store_typing: 'Fun', store_pomodoro: 'Time', store_stopwatch: 'Time', store_countdown: 'Time',
+    store_metronome: 'Time', store_palette: 'Design', store_contrast: 'Design', store_whiteboard: 'Design', store_unitconv: 'Utilities', store_password: 'Utilities',
+    store_todo: 'Utilities', store_json: 'Dev', store_base64: 'Dev', store_wordcount: 'Text', store_caseconv: 'Text' };
+  STORE_APPS.forEach(i => { i.cat = i.cat || MAP[i.id] || 'Utilities'; });
+  const at = STORE_APPS.findIndex(i => i.id === 'store_media_player');
+  STORE_APPS.splice(at + 1, 0, ...items);
+})();
+const STORE_CAT_ORDER = ['Games', 'Utilities', 'Text', 'Dev', 'Time', 'Fun', 'Design', 'Media'];
+let appStoreCat = '';
+function builtinShown(view){ return hiddenBuiltins.indexOf(view) === -1; }
+function installStoreBuiltin(view){
+  const it = STORE_APPS.find(s => s.builtin === view); if (!it) return false;
+  if (!builtinShown(view)) setBuiltinHidden(view, false);
+  showToast('"' + it.name + '" added to the desktop.');
+  return true;
+}
+function removeStoreBuiltinWithConfirm(view){
+  const it = STORE_APPS.find(s => s.builtin === view); if (!it || !builtinShown(view)) return Promise.resolve(false);
+  const go = () => { setBuiltinHidden(view, true); showToast('"' + it.name + '" icon hidden. It is still in Accessories and Ctrl+K.'); return true; };
+  if (settingsGet(CONFIRM_DELETE_KEY, '1') !== '1') return Promise.resolve(go());
+  return appConfirm('Remove "' + it.name + '" from your desktop?', 'Only its desktop icon is hidden. ' + it.name + ' is built in, so it stays available from Accessories, Ctrl+K and this store, and you can install it again any time.', 'Remove', true).then(ok => ok ? go() : false);
+}
+
 function isStoreAppInstalled(id){
   const it = STORE_APPS.find(s => s.id === id);
+  if (it && it.builtin) return builtinShown(it.builtin);
   if (it && it.native) return storeNativeInstalled(it.native);
   return !!findCustomApp(id);
 }
@@ -13847,9 +14067,15 @@ function renderAppStore(){
   const wrap = document.getElementById('appstore-list');
   if (!wrap) return;
   const q = appStoreSearchQuery.trim().toLowerCase();
-  const visible = q
-    ? STORE_APPS.filter(item => item.name.toLowerCase().indexOf(q) !== -1 || item.description.toLowerCase().indexOf(q) !== -1)
-    : STORE_APPS;
+  const cats = STORE_CAT_ORDER.filter(c => STORE_APPS.some(i => i.cat === c));
+  if (appStoreCat && cats.indexOf(appStoreCat) === -1) appStoreCat = '';
+  const chips = document.getElementById('appstore-chips');
+  if (chips){
+    chips.innerHTML = [''].concat(cats).map(c => '<button type="button" class="ghost-btn" data-cat="' + c + '" aria-pressed="' + (c === appStoreCat) + '">' + (c || 'All') + '</button>').join('');
+    if (!chips._bound){ chips._bound = true; chips.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; appStoreCat = b.dataset.cat; renderAppStore(); }); }
+  }
+  const visible = STORE_APPS.filter(item => (!appStoreCat || item.cat === appStoreCat) &&
+    (!q || item.name.toLowerCase().indexOf(q) !== -1 || item.description.toLowerCase().indexOf(q) !== -1 || item.cat.toLowerCase().indexOf(q) !== -1));
   const emptyMsg = document.getElementById('appstore-empty');
   if (emptyMsg) emptyMsg.style.display = visible.length ? 'none' : '';
   wrap.innerHTML = visible.map(item => {
@@ -13858,12 +14084,13 @@ function renderAppStore(){
     const btnHtml = installed
       ? '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Open</button>' +
         '<button type="button" class="ghost-btn store-item-btn store-item-remove" data-store-remove="' + item.id + '" style="color:var(--error); border-color:var(--error);">Remove</button>'
-      : '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Install</button>';
+      : (item.builtin ? '<button type="button" class="ghost-btn store-item-btn" data-store-open="' + item.builtin + '">Open</button>' : '') +
+        '<button type="button" class="ghost-btn store-item-btn" data-store-id="' + item.id + '">Install</button>';
     const dlHtml = item.download ? '<button type="button" class="ghost-btn store-item-btn" data-store-download="' + item.id + '" title="Save ' + escapeAttr(item.download) + ' to your computer">Download</button>' : '';
     return '<div class="store-item">' +
       '<span class="store-item-glyph">' + glyph + '</span>' +
       '<div class="store-item-body">' +
-        '<div class="store-item-name">' + escapeHtml(item.name) + '</div>' +
+        '<div class="store-item-name">' + escapeHtml(item.name) + '<span class="store-tag">' + escapeHtml(item.cat) + '</span>' + (item.builtin ? '<span class="store-tag bi">Built in</span>' : '') + '</div>' +
         '<div class="store-item-desc">' + escapeHtml(item.description) + '</div>' +
       '</div>' +
       dlHtml + btnHtml +
@@ -13880,8 +14107,10 @@ function renderAppStore(){
     wrap.addEventListener('click', (e) => {
       const dl = e.target.closest('[data-store-download]');
       if (dl && wrap.contains(dl)){ const it = STORE_APPS.find(x => x.id === dl.dataset.storeDownload); if (it) downloadFetchApp(it); return; }
+      const op = e.target.closest('[data-store-open]');
+      if (op && wrap.contains(op)){ switchAppView(op.dataset.storeOpen); return; }
       const rm = e.target.closest('[data-store-remove]');
-      if (rm && wrap.contains(rm)){ const nit = STORE_APPS.find(x => x.id === rm.dataset.storeRemove); if (nit && nit.native) removeStoreNativeWithConfirm(nit.native); else removeCustomAppWithConfirm(rm.dataset.storeRemove); return; }
+      if (rm && wrap.contains(rm)){ const nit = STORE_APPS.find(x => x.id === rm.dataset.storeRemove); if (nit && nit.builtin) removeStoreBuiltinWithConfirm(nit.builtin); else if (nit && nit.native) removeStoreNativeWithConfirm(nit.native); else removeCustomAppWithConfirm(rm.dataset.storeRemove); return; }
       const btn = e.target.closest('[data-store-id]');
       if (btn && wrap.contains(btn)) onStoreItemClick(btn);
     });
@@ -13894,8 +14123,9 @@ function renderAppStore(){
 function onStoreItemClick(btn){
   const item = STORE_APPS.find(s => s.id === btn.dataset.storeId);
   if (!item) return;
-  if (isStoreAppInstalled(item.id)){
-    switchAppView(item.native ? item.native : 'custom:' + item.id);
+  if (isStoreAppInstalled(item.id) || item.builtin){
+    if (item.builtin && !builtinShown(item.builtin)){ installStoreBuiltin(item.builtin); return; }
+    switchAppView(item.builtin ? item.builtin : item.native ? item.native : 'custom:' + item.id);
     return;
   }
   const progressWrap = document.getElementById('store-progress-' + item.id);
@@ -14132,7 +14362,7 @@ function allExportables(){
 }
 function appToDescriptor(a){
   const d = { spacepad: 'app', v: APP_SCHEMA_V, type: a.type, name: a.name, icon: a.icon };
-  if (typeof a.id === 'string' && STORE_APPS.some(s => s.id === a.id && !s.native)) d.id = a.id; // keeps "installed" identity of store apps
+  if (typeof a.id === 'string' && STORE_APPS.some(s => s.id === a.id && !s.native && !s.builtin)) d.id = a.id; // keeps "installed" identity of store apps
   if (a.type === 'html' || a.type === 'python' || a.type === 'svg') d.content = a.content || '';
   else if (a.type === 'text'){ d.format = a.format === 'txt' ? 'txt' : 'md'; d.content = a.content || ''; }
   else if (a.type === 'page'){ d.url = a.url || ''; if (a.loader) d.loader = a.loader; }
@@ -14249,7 +14479,7 @@ function validateDescriptor(d){
   }
   rec.name = sanitizeAppName(d.name);
   if (!rec.name) return { error: 'the app has no name.' };
-  if (typeof d.id === 'string' && STORE_APPS.some(s => s.id === d.id && !s.native)) rec.wantId = d.id;
+  if (typeof d.id === 'string' && STORE_APPS.some(s => s.id === d.id && !s.native && !s.builtin)) rec.wantId = d.id;
   if (type === 'html' || type === 'python' || type === 'svg' || type === 'text'){
     if (typeof d.content !== 'string' || !d.content.trim()) return { error: 'the app has no content.' };
     if (d.content.length > APP_CONTENT_MAX) return { error: 'the content is too large (limit 2 MB).' };
@@ -18354,7 +18584,7 @@ function sCopy(text, okMsg){
       accent: memStore.getItem(ACCENT_KEY) || 'Violet',
       moved: Object.keys(iconPositions).length,
       mins: Math.floor(performance.now() / 60000),
-      catalog: STORE_APPS.filter(a => a.type !== 'page').length
+      catalog: STORE_APPS.filter(a => a.type !== 'page' && !a.builtin).length
     };
   }
   const ROASTS = [
@@ -18835,7 +19065,7 @@ function sCopy(text, okMsg){
     ctx.say('App removed', 'App removed: ' + rec.name + '.');
   });
   E('apps', 'app-install', 'download', 'App installation', 3, { risk: true, desc: 'An app was installed.' }, ctx => {
-    const pool = STORE_APPS.filter(a => a.type !== 'page' && !a.native && !isStoreAppInstalled(a.id));
+    const pool = STORE_APPS.filter(a => a.type !== 'page' && !a.native && !a.builtin && !isStoreAppInstalled(a.id));
     if (!pool.length) return ctx.say('App installation', 'All available catalog apps are already installed.');
     const item = pick(pool);
     customApps.push({ id: item.id, name: item.name, icon: item.icon, type: 'html', content: item.content || '', url: '' }); saveCustomApps(); refreshAppViews();
@@ -18861,7 +19091,7 @@ function sCopy(text, okMsg){
      WINDOWS — open, arrange and animate windows. Moving effects are skipped
      in Safe mode; permanent arrangements register an Undo.
      ======================================================================= */
-  const SAFE_APPS = ['editor', 'convert', 'tools', 'stargazing', 'game', 'settings', 'customize', 'wallpapers', 'appearance', 'widgets', 'iconlayout', 'customcss', 'shortcuts', 'layouts', 'borders', 'zalgo', 'unilab', 'planets', 'appstore'];
+  const SAFE_APPS = ['editor', 'convert', 'tools', 'stargazing', 'game', 'settings', 'customize', 'wallpapers', 'appearance', 'widgets', 'iconlayout', 'customcss', 'shortcuts', 'layouts', 'borders', 'zalgo', 'unilab', 'planets', 'appstore'].concat(ACC_APPS.map(a => a.view));
   const appLabel = v => { const a = DESKTOP_APPS.find(x => x.view === v); return a ? a.label : v; };
   const isOpen = k => !!(appWindows[k] && appWindows[k].open);
   function openUndo(ctx, views){
@@ -21832,6 +22062,1348 @@ function sCopy(text, okMsg){
     _addUrl: addUrl
   };
 })();
+
+/*ACC-BEGIN*/
+/* =========================================================================
+   ACCESSORIES — small, compact utility apps modeled on classic Windows
+   accessories: Calculator, Clock Tools, Unit Converter, Color Picker, Text
+   Tools, JSON Tools, Encoder/Hash, World Clock, To-Do, Date Calculator,
+   Quick Paint, Scratchpad, Finance Calc, Dev Calc, plus the Accessories
+   launcher. They are listed in ACC_APPS (near DESKTOP_APPS) and so get a
+   desktop icon, Ctrl+K entry, taskbar chip, new-tab deep link, Window Layouts
+   and hide/restore like every built-in app. All state is in memStore
+   (spacepad_acc_v1 plus one key per app), so Export / Import everything and
+   new tabs carry it. Nothing runs while a window is closed; only armed
+   timers and alarms (Clock Tools) keep one interval alive.
+   ========================================================================= */
+(function accessoriesApps(){
+  'use strict';
+  const KEY = 'spacepad_acc_v1';
+  const $v = id => document.getElementById('view-' + id);
+  const esc = sEsc;
+  const cfg = Object.assign({ mute: false, h24: false, seeded: false }, sJson(KEY, {}));
+  const saveCfg = () => sSave(KEY, cfg);
+  // First run (or a backup from before these apps): only the six default apps get a desktop icon.
+  if (!cfg.seeded){
+    ACC_APPS.forEach(a => { if (!a.desk && hiddenBuiltins.indexOf(a.view) === -1) hiddenBuiltins.push(a.view); });
+    saveHiddenBuiltins(); cfg.seeded = true; saveCfg();
+  }
+  // ---- shared helpers ----
+  function mount(view, html){
+    const v = $v(view); v.classList.add('acc-view');
+    v.innerHTML = '<div class="studio-wrap acc-wrap">' + html + '</div>';
+    return v;
+  }
+  function on(v, type, sel, fn){ v.addEventListener(type, e => { const t = e.target.closest ? e.target.closest(sel) : null; if (t && v.contains(t)) fn(t, e); }); }
+  const seg = (name, items, cur, label) => '<div class="ac-seg" data-seg="' + name + '" role="group" aria-label="' + label + '">' +
+    items.map(i => '<button type="button" class="ghost-btn" data-v="' + i[0] + '" aria-pressed="' + (i[0] === cur) + '">' + i[1] + '</button>').join('') + '</div>';
+  const setSeg = (v, name, cur) => v.querySelectorAll('[data-seg="' + name + '"] button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === cur)));
+  const btn = (act, label, ic, extra) => '<button type="button" class="ghost-btn ac-b" data-a="' + act + '"' + (extra || '') + '>' + (ic ? icon(ic) : '') + (label ? '<span>' + label + '</span>' : '') + '</button>';
+  const ibtn = (act, label, ic, extra) => '<button type="button" class="ghost-btn ac-i" data-a="' + act + '" title="' + label + '" aria-label="' + label + '"' + (extra || '') + '>' + icon(ic) + '</button>';
+  const fld = (label, inner, cls) => '<label class="ac-f ' + (cls || '') + '"><span class="ac-lbl">' + label + '</span>' + inner + '</label>';
+  function fmtNum(x, p){
+    p = p || 10;
+    if (!isFinite(x)) return String(x);
+    if (x === 0) return '0';
+    const s = parseFloat(x.toPrecision(p)), a = Math.abs(s);
+    if (a >= 1e15 || a < 1e-6) return s.toExponential(p - 1).replace(/\.?0+e/, 'e');
+    return String(s);
+  }
+  const pad = (n, w) => String(n).padStart(w || 2, '0');
+  const winVisible = view => { const r = appWindows[view]; return !!(r && r.open && !winIsMinimized(r) && !spLocked && !document.hidden); };
+  // A ticker's interval exists only between start() and stop() (window close), and is also dropped while the screen is locked.
+  const tickers = [];
+  function ticker(view, fn, ms){
+    let id = 0, want = false;
+    const arm = () => { if (!id && want && !spLocked) id = setInterval(() => { if (winVisible(view)) fn(); }, ms); };
+    const drop = () => { clearInterval(id); id = 0; };
+    const t = { start(){ want = true; arm(); }, stop(){ want = false; drop(); }, arm: arm, drop: drop, get on(){ return !!id; } };
+    tickers.push(t); return t;
+  }
+  document.addEventListener('spacepad:lock', () => tickers.forEach(t => t.drop()));
+  document.addEventListener('spacepad:unlock', () => tickers.forEach(t => t.arm()));
+  const dlBlob = (name, blob) => { const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+  const copyBtnText = (v, sel, msg) => { const e = v.querySelector(sel); if (e) sCopy(e.value !== undefined ? e.value : e.textContent, msg); };
+  const reg = (view, api) => { studioApps[view] = api; };
+  // Local calendar date helpers (no time zones involved: UTC math on Y/M/D parts avoids DST jumps).
+  const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const parseYmd = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? { y: +m[1], m: +m[2], d: +m[3] } : null; };
+  const utcDay = p => Date.UTC(p.y, p.m - 1, p.d) / 86400000;
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dim = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const fmtDate = p => DOW[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()] + ', ' + MON[p.m - 1] + ' ' + p.d + ', ' + p.y;
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : /(ch|sh|s|x)$/.test(w) ? 'es' : 's');
+
+  /* ---------------------------------------------------------------- Calculator */
+  // Small recursive-descent parser: + - * / ^ ! % mod, parentheses, implicit multiplication, functions and constants. No eval().
+  function calcEval(src, deg, ans){
+    const s = String(src).replace(/×/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/\s+/g, '').toLowerCase();
+    if (s.length > 300) throw new Error('Expression too long');
+    const toks = [], re = /(\d+\.?\d*(?:e[+-]?\d+)?|\.\d+(?:e[+-]?\d+)?)|([a-z]+)|(\*\*|[-+*/^%!()])/y;
+    for (let p = 0; p < s.length;){
+      re.lastIndex = p; const m = re.exec(s);
+      if (!m) throw new Error('Unexpected "' + s[p] + '"');
+      p = re.lastIndex;
+      toks.push(m[1] !== undefined ? { t: 'n', v: parseFloat(m[1]) } : m[2] ? { t: 'i', v: m[2] } : { t: 'o', v: m[3] === '**' ? '^' : m[3] });
+    }
+    const bad = () => new Error('Invalid input');
+    const rad = x => deg ? x * Math.PI / 180 : x, back = x => deg ? x * 180 / Math.PI : x;
+    const snap = v => Math.abs(v) < 1e-14 ? 0 : v;
+    const fact = n => { if (n < 0 || n !== Math.floor(n) || n > 170) throw bad(); let r = 1; for (let k = 2; k <= n; k++) r *= k; return r; };
+    const FN = {
+      sin: x => snap(Math.sin(rad(x))), cos: x => snap(Math.cos(rad(x))),
+      tan: x => { const c = snap(Math.cos(rad(x))); if (c === 0) throw bad(); return snap(Math.sin(rad(x))) / c; },
+      asin: x => { if (Math.abs(x) > 1) throw bad(); return back(Math.asin(x)); }, acos: x => { if (Math.abs(x) > 1) throw bad(); return back(Math.acos(x)); }, atan: x => back(Math.atan(x)),
+      sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh, ln: x => { if (x <= 0) throw bad(); return Math.log(x); }, log: x => { if (x <= 0) throw bad(); return Math.log10(x); },
+      sqrt: x => { if (x < 0) throw bad(); return Math.sqrt(x); }, cbrt: Math.cbrt, abs: Math.abs, exp: Math.exp, fact: fact
+    };
+    let i = 0, pct = false;
+    const pk = () => toks[i], isOp = v => !!pk() && pk().t === 'o' && pk().v === v;
+    const close = () => { if (isOp(')')) i++; else if (i < toks.length) throw new Error('Missing )'); };
+    function primary(){
+      const t = toks[i++]; if (!t) throw new Error('Incomplete expression');
+      if (t.t === 'n') return t.v;
+      if (t.t === 'i'){
+        if (t.v === 'pi') return Math.PI; if (t.v === 'e') return Math.E; if (t.v === 'ans') return ans || 0;
+        const f = FN[t.v]; if (!f) throw new Error('Unknown "' + t.v + '"');
+        let a; if (isOp('(')){ i++; a = expr(); close(); } else a = unary();
+        const r = f(a); if (!isFinite(r)) throw bad(); return r;
+      }
+      if (t.v === '('){ const v = expr(); close(); return v; }
+      throw new Error('Unexpected "' + t.v + '"');
+    }
+    function post(){ pct = false; let v = primary(); for (;;){ if (isOp('!')){ i++; v = fact(v); pct = false; } else if (isOp('%')){ i++; v /= 100; pct = true; } else break; } return v; }
+    function power(){ const b = post(); if (isOp('^')){ i++; const e = upow(); pct = false; return Math.pow(b, e); } return b; }
+    function upow(){ if (isOp('-')){ i++; return -upow(); } if (isOp('+')){ i++; return upow(); } return power(); }
+    function unary(){ if (isOp('-')){ i++; return -unary(); } if (isOp('+')){ i++; return unary(); } return power(); }
+    function term(){
+      let v = unary(), solo = pct;
+      for (;;){
+        const t = pk(); if (!t) break;
+        if (t.t === 'o' && (t.v === '*' || t.v === '/')){ i++; const r = unary(); solo = false; if (t.v === '*') v *= r; else { if (r === 0) throw new Error('Cannot divide by zero'); v /= r; } }
+        else if (t.t === 'i' && t.v === 'mod'){ i++; const r = unary(); solo = false; if (r === 0) throw new Error('Cannot divide by zero'); v = v % r; }
+        else if (t.t === 'n' || (t.t === 'i' && t.v !== 'mod') || (t.t === 'o' && t.v === '(')){ v *= power(); solo = false; }
+        else break;
+      }
+      pct = solo; return v;
+    }
+    function expr(){
+      let v = term();
+      for (;;){ const t = pk(); if (t && t.t === 'o' && (t.v === '+' || t.v === '-')){ i++; let r = term(); if (pct) r = v * r; v = t.v === '+' ? v + r : v - r; pct = false; } else break; }
+      return v;
+    }
+    const out = expr();
+    if (i < toks.length) throw new Error('Unexpected "' + toks[i].v + '"');
+    if (!isFinite(out)) throw bad();
+    return out;
+  }
+  (function calcApp(){
+    const V = 'calc', SK = 'spacepad_calc_v1';
+    const st = Object.assign({ mode: 'std', deg: true, mem: 0, tape: [] }, sJson(SK, {}));
+    if (!Array.isArray(st.tape)) st.tape = [];
+    let ex = '', fresh = false, ans = 0, err = '', inv = false, last = '', tapeOpen = false;
+    const I = (l, t, c, aria) => '<button type="button" class="cc-k ' + (c || '') + '" data-i="' + esc(t) + '"' + (aria ? ' aria-label="' + aria + '"' : '') + '>' + l + '</button>';
+    const A = (l, a, c, aria) => '<button type="button" class="cc-k ' + (c || '') + '" data-a="' + a + '"' + (aria ? ' aria-label="' + aria + '"' : '') + '>' + l + '</button>';
+    const v = mount(V,
+      '<div class="ac-row">' + seg('mode', [['std', 'Standard'], ['sci', 'Scientific']], st.mode, 'Calculator mode') + '<span class="ac-sp"></span>' +
+      ibtn('tape', 'History tape', 'clock', ' aria-pressed="false"') + ibtn('copy', 'Copy result', 'copy') + '</div>' +
+      '<div class="cc-screen"><span class="cc-m" hidden>M</span><div class="cc-ex" tabindex="0" role="textbox" aria-readonly="true" aria-label="Expression"></div><div class="cc-res" role="status" aria-live="polite"></div></div>' +
+      '<div class="cc-tape ac-card" hidden></div>' +
+      '<div class="cc-mem">' + A('MC', 'mc', '', 'Memory clear') + A('MR', 'mr', '', 'Memory recall') + A('M+', 'mp', '', 'Memory add') + A('M−', 'mm', '', 'Memory subtract') + A('MS', 'ms', '', 'Memory store') + '</div>' +
+      '<div class="cc-sci">' + A('Inv', 'inv', 'fn', 'Inverse functions') + I('sin', 'sin(', 'fn', 'Sine') + I('cos', 'cos(', 'fn', 'Cosine') + I('tan', 'tan(', 'fn', 'Tangent') + A('Deg', 'deg', 'fn', 'Angle unit') +
+      I('π', 'pi', 'fn', 'Pi') + I('ln', 'ln(', 'fn', 'Natural log') + I('log', 'log(', 'fn', 'Log base 10') + I('e', 'e', 'fn', 'Euler number') + I('n!', '!', 'fn', 'Factorial') +
+      I('(', '(', 'fn') + I(')', ')', 'fn') + I('|x|', 'abs(', 'fn', 'Absolute value') + I('eˣ', 'exp(', 'fn', 'e to the power') + I('mod', ' mod ', 'fn', 'Modulo') + '</div>' +
+      '<div class="cc-keys">' + A('C', 'c', 'cl', 'Clear') + A('⌫', 'del', 'cl', 'Backspace') + I('%', '%', 'op', 'Percent') + I('÷', '/', 'op', 'Divide') +
+      A('1/x', 'recip', 'fn', 'Reciprocal') + A('x²', 'sq', 'fn', 'Square') + I('√', 'sqrt(', 'fn', 'Square root') + I('×', '*', 'op', 'Multiply') +
+      I('7', '7') + I('8', '8') + I('9', '9') + I('−', '-', 'op', 'Subtract') + I('4', '4') + I('5', '5') + I('6', '6') + I('+', '+', 'op', 'Add') +
+      I('1', '1') + I('2', '2') + I('3', '3') + I('xʸ', '^', 'op', 'Power') + A('±', 'neg', '', 'Negate') + I('0', '0') + I('.', '.') + A('=', 'eq', 'eq', 'Equals') + '</div>');
+    const el = { ex: v.querySelector('.cc-ex'), res: v.querySelector('.cc-res'), m: v.querySelector('.cc-m'), tape: v.querySelector('.cc-tape'), deg: v.querySelector('[data-a="deg"]'), inv: v.querySelector('[data-a="inv"]') };
+    const trig = ['sin', 'cos', 'tan'].map(n => v.querySelector('[data-i="' + n + '("]'));
+    const save = () => { st.tape = st.tape.slice(-40); sSave(SK, st); };
+    const pretty = s => s.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−').replace(/\bpi\b/g, 'π').replace(/sqrt/g, '√');
+    function value(){ try { return calcEval(ex, st.deg, ans); } catch(e){ err = e.message; return null; } }
+    function draw(){
+      v.classList.toggle('cc-is-sci', st.mode === 'sci');
+      setSeg(v, 'mode', st.mode);
+      el.ex.textContent = ex ? pretty(ex) : '0';
+      let r = '', isErr = false;
+      if (err){ r = err; isErr = true; }
+      else if (fresh) r = pretty(last) + ' =';
+      else if (ex){ try { const x = calcEval(ex, st.deg, ans); const f = fmtNum(x, 12); if (f !== ex) r = '= ' + f; } catch(e){ r = ''; } }
+      el.res.textContent = r; el.res.classList.toggle('err', isErr);
+      el.m.hidden = !st.mem; el.m.textContent = 'M ' + fmtNum(st.mem, 8);
+      el.deg.textContent = st.deg ? 'Deg' : 'Rad';
+      el.inv.setAttribute('aria-pressed', String(inv));
+      trig.forEach((b, k) => { const n = (inv ? 'a' : '') + ['sin', 'cos', 'tan'][k]; b.dataset.i = n + '('; b.textContent = n; });
+      el.tape.hidden = !tapeOpen;
+      v.querySelector('[data-a="tape"]').setAttribute('aria-pressed', String(tapeOpen));
+      if (tapeOpen) el.tape.innerHTML = '<div class="ac-row"><b>History</b><span class="ac-sp"></span><button type="button" class="ghost-btn ac-b" data-a="tclear">Clear</button></div>' +
+        (st.tape.length ? st.tape.slice().reverse().map((t, k) => '<button type="button" class="cc-t" data-t="' + (st.tape.length - 1 - k) + '"><span>' + esc(pretty(t.e)) + ' =</span><b>' + esc(t.r) + '</b></button>').join('') : '<div class="ac-lbl">Nothing yet. Results appear here.</div>');
+    }
+    function ins(t){
+      if (fresh){ if (/^[\d.(a-z]/i.test(t)) ex = ''; fresh = false; }
+      if (ex.length > 250) return;
+      ex += t; err = ''; draw();
+    }
+    function eq(){
+      if (!ex) return;
+      err = ''; const x = value(); if (x === null){ draw(); return; }
+      const s = fmtNum(x, 12); st.tape.push({ e: ex, r: s }); last = ex; ans = parseFloat(s); ex = s; fresh = true; save(); draw();
+    }
+    function del(){ err = ''; fresh = false; const m = /(a?(sin|cos|tan)h?|ln|log|sqrt|cbrt|abs|exp)\($| mod $/.exec(ex); ex = m ? ex.slice(0, m.index) : ex.slice(0, -1); draw(); }
+    function memAdd(sign){ if (!ex){ return; } const x = value(); if (x === null){ draw(); return; } st.mem = sign === 0 ? x : st.mem + sign * x; save(); fresh = true; last = ex; draw(); }
+    const act = {
+      c(){ ex = ''; err = ''; fresh = false; draw(); }, del, eq,
+      neg(){ if (fresh) fresh = false; const m = /(^|[-+*/^(])(-?)(\d*\.?\d+(?:e[+-]?\d+)?)$/.exec(ex); if (m) ex = ex.slice(0, m.index) + m[1] + (m[2] ? '' : '-') + m[3]; else if (!ex) ex = '-'; err = ''; draw(); },
+      recip(){ if (ex){ ex = '1/(' + ex + ')'; fresh = false; draw(); } }, sq(){ if (ex){ fresh = false; ins('^2'); } },
+      mc(){ st.mem = 0; save(); draw(); }, mr(){ const s = fmtNum(st.mem, 12); ins(st.mem < 0 ? '(' + s + ')' : s); },
+      mp(){ memAdd(1); }, mm(){ memAdd(-1); }, ms(){ memAdd(0); },
+      inv(){ inv = !inv; draw(); }, deg(){ st.deg = !st.deg; save(); draw(); },
+      tape(){ tapeOpen = !tapeOpen; draw(); }, tclear(){ st.tape = []; save(); draw(); },
+      copy(){ let s = ex || '0'; if (!fresh && ex){ try { s = fmtNum(calcEval(ex, st.deg, ans), 12); } catch(e){} } sCopy(s, 'Copied ' + s + '.'); }
+    };
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || !v.contains(b)) return;
+      if (b.dataset.v){ st.mode = b.dataset.v; save(); draw(); }
+      else if (b.dataset.i !== undefined) ins(b.dataset.i);
+      else if (b.dataset.t !== undefined){ const t = st.tape[+b.dataset.t]; if (t) ins(t.r); }
+      else if (b.dataset.a && act[b.dataset.a]) act[b.dataset.a]();
+      if (!b.closest('.cc-tape')) el.ex.focus({ preventScroll: true });
+    });
+    v.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || e.altKey){ if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !String(getSelection())){ e.preventDefault(); act.copy(); } return; }
+      if (e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
+      const k = e.key;
+      if (/^[0-9.+\-*/^()%!]$/.test(k)) ins(k);
+      else if (/^[a-zA-Z]$/.test(k)) ins(k.toLowerCase());
+      else if (k === 'Enter' || k === '=') act.eq();
+      else if (k === 'Backspace') del();
+      else if (k === 'Escape' || k === 'Delete') act.c();
+      else return;
+      e.preventDefault();
+    });
+    v.addEventListener('paste', e => {
+      const t = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/[^0-9a-zA-Z.+\-*/^()%!×÷−π√]/g, '').slice(0, 120);
+      e.preventDefault(); if (t) ins(t);
+    });
+    reg(V, { refresh(){ draw(); }, _eval: calcEval });
+    draw();
+  })();
+
+  /* ---------------------------------------------------------------- Clock Tools */
+  (function clockApp(){
+    const V = 'clock', SK = 'spacepad_clock_v1';
+    const S = Object.assign({ pomo: { focus: 25, short: 5, long: 15, every: 4 }, alarms: [] }, sJson(SK, {}));
+    S.pomo = Object.assign({ focus: 25, short: 5, long: 15, every: 4 }, S.pomo || {});
+    if (!Array.isArray(S.alarms)) S.alarms = [];
+    let tab = 'timer', timers = [], uid = 1;
+    const sw = { acc: 0, t0: 0, laps: [] };
+    const pomo = { ph: 'focus', end: 0, left: S.pomo.focus * 60000, run: false, done: 0 };
+    const pomoMs = ph => Math.max(1, +S.pomo[ph] || 1) * 60000;
+    const alarmAt = (hhmm, after) => { const p = String(hhmm).split(':'), d = new Date(after); d.setHours(+p[0] || 0, +p[1] || 0, 0, 0); if (d.getTime() <= after) d.setDate(d.getDate() + 1); return d.getTime(); };
+    S.alarms = S.alarms.filter(a => a && /^\d{1,2}:\d{2}$/.test(a.time)).slice(0, 12).map(a => ({ id: uid++, time: a.time, label: String(a.label || '').slice(0, 40), rep: !!a.rep, on: !!a.on, at: a.on ? alarmAt(a.time, Date.now()) : 0 }));
+    const save = () => sSave(SK, { pomo: S.pomo, alarms: S.alarms.map(a => ({ time: a.time, label: a.label, rep: a.rep, on: a.on })) });
+    const fmtDur = ms => { const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600); return (h ? h + ':' + pad(Math.floor(s % 3600 / 60)) : pad(Math.floor(s / 60))) + ':' + pad(s % 60); };
+    const fmtSw = ms => { const t = Math.floor(ms / 10), cs = t % 100, s = Math.floor(t / 100) % 60, m = Math.floor(t / 6000) % 60, h = Math.floor(t / 360000); return (h ? h + ':' : '') + pad(m) + ':' + pad(s) + '.' + pad(cs); };
+    // ---- notifications: in-app toast, short beep (unless muted), window title flash ----
+    let ac = null, pend = [], ft = 0, fn = 0, orig = '';
+    function unlockAudio(){ try { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; if (!ac) ac = new AC(); if (ac.state === 'suspended') ac.resume(); } catch(e){} }
+    function beep(){
+      if (cfg.mute) return;
+      try {
+        unlockAudio(); if (!ac) return; const t = ac.currentTime;
+        for (let k = 0; k < 3; k++){
+          const o = ac.createOscillator(), g = ac.createGain(), s = t + k * 0.22;
+          o.type = 'sine'; o.frequency.value = 880; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.25, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.16);
+          o.connect(g); g.connect(ac.destination); o.start(s); o.stop(s + 0.18);
+        }
+      } catch(e){}
+    }
+    function stopFlash(){ if (ft){ clearInterval(ft); ft = 0; document.title = orig; } }
+    function flashTitle(msg){
+      if (!ft) orig = document.title; else clearInterval(ft);
+      let flip = true; fn = 0; document.title = '(!) ' + msg;
+      ft = setInterval(() => { flip = !flip; document.title = flip ? '(!) ' + msg : orig; if (++fn > 40) stopFlash(); }, 700);
+    }
+    ['pointerdown', 'keydown', 'focus'].forEach(ev => window.addEventListener(ev, stopFlash, true));
+    const toast = m => showToast(m, undefined, { label: 'Dismiss', ms: 12000, run: stopFlash }, 'bell');
+    function notify(msg){ beep(); if (spLocked) pend.push(msg); else toast(msg); flashTitle(msg); }
+    document.addEventListener('spacepad:unlock', () => { pend.splice(0).forEach(toast); });
+    // ---- one engine: the interval only exists while something is armed (or the stopwatch is on screen) ----
+    let iv = 0, dirty = false;
+    const armed = () => timers.some(t => t.st === 'run') || S.alarms.some(a => a.on) || pomo.run;
+    const needs = () => armed() || (sw.t0 > 0 && winVisible(V));
+    let ivMs = 0;
+    function ensure(){
+      const n = needs(), ms = sw.t0 && tab === 'sw' && winVisible(V) ? 50 : 250; // fast only while a running stopwatch is on screen
+      if (iv && (!n || ms !== ivMs)){ clearInterval(iv); iv = 0; }
+      if (n && !iv){ iv = setInterval(tick, ms); ivMs = ms; }
+    }
+    function tick(){
+      const now = Date.now(); let changed = false;
+      timers.forEach(t => { if (t.st === 'run' && now >= t.end){ t.st = 'done'; t.left = 0; changed = true; notify((t.label || fmtDur(t.dur) + ' timer') + ' finished'); } });
+      S.alarms.forEach(a => { if (a.on && now >= a.at){ notify((a.label || 'Alarm') + ' ' + a.time); if (a.rep) a.at = alarmAt(a.time, now); else a.on = false; changed = true; } });
+      if (pomo.run && now >= pomo.end){
+        pomo.run = false; const was = pomo.ph;
+        if (was === 'focus'){ pomo.done++; pomo.ph = pomo.done % S.pomo.every === 0 ? 'long' : 'short'; } else pomo.ph = 'focus';
+        pomo.left = pomoMs(pomo.ph); changed = true;
+        notify(was === 'focus' ? 'Focus session done. Time for a ' + (pomo.ph === 'long' ? 'long' : 'short') + ' break.' : 'Break over. Back to focus.');
+      }
+      if (changed){ save(); if (winVisible(V)) build(); else dirty = true; }
+      if (winVisible(V)) paint();
+      ensure();
+    }
+    // ---- UI ----
+    const v = mount(V,
+      '<div class="ac-row">' + seg('tab', [['timer', 'Timer'], ['sw', 'Stopwatch'], ['alarm', 'Alarm'], ['pomo', 'Pomodoro']], tab, 'Clock tool') + '<span class="ac-sp"></span>' +
+      ibtn('mute', 'Sound', 'volume', ' aria-pressed="false"') + '</div>' +
+      '<div data-p="timer"></div><div data-p="sw"></div><div data-p="alarm"></div><div data-p="pomo"></div>');
+    const P = n => v.querySelector('[data-p="' + n + '"]');
+    function build(){
+      setSeg(v, 'tab', tab);
+      ['timer', 'sw', 'alarm', 'pomo'].forEach(n => { P(n).hidden = n !== tab; });
+      const mb = v.querySelector('[data-a="mute"]'); mb.innerHTML = icon(cfg.mute ? 'volume-x' : 'volume'); mb.setAttribute('aria-pressed', String(cfg.mute)); mb.title = cfg.mute ? 'Sound is off' : 'Sound is on'; mb.setAttribute('aria-label', mb.title);
+      if (tab === 'timer' && !P('timer').firstChild) P('timer').innerHTML =
+        '<div class="ac-row ck-new">' + fld('Hours', '<input type="number" min="0" max="99" value="0" data-f="h" inputmode="numeric">', 'ac-s') + fld('Min', '<input type="number" min="0" max="999" value="5" data-f="m" inputmode="numeric">', 'ac-s') + fld('Sec', '<input type="number" min="0" max="59" value="0" data-f="s" inputmode="numeric">', 'ac-s') + fld('Label', '<input type="text" maxlength="40" placeholder="Optional" data-f="l">', 'ac-g') + btn('tstart', 'Start', 'play') + '</div>' +
+        '<div class="ac-seg ck-pre">' + [1, 5, 10, 15, 30, 60].map(m => '<button type="button" class="ghost-btn" data-pre="' + m + '">' + (m === 60 ? '1 h' : m + ' min') + '</button>').join('') + '</div><div class="ck-list" data-l="timers"></div>';
+      if (tab === 'timer') P('timer').querySelector('[data-l="timers"]').innerHTML = timers.length ? timers.map(t =>
+        '<div class="ck-t ac-card" data-id="' + t.id + '"><div class="ck-tl"><span class="ck-lb">' + esc(t.label || fmtDur(t.dur) + ' timer') + '</span><b class="ck-time" data-rem="' + t.id + '"></b></div><div class="ck-bar"><i data-bar="' + t.id + '"></i></div>' +
+        '<div class="ac-row">' + (t.st === 'done' ? btn('t-again', 'Again', 'refresh-cw') : t.st === 'run' ? btn('t-pause', 'Pause', 'pause') : btn('t-go', 'Resume', 'play')) + btn('t-reset', 'Reset', 'rotate-cw') + '<span class="ac-sp"></span>' + ibtn('t-del', 'Remove timer', 'x') + '</div></div>').join('') : '<div class="ac-lbl ck-empty">No timers. Set a time and press Start, or tap a preset. Timers keep running while this window is hidden.</div>';
+      if (tab === 'sw'){
+        P('sw').innerHTML = '<div class="ck-big" data-sw role="timer" aria-label="Stopwatch"></div><div class="ac-row">' + btn('sw-go', sw.t0 ? 'Stop' : 'Start', sw.t0 ? 'pause' : 'play') + btn('sw-lap', 'Lap', 'flag', sw.t0 ? '' : ' disabled') + btn('sw-reset', 'Reset', 'rotate-cw', sw.t0 || sw.acc ? '' : ' disabled') + btn('sw-copy', 'Copy laps', 'copy', sw.laps.length ? '' : ' disabled') + '</div>' +
+          '<ol class="ck-laps" reversed>' + sw.laps.slice().reverse().map((l, k) => '<li><span>Lap ' + (sw.laps.length - k) + '</span><span>' + fmtSw(l.lap) + '</span><span class="ac-lbl">' + fmtSw(l.total) + '</span></li>').join('') + '</ol>';
+      }
+      if (tab === 'alarm') P('alarm').innerHTML =
+        '<div class="ac-row ck-new">' + fld('Time', '<input type="time" value="07:30" data-f="at">') + fld('Label', '<input type="text" maxlength="40" placeholder="Optional" data-f="al">', 'ac-g') + '<label class="ac-chk"><input type="checkbox" data-f="rep"> Daily</label>' + btn('a-add', 'Add', 'plus') + '</div>' +
+        '<div class="ck-list">' + (S.alarms.length ? S.alarms.map(a => '<div class="ck-a ac-card" data-id="' + a.id + '"><label class="ac-chk"><input type="checkbox" data-a="a-on"' + (a.on ? ' checked' : '') + ' aria-label="Alarm ' + a.time + ' on"><b class="ck-time">' + a.time + '</b></label><span class="ck-lb">' + esc(a.label) + (a.rep ? ' <span class="ac-lbl">daily</span>' : '') + '</span><span class="ac-lbl" data-in="' + a.id + '"></span>' + ibtn('a-del', 'Delete alarm', 'x') + '</div>').join('') : '<div class="ac-lbl ck-empty">No alarms yet. An alarm rings once at the next time it comes round, or every day if Daily is ticked. Alarms only fire while Spacepad is open.</div>') + '</div>';
+      if (tab === 'pomo') P('pomo').innerHTML =
+        '<div class="ck-ph" data-ph></div><div class="ck-big" data-pt role="timer" aria-label="Pomodoro"></div><div class="ck-bar"><i data-pbar></i></div>' +
+        '<div class="ac-row">' + btn('p-go', pomo.run ? 'Pause' : 'Start', pomo.run ? 'pause' : 'play') + btn('p-skip', 'Skip', 'skip-forward') + btn('p-reset', 'Reset', 'rotate-cw') + '</div><div class="ac-lbl" data-pdone></div>' +
+        '<div class="ac-row ck-new">' + fld('Focus min', '<input type="number" min="1" max="180" value="' + S.pomo.focus + '" data-pf="focus">', 'ac-s') + fld('Short break', '<input type="number" min="1" max="60" value="' + S.pomo.short + '" data-pf="short">', 'ac-s') + fld('Long break', '<input type="number" min="1" max="90" value="' + S.pomo.long + '" data-pf="long">', 'ac-s') + fld('Long every', '<input type="number" min="2" max="12" value="' + S.pomo.every + '" data-pf="every">', 'ac-s') + '</div>';
+      paint();
+    }
+    function paint(){
+      const now = Date.now();
+      if (tab === 'timer') timers.forEach(t => {
+        const rem = t.st === 'run' ? Math.max(0, t.end - now) : t.left;
+        const e = P('timer').querySelector('[data-rem="' + t.id + '"]'), b = P('timer').querySelector('[data-bar="' + t.id + '"]');
+        if (e){ const s = t.st === 'done' ? 'Done' : fmtDur(rem); if (e.textContent !== s) e.textContent = s; }
+        if (b) b.style.width = (t.dur ? 100 * (1 - rem / t.dur) : 100).toFixed(1) + '%';
+      });
+      if (tab === 'sw'){ const e = P('sw').querySelector('[data-sw]'); if (e) e.textContent = fmtSw(sw.acc + (sw.t0 ? now - sw.t0 : 0)); }
+      if (tab === 'alarm') S.alarms.forEach(a => { const e = P('alarm').querySelector('[data-in="' + a.id + '"]'); if (e){ const m = Math.floor((a.at - now) / 60000); e.textContent = !a.on ? 'off' : m >= 60 ? 'in ' + Math.floor(m / 60) + 'h ' + pad(m % 60) + 'm' : m < 1 ? 'in <1m' : 'in ' + m + 'm'; } });
+      if (tab === 'pomo'){
+        const rem = pomo.run ? Math.max(0, pomo.end - now) : pomo.left, tot = pomoMs(pomo.ph);
+        P('pomo').querySelector('[data-pt]').textContent = fmtDur(rem);
+        P('pomo').querySelector('[data-ph]').textContent = pomo.ph === 'focus' ? 'Focus' : pomo.ph === 'short' ? 'Short break' : 'Long break';
+        P('pomo').querySelector('[data-pbar]').style.width = (100 * (1 - rem / tot)).toFixed(1) + '%';
+        P('pomo').querySelector('[data-pdone]').textContent = plural(pomo.done, 'focus session') + ' done this visit.';
+      }
+    }
+    function addTimer(ms, label){
+      if (!(ms > 0)) return showToast('Set a time greater than zero.', 'error');
+      if (timers.length >= 12) return showToast('That is plenty of timers. Remove one first.', 'error');
+      unlockAudio(); timers.push({ id: uid++, label: label, dur: ms, end: Date.now() + ms, left: ms, st: 'run' }); build(); ensure();
+    }
+    const field = (root, n) => root.querySelector('[data-f="' + n + '"]');
+    const num = (root, n, mx) => Math.max(0, Math.min(mx, parseInt(field(root, n).value, 10) || 0));
+    const T = id => timers.find(t => t.id === +id);
+    const act = {
+      tstart(){ const p = P('timer'); addTimer((num(p, 'h', 99) * 3600 + num(p, 'm', 999) * 60 + num(p, 's', 59)) * 1000, field(p, 'l').value.trim()); },
+      't-pause'(t){ const x = T(t.closest('[data-id]').dataset.id); if (x){ x.left = Math.max(0, x.end - Date.now()); x.st = 'pause'; } build(); ensure(); },
+      't-go'(t){ const x = T(t.closest('[data-id]').dataset.id); if (x){ x.end = Date.now() + x.left; x.st = 'run'; unlockAudio(); } build(); ensure(); },
+      't-again'(t){ const x = T(t.closest('[data-id]').dataset.id); if (x){ x.left = x.dur; x.end = Date.now() + x.dur; x.st = 'run'; unlockAudio(); } build(); ensure(); },
+      't-reset'(t){ const x = T(t.closest('[data-id]').dataset.id); if (x){ x.left = x.dur; x.st = 'pause'; } build(); ensure(); },
+      't-del'(t){ timers = timers.filter(x => x.id !== +t.closest('[data-id]').dataset.id); build(); ensure(); },
+      'sw-go'(){ const now = Date.now(); if (sw.t0){ sw.acc += now - sw.t0; sw.t0 = 0; } else sw.t0 = now; build(); ensure(); },
+      'sw-lap'(){ if (!sw.t0) return; const tot = sw.acc + Date.now() - sw.t0, prev = sw.laps.length ? sw.laps[sw.laps.length - 1].total : 0; sw.laps.push({ lap: tot - prev, total: tot }); build(); },
+      'sw-reset'(){ sw.acc = 0; sw.t0 = 0; sw.laps = []; build(); ensure(); },
+      'sw-copy'(){ sCopy(sw.laps.map((l, k) => 'Lap ' + (k + 1) + '\t' + fmtSw(l.lap) + '\t' + fmtSw(l.total)).join('\n'), 'Laps copied.'); },
+      'a-add'(){ const p = P('alarm'), t = field(p, 'at').value; if (!/^\d{1,2}:\d{2}$/.test(t)) return showToast('Pick a time first.', 'error'); if (S.alarms.length >= 12) return showToast('Too many alarms. Delete one first.', 'error');
+        unlockAudio(); S.alarms.push({ id: uid++, time: t, label: field(p, 'al').value.trim(), rep: field(p, 'rep').checked, on: true, at: alarmAt(t, Date.now()) }); save(); build(); ensure(); },
+      'a-on'(t){ const a = S.alarms.find(x => x.id === +t.closest('[data-id]').dataset.id); if (a){ a.on = t.checked; if (a.on){ a.at = alarmAt(a.time, Date.now()); unlockAudio(); } } save(); paint(); ensure(); },
+      'a-del'(t){ S.alarms = S.alarms.filter(x => x.id !== +t.closest('[data-id]').dataset.id); save(); build(); ensure(); },
+      'p-go'(){ unlockAudio(); if (pomo.run){ pomo.left = Math.max(0, pomo.end - Date.now()); pomo.run = false; } else { pomo.end = Date.now() + pomo.left; pomo.run = true; } build(); ensure(); },
+      'p-skip'(){ if (pomo.ph === 'focus'){ pomo.ph = 'short'; } else pomo.ph = 'focus'; pomo.run = false; pomo.left = pomoMs(pomo.ph); build(); ensure(); },
+      'p-reset'(){ pomo.run = false; pomo.ph = 'focus'; pomo.done = 0; pomo.left = pomoMs('focus'); build(); ensure(); },
+      mute(){ cfg.mute = !cfg.mute; saveCfg(); build(); if (!cfg.mute) beep(); }
+    };
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button,input[data-a]'); if (!b || !v.contains(b)) return;
+      if (b.dataset.v && b.closest('[data-seg="tab"]')){ tab = b.dataset.v; build(); ensure(); }
+      else if (b.dataset.pre) addTimer(+b.dataset.pre * 60000, '');
+      else if (b.dataset.a && act[b.dataset.a] && b.tagName !== 'INPUT') act[b.dataset.a](b);
+    });
+    v.addEventListener('change', e => {
+      const t = e.target;
+      if (t.dataset && t.dataset.a === 'a-on') act['a-on'](t);
+      else if (t.dataset && t.dataset.pf){ const mx = { focus: 180, short: 60, long: 90, every: 12 }[t.dataset.pf]; S.pomo[t.dataset.pf] = Math.max(t.dataset.pf === 'every' ? 2 : 1, Math.min(mx, parseInt(t.value, 10) || 1)); t.value = S.pomo[t.dataset.pf]; save(); if (!pomo.run && t.dataset.pf === pomo.ph) pomo.left = pomoMs(pomo.ph); paint(); }
+    });
+    v.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.closest('.ck-new')){ const p = e.target.closest('[data-p]'); if (p.dataset.p === 'timer') act.tstart(); else if (p.dataset.p === 'alarm') act['a-add'](); } });
+    reg(V, {
+      refresh(){ build(); ensure(); },
+      onClose(){ ensure(); },
+      _state: () => ({ iv: !!iv, timers: timers.length, armed: armed(), alarms: S.alarms.length, flashing: !!ft, mute: cfg.mute, pend: pend.length })
+    });
+    // coming back from minimized (display:none -> shown): catch the screen up, no timer needed
+    if (window.ResizeObserver) new ResizeObserver(() => { if (winVisible(V)){ if (dirty){ dirty = false; build(); } else paint(); ensure(); } }).observe(v);
+    build(); ensure();
+  })();
+
+  /* ---------------------------------------------------------------- Unit Converter */
+  (function unitApp(){
+    const V = 'unitconv';
+    // factor = size of one unit in the category's base unit; temperature is handled separately.
+    const CAT = {
+      length: ['Length', 'm', [['mm', .001], ['cm', .01], ['m', 1], ['km', 1000], ['in', .0254], ['ft', .3048], ['yd', .9144], ['mi', 1609.344], ['nmi', 1852]]],
+      mass: ['Mass', 'kg', [['mg', 1e-6], ['g', .001], ['kg', 1], ['t', 1000], ['oz', .028349523125], ['lb', .45359237], ['st', 6.35029318]]],
+      temp: ['Temperature', 'C', [['°C', 'C'], ['°F', 'F'], ['K', 'K']]],
+      volume: ['Volume', 'L', [['mL', .001], ['L', 1], ['m³', 1000], ['tsp', .00492892159375], ['tbsp', .01478676478125], ['fl oz', .0295735295625], ['cup', .2365882365], ['pint', .473176473], ['quart', .946352946], ['gal', 3.785411784]]],
+      area: ['Area', 'm²', [['mm²', 1e-6], ['cm²', 1e-4], ['m²', 1], ['ha', 1e4], ['km²', 1e6], ['in²', 6.4516e-4], ['ft²', .09290304], ['yd²', .83612736], ['acre', 4046.8564224], ['mi²', 2589988.110336]]],
+      speed: ['Speed', 'm/s', [['m/s', 1], ['km/h', 1 / 3.6], ['mph', .44704], ['knot', 1852 / 3600], ['ft/s', .3048]]],
+      time: ['Time', 's', [['ms', .001], ['s', 1], ['min', 60], ['hour', 3600], ['day', 86400], ['week', 604800], ['year', 31557600]]],
+      data: ['Data size', 'B', [['bit', .125], ['B', 1], ['KB', 1e3], ['MB', 1e6], ['GB', 1e9], ['TB', 1e12], ['KiB', 1024], ['MiB', 1048576], ['GiB', 1073741824], ['TiB', 1099511627776]]],
+      energy: ['Energy', 'J', [['J', 1], ['kJ', 1000], ['cal', 4.184], ['kcal', 4184], ['Wh', 3600], ['kWh', 3.6e6], ['BTU', 1055.05585262], ['eV', 1.602176634e-19], ['ft·lbf', 1.3558179483314004]]],
+      pressure: ['Pressure', 'Pa', [['Pa', 1], ['kPa', 1000], ['bar', 1e5], ['mbar', 100], ['atm', 101325], ['psi', 6894.757293168], ['mmHg', 133.322387415], ['inHg', 3386.389]]]
+    };
+    const toTemp = { C: x => x, F: x => (x - 32) * 5 / 9, K: x => x - 273.15 }, fromTemp = { C: x => x, F: x => x * 9 / 5 + 32, K: x => x + 273.15 };
+    function convert(cat, val, from, to){
+      const units = CAT[cat][2];
+      if (cat === 'temp') return fromTemp[units[to][1]](toTemp[units[from][1]](val));
+      return val * units[from][1] / units[to][1];
+    }
+    const st = { cat: 'length', from: 2, to: 3, val: '1' };
+    const opts = (cat, sel) => CAT[cat][2].map((u, i) => '<option value="' + i + '"' + (i === sel ? ' selected' : '') + '>' + esc(u[0]) + '</option>').join('');
+    const v = mount(V,
+      fld('Category', '<select data-f="cat">' + Object.keys(CAT).map(k => '<option value="' + k + '">' + CAT[k][0] + '</option>').join('') + '</select>') +
+      '<div class="ac-card uc-pair">' + fld('From', '<input type="text" inputmode="decimal" data-f="val" value="1" autocomplete="off" spellcheck="false">', 'ac-g') + fld('Unit', '<select data-f="from"></select>', 'ac-g') + '</div>' +
+      '<div class="ac-row uc-mid">' + ibtn('swap', 'Swap units', 'shuffle') + '<span class="ac-sp"></span>' + btn('copy', 'Copy result', 'copy') + '</div>' +
+      '<div class="ac-card uc-pair">' + fld('To', '<input type="text" data-f="out" readonly aria-live="polite">', 'ac-g') + fld('Unit', '<select data-f="to"></select>', 'ac-g') + '</div>' +
+      '<details class="uc-all"><summary>All units</summary><div class="uc-tbl" data-all></div></details>');
+    const f = n => v.querySelector('[data-f="' + n + '"]');
+    function calc(){
+      const raw = f('val').value.trim().replace(/,/g, '.'), x = Number(raw);
+      const ok = raw !== '' && isFinite(x);
+      f('out').value = ok ? fmtNum(convert(st.cat, x, st.from, st.to), 10) : '';
+      f('val').setAttribute('aria-invalid', String(raw !== '' && !ok));
+      v.querySelector('[data-all]').innerHTML = ok ? CAT[st.cat][2].map((u, i) => '<button type="button" class="uc-row" data-copy="' + i + '"><span>' + esc(u[0]) + '</span><b>' + fmtNum(convert(st.cat, x, st.from, i), 8) + '</b></button>').join('') : '<span class="ac-lbl">Type a number.</span>';
+    }
+    function fill(){ f('cat').value = st.cat; f('from').innerHTML = opts(st.cat, st.from); f('to').innerHTML = opts(st.cat, st.to); calc(); }
+    v.addEventListener('input', e => { if (e.target === f('val')) calc(); });
+    v.addEventListener('change', e => {
+      const n = e.target.dataset && e.target.dataset.f;
+      if (n === 'cat'){ st.cat = e.target.value; st.from = 0; st.to = Math.min(1, CAT[st.cat][2].length - 1); if (st.cat === 'length'){ st.from = 2; st.to = 3; } fill(); }
+      else if (n === 'from' || n === 'to'){ st[n] = +e.target.value; calc(); }
+    });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.a === 'swap'){ const t = st.from; st.from = st.to; st.to = t; fill(); }
+      else if (b.dataset.a === 'copy'){ if (f('out').value) sCopy(f('out').value, 'Copied ' + f('out').value + '.'); }
+      else if (b.dataset.copy !== undefined) sCopy(b.querySelector('b').textContent, 'Copied ' + b.querySelector('b').textContent + '.');
+    });
+    reg(V, { refresh(){}, _convert: convert });
+    fill();
+  })();
+
+  /* ---------------------------------------------------------------- Color Picker */
+  (function colorApp(){
+    const V = 'colorpick', SK = 'spacepad_color_v1';
+    const st = Object.assign({ h: 262, s: 88, l: 70, bg: '#ffffff', harm: 'comp' }, sJson(SK, {}));
+    const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    function hsl2rgb(h, s, l){ s /= 100; l /= 100; const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l), f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)]; }
+    function rgb2hsl(r, g, b){ r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0, s = 0;
+      if (d){ s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; } return [Math.round(h) % 360, Math.round(s * 100), Math.round(l * 100)]; }
+    const hex = (r, g, b) => '#' + [r, g, b].map(x => pad(clamp(x, 0, 255).toString(16))).join('');
+    function parseHex(t){ t = String(t).trim().replace(/^#/, ''); if (/^[0-9a-f]{3}$/i.test(t)) t = t.replace(/./g, '$&$&'); return /^[0-9a-f]{6}$/i.test(t) ? [0, 2, 4].map(i => parseInt(t.substr(i, 2), 16)) : null; }
+    const lum = rgb => { const c = rgb.map(x => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    if (![st.r, st.g, st.b].every(Number.isFinite)){ const c = hsl2rgb(st.h, st.s, st.l); st.r = c[0]; st.g = c[1]; st.b = c[2]; }
+    const cur = () => [st.r, st.g, st.b];
+    const HARM = { comp: ['Complementary', [0, 180]], analog: ['Analogous', [-30, 0, 30]], tri: ['Triadic', [0, 120, 240]], split: ['Split complementary', [0, 150, 210]], tetra: ['Tetradic', [0, 90, 180, 270]], mono: ['Monochromatic', null] };
+    const v = mount(V,
+      '<div class="cp-top"><input type="color" class="cp-nat" data-f="native" aria-label="Pick a color">' + '<div class="cp-sw" data-sw></div>' + '<div class="ac-col">' + fld('HEX', '<input type="text" data-f="hex" maxlength="7" spellcheck="false" autocomplete="off">') + (window.EyeDropper ? btn('eye', 'Eyedropper', 'pipette') : '') + '</div></div>' +
+      '<div class="cp-sl">' + [['h', 'H', 360], ['s', 'S', 100], ['l', 'L', 100], ['r', 'R', 255], ['g', 'G', 255], ['b', 'B', 255]].map(x =>
+        '<label class="cp-s"><span>' + x[1] + '</span><input type="range" min="0" max="' + x[2] + '" data-s="' + x[0] + '" aria-label="' + ({ h: 'Hue', s: 'Saturation', l: 'Lightness', r: 'Red', g: 'Green', b: 'Blue' })[x[0]] + '"><output data-o="' + x[0] + '"></output></label>').join('') + '</div>' +
+      '<div class="ac-row">' + btn('c-hex', 'HEX', 'copy') + btn('c-rgb', 'RGB', 'copy') + btn('c-hsl', 'HSL', 'copy') + '</div>' +
+      '<div class="ac-card"><div class="ac-row"><b>Contrast</b><span class="ac-sp"></span>' + btn('swapfb', 'Swap', 'shuffle') + '</div>' +
+      '<div class="ac-row cp-bgr"><input type="color" data-f="bgn" aria-label="Background color">' + fld('Background HEX', '<input type="text" data-f="bg" maxlength="7" spellcheck="false">', 'ac-g') + '</div>' +
+      '<div class="cp-demo" data-demo>Sample text Aa 123</div><div class="cp-ratio" data-ratio role="status"></div><div class="cp-wcag" data-wcag></div></div>' +
+      '<div class="ac-card"><div class="ac-row">' + fld('Harmony', '<select data-f="harm">' + Object.keys(HARM).map(k => '<option value="' + k + '">' + HARM[k][0] + '</option>').join('') + '</select>', 'ac-g') + btn('c-pal', 'Copy', 'copy') + '</div><div class="cp-pal" data-pal></div></div>');
+    const f = n => v.querySelector('[data-f="' + n + '"]'), sl = n => v.querySelector('[data-s="' + n + '"]');
+    let hexTyping = false, bgTyping = false;
+    const save = () => sSave(SK, { h: st.h, s: st.s, l: st.l, r: st.r, g: st.g, b: st.b, bg: st.bg, harm: st.harm });
+    function draw(skip){
+      const rgb = cur(), hx = hex(rgb[0], rgb[1], rgb[2]);
+      v.querySelector('[data-sw]').style.background = hx;
+      if (!hexTyping) f('hex').value = hx; f('native').value = hx;
+      [['h', st.h], ['s', st.s], ['l', st.l], ['r', rgb[0]], ['g', rgb[1]], ['b', rgb[2]]].forEach(x => { if (skip !== x[0]) sl(x[0]).value = x[1]; v.querySelector('[data-o="' + x[0] + '"]').textContent = x[1]; });
+      sl('s').style.background = 'linear-gradient(90deg,' + hex.apply(null, hsl2rgb(st.h, 0, st.l)) + ',' + hex.apply(null, hsl2rgb(st.h, 100, st.l)) + ')';
+      sl('h').style.background = 'linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)';
+      sl('l').style.background = 'linear-gradient(90deg,#000,' + hex.apply(null, hsl2rgb(st.h, st.s, 50)) + ',#fff)';
+      // contrast
+      const bg = parseHex(st.bg) || [255, 255, 255]; if (!bgTyping) f('bg').value = hex(bg[0], bg[1], bg[2]); f('bgn').value = hex(bg[0], bg[1], bg[2]);
+      const r = ratio(rgb, bg), demo = v.querySelector('[data-demo]'); demo.style.color = hx; demo.style.background = hex(bg[0], bg[1], bg[2]);
+      v.querySelector('[data-ratio]').textContent = r.toFixed(2) + ':1';
+      v.querySelector('[data-wcag]').innerHTML = [['AA normal', 4.5], ['AA large', 3], ['AAA normal', 7], ['AAA large', 4.5]].map(x => '<span class="cp-b ' + (r >= x[1] ? 'ok' : 'no') + '">' + x[0] + ': ' + (r >= x[1] ? 'Pass' : 'Fail') + '</span>').join('');
+      // harmonies
+      const H = HARM[st.harm]; f('harm').value = st.harm;
+      const list = H[1] ? H[1].map(d => [(st.h + d + 360) % 360, st.s, st.l]) : [10, 25, 40, 55, 70, 85].map(l => [st.h, st.s, l]);
+      v.querySelector('[data-pal]').innerHTML = list.map(c => { const x = hsl2rgb(c[0], c[1], c[2]), h = hex(x[0], x[1], x[2]); return '<button type="button" class="cp-chip" data-hex="' + h + '" title="Use ' + h + '" style="background:' + h + ';color:' + (lum(x) > 0.4 ? '#000' : '#fff') + '">' + h + '</button>'; }).join('');
+    }
+    function setRgb(r, g, b){ const x = rgb2hsl(r, g, b); st.r = r; st.g = g; st.b = b; if (x[1] > 0 && x[2] > 0 && x[2] < 100) st.h = x[0]; st.s = x[1]; st.l = x[2]; }
+    function setHsl(k, val){ st[k] = val; const c = hsl2rgb(st.h, st.s, st.l); st.r = c[0]; st.g = c[1]; st.b = c[2]; }
+    const commit = skip => { save(); draw(skip); };
+    v.addEventListener('input', e => {
+      const t = e.target, s = t.dataset.s, n = t.dataset.f;
+      if (s){ const val = +t.value; if (s === 'h' || s === 's' || s === 'l') setHsl(s, val); else { const c = cur(); c[{ r: 0, g: 1, b: 2 }[s]] = val; setRgb(c[0], c[1], c[2]); } commit(s); }
+      else if (n === 'hex'){ const c = parseHex(t.value); hexTyping = true; if (c){ setRgb(c[0], c[1], c[2]); commit(); } hexTyping = false; }
+      else if (n === 'native'){ const c = parseHex(t.value); if (c){ setRgb(c[0], c[1], c[2]); commit(); } }
+      else if (n === 'bg'){ if (parseHex(t.value)){ st.bg = t.value.startsWith('#') ? t.value : '#' + t.value; bgTyping = true; commit(); bgTyping = false; } }
+      else if (n === 'bgn'){ st.bg = t.value; commit(); }
+    });
+    v.addEventListener('change', e => { if (e.target.dataset.f === 'harm'){ st.harm = e.target.value; commit(); } if (e.target.dataset.f === 'hex') draw(); });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a, rgb = cur();
+      if (b.dataset.hex){ const c = parseHex(b.dataset.hex); setRgb(c[0], c[1], c[2]); commit(); }
+      else if (a === 'c-hex') sCopy(hex(rgb[0], rgb[1], rgb[2]), 'Copied the HEX value.');
+      else if (a === 'c-rgb') sCopy('rgb(' + rgb.join(', ') + ')', 'Copied the RGB value.');
+      else if (a === 'c-hsl') sCopy('hsl(' + st.h + ', ' + st.s + '%, ' + st.l + '%)', 'Copied the HSL value.');
+      else if (a === 'c-pal') sCopy([].map.call(v.querySelectorAll('.cp-chip'), c => c.dataset.hex).join(', '), 'Copied the palette.');
+      else if (a === 'swapfb'){ const bg = parseHex(st.bg) || [255, 255, 255]; st.bg = hex(rgb[0], rgb[1], rgb[2]); setRgb(bg[0], bg[1], bg[2]); commit(); }
+      else if (a === 'eye'){ try { new window.EyeDropper().open().then(r => { const c = parseHex(r.sRGBHex); if (c){ setRgb(c[0], c[1], c[2]); commit(); } }, () => {}); } catch(e2){ showToast('The eyedropper is not available here.', 'error'); } }
+    });
+    reg(V, { refresh(){ draw(); }, _get: () => ({ hex: hex.apply(null, cur()), ratio: ratio(cur(), parseHex(st.bg) || [255, 255, 255]), ratioFn: (a, b) => ratio(parseHex(a), parseHex(b)) }) });
+    draw();
+  })();
+
+  /* ---------------------------------------------------------------- Text Tools */
+  (function textApp(){
+    const V = 'texttools';
+    let tab = 'case', hist = [], tmr = 0;
+    const LOREM = 'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit voluptate velit esse cillum fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum'.split(' ');
+    const words = s => (s.match(/[^\s]+/g) || []);
+    const splitWords = s => s.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_\-./]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+    const cap = w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    const slug = s => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const CASE = {
+      upper: s => s.toUpperCase(), lower: s => s.toLowerCase(),
+      title: s => s.toLowerCase().replace(/(^|[\s(\-"'])([a-zà-ɏ])/g, (m, a, b) => a + b.toUpperCase()),
+      sentence: s => s.toLowerCase().replace(/(^\s*|[.!?]\s+|\n\s*)([a-zà-ɏ])/g, (m, a, b) => a + b.toUpperCase()),
+      camel: s => { const w = splitWords(s); return w.length ? w[0].toLowerCase() + w.slice(1).map(cap).join('') : ''; },
+      pascal: s => splitWords(s).map(cap).join(''), snake: s => splitWords(s).map(w => w.toLowerCase()).join('_'), kebab: s => splitWords(s).map(w => w.toLowerCase()).join('-'),
+      swap: s => s.replace(/[a-z]/gi, c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase())
+    };
+    const lines = (s, fn) => fn(s.split('\n')).join('\n');
+    const LINES = {
+      'sort-az': s => lines(s, a => a.slice().sort((x, y) => x.localeCompare(y))), 'sort-za': s => lines(s, a => a.slice().sort((x, y) => y.localeCompare(x))),
+      'sort-num': s => lines(s, a => a.slice().sort((x, y) => (parseFloat(x) || 0) - (parseFloat(y) || 0) || x.localeCompare(y))),
+      dedupe: s => lines(s, a => { const seen = new Set(); return a.filter(l => !seen.has(l) && seen.add(l)); }),
+      'rev-lines': s => lines(s, a => a.slice().reverse()), 'no-blank': s => lines(s, a => a.filter(l => l.trim())),
+      'trim-lines': s => lines(s, a => a.map(l => l.trim())), number: s => lines(s, a => a.map((l, i) => (i + 1) + '. ' + l)),
+      shuffle: s => lines(s, a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = b[i]; b[i] = b[j]; b[j] = t; } return b; })
+    };
+    const CLEAN = {
+      trim: s => s.trim(), spaces: s => s.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n'), reverse: s => Array.from(s).reverse().join(''), slugify: s => slug(s),
+      'strip-html': s => s.replace(/<[^>]*>/g, ''), 'one-line': s => s.replace(/\s*\n\s*/g, ' ').trim(), 'ascii': s => s.normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    };
+    function lorem(n, unit){
+      const w = () => LOREM[Math.floor(Math.random() * LOREM.length)];
+      const sentence = (first) => { const len = 6 + Math.floor(Math.random() * 9), a = []; for (let i = 0; i < len; i++) a.push(w()); if (first) { a.splice(0, 5, 'lorem', 'ipsum', 'dolor', 'sit', 'amet'); } const s = a.join(' '); return s.charAt(0).toUpperCase() + s.slice(1) + '.'; };
+      if (unit === 'words'){ const a = []; for (let i = 0; i < n; i++) a.push(i === 0 ? 'Lorem' : i === 1 ? 'ipsum' : w()); return a.join(' ') + '.'; }
+      if (unit === 'sentences'){ const a = []; for (let i = 0; i < n; i++) a.push(sentence(i === 0)); return a.join(' '); }
+      const ps = []; for (let p = 0; p < n; p++){ const a = []; for (let i = 0, c = 3 + Math.floor(Math.random() * 3); i < c; i++) a.push(sentence(p === 0 && i === 0)); ps.push(a.join(' ')); } return ps.join('\n\n');
+    }
+    const v = mount(V,
+      '<textarea class="ac-ta tt-in" data-f="in" rows="7" spellcheck="false" aria-label="Text" placeholder="Type or paste text here"></textarea>' +
+      '<div class="tt-stats" data-stats role="status"></div>' +
+      '<div class="ac-row">' + btn('undo', 'Undo', 'undo', ' disabled') + btn('copy', 'Copy', 'copy') + btn('clear', 'Clear', 'trash') + '</div>' +
+      seg('tab', [['case', 'Case'], ['lines', 'Lines'], ['clean', 'Clean'], ['find', 'Find'], ['lorem', 'Lorem']], tab, 'Tool group') +
+      '<div class="ac-seg tt-ops" data-p="case">' + [['upper', 'UPPER'], ['lower', 'lower'], ['title', 'Title Case'], ['sentence', 'Sentence case'], ['camel', 'camelCase'], ['pascal', 'PascalCase'], ['snake', 'snake_case'], ['kebab', 'kebab-case'], ['swap', 'sWAP']].map(o => '<button type="button" class="ghost-btn" data-op="case:' + o[0] + '">' + o[1] + '</button>').join('') + '</div>' +
+      '<div class="ac-seg tt-ops" data-p="lines">' + [['sort-az', 'Sort A-Z'], ['sort-za', 'Sort Z-A'], ['sort-num', 'Sort numeric'], ['dedupe', 'Remove duplicates'], ['rev-lines', 'Reverse lines'], ['no-blank', 'Remove blank'], ['trim-lines', 'Trim lines'], ['number', 'Number lines'], ['shuffle', 'Shuffle']].map(o => '<button type="button" class="ghost-btn" data-op="lines:' + o[0] + '">' + o[1] + '</button>').join('') + '</div>' +
+      '<div class="ac-seg tt-ops" data-p="clean">' + [['trim', 'Trim'], ['spaces', 'Collapse spaces'], ['one-line', 'Join to one line'], ['reverse', 'Reverse text'], ['slugify', 'Slugify'], ['strip-html', 'Strip HTML tags'], ['ascii', 'Remove accents']].map(o => '<button type="button" class="ghost-btn" data-op="clean:' + o[0] + '">' + o[1] + '</button>').join('') + '</div>' +
+      '<div data-p="find"><div class="ac-row">' + fld('Find', '<input type="text" data-f="find" spellcheck="false" autocomplete="off">', 'ac-g') + fld('Replace with', '<input type="text" data-f="rep" spellcheck="false" autocomplete="off">', 'ac-g') + '</div>' +
+      '<div class="ac-row"><label class="ac-chk"><input type="checkbox" data-f="rx"> Regex</label><label class="ac-chk"><input type="checkbox" data-f="ci"> Ignore case</label><label class="ac-chk"><input type="checkbox" data-f="ww"> Whole word</label><span class="ac-sp"></span>' + btn('replace', 'Replace all', 'refresh-cw') + '</div><div class="ac-lbl" data-fmsg role="status"></div></div>' +
+      '<div data-p="lorem" class="ac-row">' + fld('Count', '<input type="number" min="1" max="50" value="3" data-f="ln">', 'ac-s') + fld('Unit', '<select data-f="lu"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option></select>') + btn('lorem', 'Generate', 'file-text') + '</div>');
+    const f = n => v.querySelector('[data-f="' + n + '"]');
+    const ta = f('in');
+    function stats(){
+      const s = ta.value, w = words(s).length, ch = Array.from(s).length, sent = (s.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length || (s.trim() ? 1 : 0), par = s.split(/\n\s*\n/).filter(x => x.trim()).length;
+      const min = w / 200, rt = w === 0 ? '0 sec' : min < 1 ? Math.max(1, Math.round(min * 60)) + ' sec' : Math.round(min) + ' min';
+      v.querySelector('[data-stats]').innerHTML = [['Words', w], ['Characters', ch], ['No spaces', Array.from(s.replace(/\s/g, '')).length], ['Lines', s ? s.split('\n').length : 0], ['Sentences', sent], ['Paragraphs', par], ['Reading', rt]].map(x => '<span><b>' + x[1] + '</b> ' + x[0] + '</span>').join('');
+      findMsg();
+    }
+    function mkRe(){
+      const q = f('find').value; if (!q) return { re: null };
+      try { let src = f('rx').checked ? q : q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); if (f('ww').checked) src = '\\b(?:' + src + ')\\b'; return { re: new RegExp(src, 'g' + (f('ci').checked ? 'i' : '')) }; }
+      catch(e){ return { err: e.message.replace(/^Invalid regular expression: /, '') }; }
+    }
+    function findMsg(){
+      const m = mkRe(), e = v.querySelector('[data-fmsg]');
+      if (m.err){ e.textContent = m.err; e.classList.add('err'); return; } e.classList.remove('err');
+      if (!m.re){ e.textContent = ''; return; }
+      let n = 0; ta.value.replace(m.re, x => { n++; return x; }); e.textContent = plural(n, 'match') + '.';
+    }
+    function setText(t, keep){ if (!keep){ hist.push(ta.value); if (hist.length > 40) hist.shift(); } ta.value = t; v.querySelector('[data-a="undo"]').disabled = !hist.length; stats(); }
+    function showTab(){ setSeg(v, 'tab', tab); v.querySelectorAll('[data-p]').forEach(p => { p.hidden = p.dataset.p !== tab; }); }
+    v.addEventListener('input', e => { if (e.target === ta) stats(); else if (e.target.dataset.f && /find|rx|ci|ww/.test(e.target.dataset.f)) findMsg(); });
+    v.addEventListener('change', e => { if (e.target.dataset.f && /rx|ci|ww/.test(e.target.dataset.f)) findMsg(); });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.v){ tab = b.dataset.v; showTab(); }
+      else if (b.dataset.op){ const p = b.dataset.op.split(':'), fn = ({ case: CASE, lines: LINES, clean: CLEAN })[p[0]][p[1]]; if (ta.value) setText(fn(ta.value)); }
+      else if (b.dataset.a === 'undo'){ if (hist.length) setText(hist.pop(), true); }
+      else if (b.dataset.a === 'copy'){ if (ta.value) sCopy(ta.value, 'Text copied.'); }
+      else if (b.dataset.a === 'clear'){ if (ta.value) setText(''); ta.focus(); }
+      else if (b.dataset.a === 'replace'){ const m = mkRe(); if (m.err) return showToast(m.err, 'error'); if (!m.re) return showToast('Type something to find.', 'error'); let n = 0; const rep = f('rep').value;
+        const out = ta.value.replace(m.re, (...a) => { n++; return f('rx').checked ? rep.replace(/\$(\d+|&)/g, (x, k) => k === '&' ? a[0] : (typeof a[+k] === 'string' && +k < a.length - 2 ? a[+k] : '')) : rep; });
+        if (n){ setText(out); showToast('Replaced ' + plural(n, 'match') + '.'); } else showToast('No matches.'); }
+      else if (b.dataset.a === 'lorem'){ const n = Math.max(1, Math.min(50, parseInt(f('ln').value, 10) || 1)); const t = lorem(n, f('lu').value); setText(ta.value && !/\s$/.test(ta.value) ? ta.value + '\n\n' + t : ta.value + t); }
+    });
+    reg(V, { refresh(){ stats(); }, setText: t => setText(String(t)) });
+    showTab(); stats();
+  })();
+
+  /* ---------------------------------------------------------------- JSON Tools */
+  (function jsonApp(){
+    const V = 'jsontools';
+    let hist = [], errPos = -1, treeOn = false;
+    const sortKeys = o => Array.isArray(o) ? o.map(sortKeys) : (o && typeof o === 'object') ? Object.keys(o).sort().reduce((r, k) => { r[k] = sortKeys(o[k]); return r; }, {}) : o;
+    function lineCol(text, pos){ const pre = text.slice(0, pos), ln = pre.split('\n'); return { line: ln.length, col: ln[ln.length - 1].length + 1 }; }
+    // Strict JSON scanner used only to locate an error (this browser's own message may carry no position).
+    function scan(t){
+      let i = 0; const n = t.length, fail = (pos, msg) => { throw { pos: Math.min(pos, n), msg: msg }; };
+      const ws = () => { while (i < n && ' \t\n\r'.indexOf(t[i]) !== -1) i++; };
+      const show = c => c === undefined ? 'end of input' : "'" + c + "'";
+      function str(){
+        i++;
+        while (i < n){
+          const ch = t[i];
+          if (ch === '"'){ i++; return; }
+          if (ch === '\\'){ const e = t[i + 1]; if (e === undefined) fail(n, 'Unterminated string');
+            if (e === 'u'){ if (!/^[0-9a-fA-F]{4}$/.test(t.slice(i + 2, i + 6))) fail(i, 'Invalid unicode escape'); i += 6; } else if ('"\\/bfnrt'.indexOf(e) !== -1) i += 2; else fail(i, 'Invalid escape \\' + e); }
+          else if (ch < ' ') fail(i, 'Control character in string (write it as \\n or \\t)'); else i++;
+        }
+        fail(n, 'Unterminated string');
+      }
+      function value(){
+        ws(); if (i >= n) fail(n, 'Unexpected end of input');
+        const c = t[i];
+        if (c === '{'){
+          i++; ws(); if (t[i] === '}'){ i++; return; }
+          for (;;){
+            ws(); if (i >= n) fail(n, 'Unexpected end of input');
+            if (t[i] !== '"') fail(i, (t[i] === '}' ? 'Trailing comma is not allowed' : 'Expected a quoted key but found ' + show(t[i])));
+            str(); ws(); if (t[i] !== ':') fail(i, "Expected ':' but found " + show(t[i])); i++; value(); ws();
+            if (t[i] === ','){ i++; continue; } if (t[i] === '}'){ i++; return; }
+            fail(i, "Expected ',' or '}' but found " + show(t[i]));
+          }
+        }
+        if (c === '['){
+          i++; ws(); if (t[i] === ']'){ i++; return; }
+          for (;;){
+            value(); ws(); if (t[i] === ','){ i++; continue; } if (t[i] === ']'){ i++; return; }
+            fail(i, "Expected ',' or ']' but found " + show(t[i]));
+          }
+        }
+        if (c === '"') return str();
+        const lit = /^(true|false|null)(?![A-Za-z0-9_])/.exec(t.slice(i, i + 6)); if (lit){ i += lit[1].length; return; }
+        const num = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/.exec(t.slice(i, i + 400)); if (num && num[0]){ i += num[0].length; return; }
+        if ((c === '}' || c === ']') && /,\s*$/.test(t.slice(0, i))) fail(i, 'Trailing comma is not allowed');
+        fail(i, 'Unexpected ' + (/[A-Za-z]/.test(c) ? "text '" + /^[A-Za-z]+/.exec(t.slice(i))[0].slice(0, 12) + "'" : show(c)));
+      }
+      value(); ws(); if (i < n) fail(i, 'Unexpected ' + show(t[i]) + ' after the end of the value');
+    }
+    function parse(text){
+      try { return { ok: true, val: JSON.parse(text) }; }
+      catch(e){
+        let msg = String(e.message || e), pos = -1; const m = /position (\d+)/.exec(msg);
+        try { scan(text); } catch(x){ if (x && typeof x.pos === 'number'){ pos = x.pos; msg = x.msg; } }
+        if (pos < 0 && m) pos = +m[1];
+        pos = Math.max(0, Math.min(text.length, pos < 0 ? 0 : pos));
+        const p = lineCol(text, pos);
+        return { ok: false, pos: pos, line: p.line, col: p.col, msg: msg.replace(/ in JSON at position \d+( \(line \d+ column \d+\))?/, '') };
+      }
+    }
+    // CSV
+    const csvCell = x => { const s = x === null || x === undefined ? '' : typeof x === 'object' ? JSON.stringify(x) : String(x); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    function toCsv(val){
+      const rows = Array.isArray(val) ? val : [val];
+      if (!rows.length) throw new Error('The array is empty.');
+      if (rows.some(r => r === null || typeof r !== 'object' || Array.isArray(r))){ if (rows.every(r => Array.isArray(r))) return rows.map(r => r.map(csvCell).join(',')).join('\n'); throw new Error('CSV needs an array of objects (or an array of arrays).'); }
+      const keys = []; rows.forEach(r => Object.keys(r).forEach(k => { if (keys.indexOf(k) === -1) keys.push(k); }));
+      return [keys.map(csvCell).join(',')].concat(rows.map(r => keys.map(k => csvCell(r[k])).join(','))).join('\n');
+    }
+    function parseCsv(t){
+      const rows = []; let row = [], cell = '', q = false;
+      for (let i = 0; i < t.length; i++){
+        const c = t[i];
+        if (q){ if (c === '"'){ if (t[i + 1] === '"'){ cell += '"'; i++; } else q = false; } else cell += c; }
+        else if (c === '"') q = true;
+        else if (c === ','){ row.push(cell); cell = ''; }
+        else if (c === '\n' || c === '\r'){ if (c === '\r' && t[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+        else cell += c;
+      }
+      if (q) throw new Error('Unterminated quote in CSV.');
+      if (cell !== '' || row.length){ row.push(cell); rows.push(row); }
+      return rows;
+    }
+    function fromCsv(t){
+      const rows = parseCsv(t.replace(/^﻿/, '')).filter(r => r.length > 1 || r[0] !== ''); if (rows.length < 1) throw new Error('No CSV data.');
+      const head = rows[0], conv = x => /^-?(0|[1-9]\d*)(\.\d+)?$/.test(x) ? Number(x) : x === 'true' ? true : x === 'false' ? false : x === 'null' ? null : x;
+      return rows.slice(1).map(r => { const o = {}; head.forEach((h, i) => { o[h === '' ? 'column' + (i + 1) : h] = conv(r[i] === undefined ? '' : r[i]); }); return o; });
+    }
+    const v = mount(V,
+      '<textarea class="ac-ta jt-in" data-f="in" rows="9" spellcheck="false" aria-label="JSON" placeholder="Paste JSON here"></textarea>' +
+      '<div class="jt-msg" data-msg role="status"></div>' +
+      '<div class="ac-row">' + btn('format', 'Format', 'braces') + btn('minify', 'Minify', 'shrink') + btn('validate', 'Validate', 'check-circle') + btn('sort', 'Sort keys', 'list') + btn('goto', 'Go to error', 'crosshair', ' hidden') + '</div>' +
+      '<div class="ac-row">' + fld('Indent', '<select data-f="ind"><option value="2">2 spaces</option><option value="4">4 spaces</option><option value="t">Tab</option></select>', 'ac-s') + btn('tocsv', 'JSON to CSV', 'arrow-right') + btn('fromcsv', 'CSV to JSON', 'arrow-right') + '</div>' +
+      '<div class="ac-row">' + btn('undo', 'Undo', 'undo', ' disabled') + btn('copy', 'Copy', 'copy') + btn('tree', 'Tree view', 'layers', ' aria-pressed="false"') + btn('exp', 'Expand', 'plus', ' hidden') + btn('col', 'Collapse', 'minus', ' hidden') + '</div>' +
+      '<div class="jt-tree ac-card" data-tree hidden></div>');
+    const ta = v.querySelector('[data-f="in"]'), msg = v.querySelector('[data-msg]'), tree = v.querySelector('[data-tree]');
+    const indent = () => { const x = v.querySelector('[data-f="ind"]').value; return x === 't' ? '\t' : +x; };
+    function say(t, bad){ msg.textContent = t; msg.classList.toggle('err', !!bad); msg.classList.toggle('ok', !bad && !!t); }
+    function check(quiet){
+      const t = ta.value; v.querySelector('[data-a="goto"]').hidden = true; errPos = -1;
+      if (!t.trim()){ say(''); return null; }
+      const r = parse(t);
+      if (!r.ok){ errPos = r.pos; say('Line ' + r.line + ', column ' + r.col + ': ' + r.msg, true); v.querySelector('[data-a="goto"]').hidden = false; return null; }
+      if (!quiet) say('Valid JSON (' + (Array.isArray(r.val) ? plural(r.val.length, 'item') : r.val && typeof r.val === 'object' ? plural(Object.keys(r.val).length, 'key') : typeof r.val) + ', ' + t.length + ' characters).');
+      return r;
+    }
+    function setText(t, note){ hist.push(ta.value); if (hist.length > 30) hist.shift(); ta.value = t; v.querySelector('[data-a="undo"]').disabled = false; if (note){ v.querySelector('[data-a="goto"]').hidden = true; errPos = -1; say(note); } else check(); drawTree(); }
+    function node(val, key, depth, budget){
+      const k = key === null ? '' : '<span class="jt-k">' + esc(key) + '</span>: ';
+      if (val !== null && typeof val === 'object'){
+        const arr = Array.isArray(val), ks = Object.keys(val); budget.n--;
+        if (budget.n < 0) return '<div class="jt-leaf">' + k + '…</div>';
+        return '<details' + (depth < 2 ? ' open' : '') + '><summary>' + k + '<span class="jt-d">' + (arr ? '[' + ks.length + ']' : '{' + ks.length + '}') + '</span></summary><div class="jt-in">' + ks.slice(0, 500).map(c => node(val[c], arr ? '[' + c + ']' : c, depth + 1, budget)).join('') + (ks.length > 500 ? '<div class="jt-leaf">… ' + (ks.length - 500) + ' more</div>' : '') + '</div></details>';
+      }
+      const t = val === null ? 'null' : typeof val; budget.n--;
+      return '<div class="jt-leaf">' + k + '<span class="jt-' + t + '">' + esc(t === 'string' ? '"' + (val.length > 300 ? val.slice(0, 300) + '…' : val) + '"' : String(val)) + '</span></div>';
+    }
+    function drawTree(){
+      const on = treeOn; tree.hidden = !on;
+      const tb = v.querySelector('[data-a="tree"]'); tb.setAttribute('aria-pressed', String(on));
+      v.querySelector('[data-a="exp"]').hidden = v.querySelector('[data-a="col"]').hidden = !on;
+      if (!on) return;
+      const r = ta.value.trim() ? parse(ta.value) : null;
+      tree.innerHTML = r && r.ok ? node(r.val, null, 0, { n: 4000 }) : '<span class="ac-lbl">' + (r ? 'Fix the JSON to see the tree.' : 'Paste JSON to see the tree.') + '</span>';
+    }
+    let t = 0;
+    ta.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { check(true); if (!ta.value.trim()) say(''); drawTree(); }, 250); });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); const a = b && b.dataset.a; if (!a) return;
+      if (a === 'validate'){ if (!ta.value.trim()) say('Nothing to validate.', true); else check(); return; }
+      if (a === 'goto'){ if (errPos >= 0){ ta.focus(); ta.setSelectionRange(errPos, Math.min(ta.value.length, errPos + 1)); } return; }
+      if (a === 'undo'){ if (hist.length){ ta.value = hist.pop(); v.querySelector('[data-a="undo"]').disabled = !hist.length; check(true); drawTree(); } return; }
+      if (a === 'copy'){ if (ta.value) sCopy(ta.value, 'JSON copied.'); return; }
+      if (a === 'tree'){ treeOn = !treeOn; drawTree(); return; }
+      if (a === 'exp' || a === 'col'){ tree.querySelectorAll('details').forEach(d => { d.open = a === 'exp'; }); return; }
+      if (!ta.value.trim()) return say('Paste something first.', true);
+      if (a === 'fromcsv'){ try { const o = fromCsv(ta.value); setText(JSON.stringify(o, null, indent())); } catch(er){ say(er.message, true); } return; }
+      const r = check(true); if (!r) return;
+      try {
+        if (a === 'format') setText(JSON.stringify(r.val, null, indent()));
+        else if (a === 'minify') setText(JSON.stringify(r.val));
+        else if (a === 'sort') setText(JSON.stringify(sortKeys(r.val), null, indent()));
+        else if (a === 'tocsv') setText(toCsv(r.val), 'Converted to CSV. Press Undo to go back.');
+      } catch(er){ say(er.message, true); }
+    });
+    reg(V, { refresh(){}, setText: x => { ta.value = String(x); check(); drawTree(); }, _parse: parse, _toCsv: toCsv, _fromCsv: fromCsv });
+  })();
+
+  /* ---------------------------------------------------------------- Encoder / Hash */
+  (function encApp(){
+    const V = 'encoder';
+    let mode = 'b64', hashSeq = 0, fileInfo = null;
+    const enc = new TextEncoder(), dec = new TextDecoder('utf-8', { fatal: true });
+    const bytesToB64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+    const b64ToBytes = s => { s = s.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/'); if (/[^A-Za-z0-9+/=]/.test(s)) throw new Error('That is not valid Base64.'); while (s.length % 4) s += '='; const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+    const b64Text = s => dec.decode(b64ToBytes(s));
+    const hex = u8 => Array.from(u8, b => pad(b.toString(16))).join('');
+    const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    const CODEC = {
+      b64: { name: 'Base64', enc: (s, o) => { const r = bytesToB64(enc.encode(s)); return o.safe ? r.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : r; }, dec: s => b64Text(s), opt: '<label class="ac-chk"><input type="checkbox" data-o="safe"> URL-safe</label>' },
+      url: { name: 'URL', enc: (s, o) => o.full ? encodeURI(s) : encodeURIComponent(s), dec: (s, o) => o.full ? decodeURI(s) : decodeURIComponent(s.replace(/\+/g, ' ')), opt: '<label class="ac-chk"><input type="checkbox" data-o="full"> Whole URL</label>' },
+      html: { name: 'HTML entities', enc: (s, o) => s.replace(/[&<>"']/g, c => ENT[c]).replace(o.all ? /[^\x00-\x7e]/gu : /$^/g, c => '&#' + c.codePointAt(0) + ';'), dec: s => { const t = document.createElement('textarea'); t.innerHTML = s.replace(/</g, '&lt;'); return t.value; }, opt: '<label class="ac-chk"><input type="checkbox" data-o="all"> Encode non-ASCII</label>' },
+      hex: { name: 'Hex', enc: s => Array.from(enc.encode(s), b => pad(b.toString(16))).join(' '), dec: s => { const h = s.replace(/0x|[\s,:]/gi, ''); if (!/^([0-9a-f]{2})*$/i.test(h)) throw new Error('Hex needs pairs of 0-9 and a-f.'); return dec.decode(Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16))); }, opt: '' }
+    };
+    const v = mount(V,
+      seg('mode', [['b64', 'Base64'], ['url', 'URL'], ['html', 'HTML'], ['hex', 'Hex'], ['jwt', 'JWT'], ['hash', 'Hash']], mode, 'Encoder mode') +
+      '<label class="ac-f"><span class="ac-lbl" data-inlbl>Input</span><textarea class="ac-ta" data-f="in" rows="5" spellcheck="false"></textarea></label>' +
+      '<div data-p="code"><div class="ac-row" data-opts></div><div class="ac-row">' + btn('encode', 'Encode', 'arrow-down') + btn('decode', 'Decode', 'arrow-up') + btn('use', 'Output to input', 'corner') + '</div></div>' +
+      '<div data-p="hash"><div class="ac-row">' + '<label class="ac-btnfile ghost-btn">' + icon('upload') + '<span>Hash a file</span><input type="file" data-f="file" class="ac-hide"></label>' + '<label class="ac-chk"><input type="checkbox" data-f="upper"> Uppercase</label><span class="ac-sp"></span>' + btn('hclear', 'Clear file', 'x', ' hidden') + '</div><div class="ac-lbl" data-finfo></div>' +
+      '<div class="ac-hashes" data-hashes></div>' + fld('Compare with a known hash', '<input type="text" data-f="cmp" spellcheck="false" autocomplete="off" placeholder="Paste a hash to compare">') + '<div class="ac-lbl" data-cmpmsg role="status"></div></div>' +
+      '<label class="ac-f" data-outwrap><span class="ac-lbl">Output</span><textarea class="ac-ta" data-f="out" rows="5" readonly spellcheck="false" aria-live="polite"></textarea></label>' +
+      '<div class="ac-row" data-outrow>' + btn('copy', 'Copy output', 'copy') + '<span class="jt-msg" data-msg role="status"></span></div>');
+    const f = n => v.querySelector('[data-f="' + n + '"]'), q = s => v.querySelector(s);
+    const opts = () => { const o = {}; v.querySelectorAll('[data-o]').forEach(c => { o[c.dataset.o] = c.checked; }); return o; };
+    const say = (t, bad) => { const m = q('[data-msg]'); m.textContent = t || ''; m.classList.toggle('err', !!bad); };
+    function jwt(txt){
+      const p = txt.trim().split('.'); if (p.length !== 3 && p.length !== 2) throw new Error('A JWT has three parts separated by dots.');
+      const part = (s, n) => { try { return JSON.parse(b64Text(s)); } catch(e){ throw new Error('The ' + n + ' is not valid Base64URL JSON.'); } };
+      const h = part(p[0], 'header'), pl = part(p[1], 'payload'), lines = ['HEADER', JSON.stringify(h, null, 2), '', 'PAYLOAD', JSON.stringify(pl, null, 2), ''];
+      ['iat', 'nbf', 'exp'].forEach(k => { if (typeof pl[k] === 'number') lines.push(k + ': ' + new Date(pl[k] * 1000).toISOString() + (k === 'exp' ? (pl[k] * 1000 < Date.now() ? '  (expired)' : '  (not expired)') : '')); });
+      lines.push('', 'SIGNATURE (not verified)', p[2] || '(none)'); return lines.join('\n');
+    }
+    function show(){
+      setSeg(v, 'mode', mode); const isHash = mode === 'hash', isJwt = mode === 'jwt';
+      q('[data-p="code"]').hidden = isHash || isJwt; q('[data-p="hash"]').hidden = !isHash; q('[data-outwrap]').hidden = isHash; q('[data-outrow]').hidden = isHash;
+      q('[data-inlbl]').textContent = isJwt ? 'Paste a JWT' : isHash ? 'Text to hash (or choose a file)' : 'Input';
+      q('[data-opts]').innerHTML = CODEC[mode] ? CODEC[mode].opt : ''; f('out').value = ''; say('');
+      if (isJwt) runJwt(); if (isHash) hashNow();
+    }
+    function runJwt(){ const t = f('in').value; if (!t.trim()){ f('out').value = ''; say(''); return; } try { f('out').value = jwt(t); say('Decoded only. The signature is not verified.'); } catch(e){ f('out').value = ''; say(e.message, true); } }
+    function run(dir){
+      const c = CODEC[mode]; if (!c) return;
+      try { f('out').value = c[dir](f('in').value, opts()); say(''); }
+      catch(e){ f('out').value = ''; say(e.name === 'URIError' ? 'That is not valid percent-encoding.' : e.name === 'TypeError' && /encoded data|decode/i.test(e.message) ? 'The bytes are not valid UTF-8 text.' : e.message || 'Could not convert that.', true); }
+    }
+    async function hashNow(){
+      if (mode !== 'hash') return;
+      const seq = ++hashSeq, box = q('[data-hashes]');
+      if (!(window.crypto && crypto.subtle)){ box.innerHTML = '<div class="jt-msg err">Hashing needs a secure context (https or localhost).</div>'; return; }
+      let data, label;
+      if (fileInfo){ if (fileInfo.size > 400 * 1048576){ box.innerHTML = '<div class="jt-msg err">That file is too large to hash here (limit 400 MB).</div>'; return; } box.innerHTML = '<div class="ac-lbl">Hashing…</div>'; try { data = await fileInfo.arrayBuffer(); } catch(e){ box.innerHTML = '<div class="jt-msg err">Could not read that file.</div>'; return; } label = fileInfo.name; }
+      else { data = enc.encode(f('in').value); label = 'text'; }
+      const algs = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'], up = f('upper').checked;
+      const res = await Promise.all(algs.map(a => crypto.subtle.digest(a, data).then(d => hex(new Uint8Array(d)))));
+      if (seq !== hashSeq) return;
+      box.innerHTML = algs.map((a, i) => '<div class="ac-hash"><span class="ac-lbl">' + a + '</span><code data-h="' + a + '">' + (up ? res[i].toUpperCase() : res[i]) + '</code>' + ibtn('hcopy', 'Copy ' + a, 'copy', ' data-i="' + i + '"') + '</div>').join('');
+      box.dataset.ready = '1'; cmp();
+    }
+    function cmp(){
+      const x = f('cmp').value.trim().toLowerCase().replace(/\s+/g, ''), m = q('[data-cmpmsg]');
+      if (!x){ m.textContent = ''; m.className = 'ac-lbl'; return; }
+      const hit = [].find.call(v.querySelectorAll('[data-h]'), c => c.textContent.toLowerCase() === x);
+      m.textContent = hit ? 'Match: ' + hit.dataset.h : 'No match with any of these hashes.'; m.className = 'ac-lbl ' + (hit ? 'ok' : 'err');
+    }
+    let ht = 0; const hashLater = () => { clearTimeout(ht); ht = setTimeout(hashNow, 150); };
+    v.addEventListener('input', e => { const n = e.target.dataset.f; if (n === 'in'){ if (mode === 'jwt') runJwt(); else if (mode === 'hash'){ if (!fileInfo) hashLater(); } } else if (n === 'cmp') cmp(); });
+    v.addEventListener('change', e => {
+      const n = e.target.dataset.f;
+      if (n === 'file'){ fileInfo = e.target.files[0] || null; e.target.value = ''; q('[data-a="hclear"]').hidden = !fileInfo; q('[data-finfo]').textContent = fileInfo ? fileInfo.name + ' (' + fileInfo.size.toLocaleString() + ' bytes)' : ''; hashNow(); }
+      else if (n === 'upper') hashNow();
+    });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
+      if (b.dataset.v){ mode = b.dataset.v; show(); }
+      else if (a === 'encode') run('enc'); else if (a === 'decode') run('dec');
+      else if (a === 'use'){ if (f('out').value){ f('in').value = f('out').value; f('out').value = ''; } }
+      else if (a === 'copy'){ if (f('out').value) sCopy(f('out').value, 'Output copied.'); }
+      else if (a === 'hclear'){ fileInfo = null; b.hidden = true; q('[data-finfo]').textContent = ''; hashNow(); }
+      else if (a === 'hcopy'){ const c = b.parentNode.querySelector('code'); sCopy(c.textContent, 'Hash copied.'); }
+    });
+    reg(V, { refresh(){}, _hash: async (t) => { const d = await crypto.subtle.digest('SHA-256', enc.encode(t)); return hex(new Uint8Array(d)); } });
+    show();
+  })();
+
+  /* ---------------------------------------------------------------- World Clock */
+  (function worldApp(){
+    const V = 'worldclock', SK = 'spacepad_worldclock_v1';
+    const local = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch(e){ return 'UTC'; } })();
+    const st = Object.assign({ zones: [local, 'America/New_York', 'Europe/London', 'Asia/Tokyo'], h24: cfg.h24, at: '' }, sJson(SK, {}));
+    let zones = Array.isArray(st.zones) ? st.zones.filter((z, i, a) => typeof z === 'string' && a.indexOf(z) === i).slice(0, 12) : [local];
+    const ZONES = (() => { try { return Intl.supportedValuesOf('timeZone'); } catch(e){ return ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Asia/Kolkata', 'Australia/Sydney']; } })();
+    const valid = z => { try { new Intl.DateTimeFormat('en', { timeZone: z }); return true; } catch(e){ return false; } };
+    ['UTC', 'Asia/Kolkata', 'Asia/Kathmandu', 'Asia/Ho_Chi_Minh', 'Asia/Yangon', 'Europe/Kyiv'].forEach(z => { if (ZONES.indexOf(z) === -1 && valid(z)) ZONES.push(z); });
+    zones = zones.filter(valid); if (!zones.length) zones = [local];
+    const dtf = {}; const fmt = z => dtf[z] || (dtf[z] = new Intl.DateTimeFormat('en-US', { timeZone: z, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', weekday: 'short' }));
+    function parts(z, t){ const o = {}; fmt(z).formatToParts(new Date(t)).forEach(p => { o[p.type] = p.value; }); return { y: +o.year, mo: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute, s: +o.second, wd: o.weekday }; }
+    function offMin(z, t){ const p = parts(z, t); return Math.round((Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(t / 1000) * 1000) / 60000); }
+    const offStr = m => 'UTC' + (m < 0 ? '-' : '+') + Math.floor(Math.abs(m) / 60) + (Math.abs(m) % 60 ? ':' + pad(Math.abs(m) % 60) : '');
+    const nice = z => z.split('/').pop().replace(/_/g, ' ');
+    const clock = (p, h24) => h24 ? pad(p.h) + ':' + pad(p.mi) : ((p.h % 12) || 12) + ':' + pad(p.mi) + ' ' + (p.h < 12 ? 'AM' : 'PM');
+    const atMs = () => { if (!st.at) return Date.now(); const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(st.at); return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime() : Date.now(); };
+    const save = () => { sSave(SK, { zones: zones, h24: st.h24, at: st.at }); };
+    const v = mount(V,
+      '<div class="ac-row">' + fld('Add a city or time zone', '<input type="text" list="wc-zones" data-f="add" placeholder="e.g. Asia/Kolkata" autocomplete="off" spellcheck="false">', 'ac-g') + btn('add', 'Add', 'plus') + '</div><datalist id="wc-zones">' + ZONES.map(z => '<option value="' + z + '">').join('') + '</datalist>' +
+      '<div class="ac-row">' + seg('fmt', [['12', '12-hour'], ['24', '24-hour']], st.h24 ? '24' : '12', 'Hour format') + '<span class="ac-sp"></span>' + fld('Time', '<input type="datetime-local" data-f="at">', 'ac-g') + btn('now', 'Now', 'clock') + '</div>' +
+      '<div class="wc-list" data-list></div>' +
+      '<div class="ac-card"><div class="ac-row"><b>Meeting planner</b><span class="ac-lbl">9:00 to 17:00 counts as working hours</span></div><div class="wc-plan" data-plan></div><div class="ac-lbl" data-best role="status"></div></div>');
+    const f = n => v.querySelector('[data-f="' + n + '"]'), list = v.querySelector('[data-list]');
+    const tk = ticker(V, () => { if (!st.at) paint(); }, 1000);
+    function rows(){
+      list.innerHTML = zones.map((z, i) => '<div class="wc-row" data-z="' + esc(z) + '"><div class="wc-n"><b>' + esc(nice(z)) + (z === local ? ' <span class="ac-lbl">(this device)</span>' : '') + '</b><span class="ac-lbl">' + esc(z) + '</span></div><div class="wc-t"><b data-t></b><span class="ac-lbl" data-d></span></div>' + ibtn('rm', 'Remove ' + nice(z), 'x') + '</div>').join('');
+      paint(); plan();
+    }
+    function paint(){
+      const t = atMs(), here = offMin(local, t);
+      list.querySelectorAll('.wc-row').forEach(r => { const z = r.dataset.z, p = parts(z, t), o = offMin(z, t), diff = (o - here) / 60;
+        r.querySelector('[data-t]').textContent = clock(p, st.h24);
+        r.querySelector('[data-d]').textContent = p.wd + ' ' + MON[p.mo - 1] + ' ' + p.d + ' · ' + offStr(o) + (z === local ? '' : ' · ' + (diff >= 0 ? '+' : '') + fmtNum(diff, 4) + ' h'); });
+    }
+    function dayStart(z, t){ const p = parts(z, t), g = Date.UTC(p.y, p.mo - 1, p.d), o1 = offMin(z, g); let c = g - o1 * 60000; const o2 = offMin(z, c); if (o2 !== o1) c = g - o2 * 60000; return c; }
+    function plan(){
+      const t = atMs(), base = zones[0], s = dayStart(base, t), box = v.querySelector('[data-plan]');
+      const ok = []; for (let i = 0; i < 24; i++) ok.push(zones.every(z => { const h = parts(z, s + i * 3600000).h; return h >= 9 && h < 17; }));
+      box.style.setProperty('--n', 24);
+      box.innerHTML = '<div class="wc-ph"><span></span>' + Array.from({ length: 24 }, (_, i) => '<i>' + (i % 3 === 0 ? i : '') + '</i>').join('') + '</div>' + zones.map(z => '<div class="wc-pr"><span title="' + esc(z) + '">' + esc(nice(z)) + '</span>' + Array.from({ length: 24 }, (_, i) => { const h = parts(z, s + i * 3600000).h, w = h >= 9 && h < 17, n = h >= 22 || h < 6; return '<i class="' + (w ? 'w' : n ? 'n' : '') + (ok[i] ? ' o' : '') + '" title="' + pad(h) + ':00' + (w ? ' working hours' : n ? ' night' : '') + '"></i>'; }).join('') + '</div>').join('');
+      const rs = []; for (let i = 0; i < 24; i++) if (ok[i]){ let j = i; while (j + 1 < 24 && ok[j + 1]) j++; rs.push(i + '-' + (j + 1)); i = j; }
+      const lab = x => x.split('-').map(n => pad(+n) + ':00').join(' to ');
+      v.querySelector('[data-best]').textContent = zones.length < 2 ? 'Add another city to find shared working hours.' : rs.length ? 'Everyone is in working hours, as ' + nice(base) + ' time: ' + rs.map(lab).join(', ') + '.' : 'No hour is inside 9:00 to 17:00 for every city.';
+    }
+    function addZone(){
+      const raw = f('add').value.trim(); if (!raw) return;
+      const key = raw.toLowerCase().replace(/ /g, '_'); let z = ZONES.find(x => x.toLowerCase() === key) || ZONES.find(x => x.toLowerCase().endsWith('/' + key));
+      if (!z) return showToast('Unknown time zone. Pick one from the list, like Europe/Paris.', 'error');
+      if (zones.indexOf(z) !== -1) return showToast(nice(z) + ' is already on the list.', 'error');
+      if (zones.length >= 12) return showToast('Up to 12 clocks. Remove one first.', 'error');
+      zones.push(z); f('add').value = ''; save(); rows();
+    }
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
+      if (b.dataset.v){ st.h24 = b.dataset.v === '24'; cfg.h24 = st.h24; saveCfg(); save(); setSeg(v, 'fmt', b.dataset.v); paint(); }
+      else if (a === 'add') addZone();
+      else if (a === 'now'){ st.at = ''; f('at').value = ''; save(); paint(); plan(); }
+      else if (a === 'rm'){ if (zones.length < 2) return showToast('Keep at least one clock.', 'error'); zones = zones.filter(z => z !== b.closest('.wc-row').dataset.z); save(); rows(); }
+    });
+    v.addEventListener('change', e => { if (e.target === f('at')){ st.at = e.target.value; save(); paint(); plan(); } });
+    f('add').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addZone(); } });
+    reg(V, { refresh(){ f('at').value = st.at; rows(); tk.start(); }, onClose(){ tk.stop(); }, _offset: (z, iso) => offMin(z, new Date(iso).getTime()), _zones: () => zones.slice(), _tick: () => tk.on });
+    f('at').value = st.at; rows();
+  })();
+
+  /* ---------------------------------------------------------------- To-Do */
+  (function todoApp(){
+    const V = 'todo', SK = 'spacepad_todo_v1';
+    let st = sJson(SK, null);
+    if (!st || !Array.isArray(st.lists) || !st.lists.length) st = { cur: 0, lists: [{ name: 'My tasks', items: [] }] };
+    st.lists = st.lists.slice(0, 20).map(l => ({ name: String(l.name || 'List').slice(0, 30), items: (Array.isArray(l.items) ? l.items : []).slice(0, 300).map(i => ({ id: String(i.id || Math.random().toString(36).slice(2)), text: String(i.text || '').slice(0, 300), done: !!i.done, due: /^\d{4}-\d{2}-\d{2}$/.test(i.due) ? i.due : '' })) }));
+    st.cur = Math.max(0, Math.min(st.lists.length - 1, st.cur | 0));
+    let filter = 'all', dragId = null, editId = null;
+    const save = () => sSave(SK, st);
+    const L = () => st.lists[st.cur];
+    const today = () => ymd(new Date());
+    const dueTxt = d => { const p = parseYmd(d); return p ? MON[p.m - 1] + ' ' + p.d + (p.y !== new Date().getFullYear() ? ', ' + p.y : '') : ''; };
+    const v = mount(V,
+      '<div class="ac-row"><select data-f="list" aria-label="List"></select>' + ibtn('lnew', 'New list', 'plus') + ibtn('lren', 'Rename list', 'edit') + ibtn('ldel', 'Delete list', 'trash') + '</div>' +
+      '<div class="td-prog"><div class="ck-bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100"><i data-bar></i></div><span class="ac-lbl" data-pt></span></div>' +
+      '<div class="ac-row td-add"><input type="text" data-f="new" maxlength="300" placeholder="Add a task and press Enter" aria-label="New task" autocomplete="off"><input type="date" data-f="due" aria-label="Due date">' + btn('add', 'Add', 'plus') + '</div>' +
+      seg('filter', [['all', 'All'], ['active', 'Active'], ['done', 'Done'], ['overdue', 'Overdue']], filter, 'Filter') +
+      '<ul class="td-list" data-items></ul><div class="ac-row">' + btn('clear', 'Clear completed', 'trash') + '<span class="ac-sp"></span><span class="ac-lbl" data-hint>Drag the handle, or use the arrows, to reorder.</span></div>');
+    const f = n => v.querySelector('[data-f="' + n + '"]');
+    function draw(){
+      f('list').innerHTML = st.lists.map((l, i) => '<option value="' + i + '"' + (i === st.cur ? ' selected' : '') + '>' + esc(l.name) + ' (' + l.items.filter(x => !x.done).length + ')</option>').join('');
+      const it = L().items, done = it.filter(x => x.done).length, pct = it.length ? Math.round(100 * done / it.length) : 0, t = today();
+      v.querySelector('[data-bar]').style.width = pct + '%'; v.querySelector('.td-prog [role=progressbar]').setAttribute('aria-valuenow', pct);
+      v.querySelector('[data-pt]').textContent = done + ' of ' + it.length + ' done (' + pct + '%)';
+      setSeg(v, 'filter', filter);
+      const show = it.filter(x => filter === 'all' || (filter === 'active' && !x.done) || (filter === 'done' && x.done) || (filter === 'overdue' && !x.done && x.due && x.due < t));
+      v.querySelector('[data-items]').innerHTML = show.length ? show.map(x => {
+        const od = !x.done && x.due && x.due < t, idx = it.indexOf(x);
+        return '<li class="td-i' + (x.done ? ' done' : '') + '" draggable="' + (filter === 'all') + '" data-id="' + x.id + '"><span class="td-h" aria-hidden="true">' + icon('move') + '</span>' +
+          '<input type="checkbox" data-a="chk"' + (x.done ? ' checked' : '') + ' aria-label="Done: ' + esc(x.text) + '">' +
+          (editId === x.id ? '<input type="text" class="td-ed" data-f="edit" maxlength="300" value="' + esc(x.text) + '" aria-label="Edit task">' : '<span class="td-t" data-a="edit" tabindex="0" role="button" title="Click to edit">' + esc(x.text) + '</span>') +
+          (x.due ? '<span class="td-due' + (od ? ' od' : '') + '">' + (od ? 'Overdue ' : '') + dueTxt(x.due) + '</span>' : '') +
+          '<button type="button" class="ghost-btn ac-i" data-a="up" title="Move up" aria-label="Move up"' + (idx === 0 || filter !== 'all' ? ' disabled' : '') + '>' + icon('arrow-up') + '</button>' +
+          '<button type="button" class="ghost-btn ac-i" data-a="down" title="Move down" aria-label="Move down"' + (idx === it.length - 1 || filter !== 'all' ? ' disabled' : '') + '>' + icon('arrow-down') + '</button>' +
+          '<button type="button" class="ghost-btn ac-i" data-a="del" title="Delete task" aria-label="Delete task">' + icon('x') + '</button></li>';
+      }).join('') : '<li class="ac-lbl td-empty">' + (it.length ? 'Nothing matches this filter.' : 'No tasks yet. Add one above.') + '</li>';
+      v.querySelector('[data-hint]').style.visibility = filter === 'all' && it.length > 1 ? '' : 'hidden';
+      const ed = v.querySelector('.td-ed'); if (ed){ ed.focus(); ed.setSelectionRange(ed.value.length, ed.value.length); }
+    }
+    function add(){ const t = f('new').value.trim(); if (!t) return; if (L().items.length >= 300) return showToast('This list is full (300 tasks).', 'error'); L().items.push({ id: Math.random().toString(36).slice(2), text: t, done: false, due: f('due').value }); f('new').value = ''; save(); draw(); f('new').focus(); }
+    const item = el => L().items.find(x => x.id === el.closest('[data-id]').dataset.id);
+    function move(id, to){ const it = L().items, i = it.findIndex(x => x.id === id); if (i < 0 || to < 0 || to >= it.length || to === i) return; const x = it.splice(i, 1)[0]; it.splice(to, 0, x); save(); draw(); }
+    function askName(title, cur){
+      return new Promise(res => {
+        const ov = document.createElement('div'); ov.className = 'net-popup-overlay acc-dlg'; ov.style.zIndex = '1300'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+        ov.innerHTML = '<div class="net-popup" style="max-width:340px;"><h3>' + esc(title) + '</h3><input type="text" maxlength="30" value="' + esc(cur) + '" aria-label="' + esc(title) + '" style="width:100%;box-sizing:border-box;margin:8px 0 12px;"><div class="conv-btn-row" style="justify-content:center;"><button type="button" class="ghost-btn net-cancel" data-n="0">Cancel</button><button type="button" class="ghost-btn" data-n="1">Save</button></div></div>';
+        const inp = ov.querySelector('input'); let done = false;
+        const fin = ok => { if (done) return; done = true; ov.remove(); res(ok ? inp.value.trim() : null); };
+        ov.addEventListener('click', e => { const b = e.target.closest('[data-n]'); if (b) fin(b.dataset.n === '1'); else if (e.target === ov) fin(false); });
+        ov.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); fin(true); } else if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); fin(false); } });
+        document.body.appendChild(ov); inp.focus(); inp.select();
+      });
+    }
+    f('new').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); add(); } });
+    v.addEventListener('keydown', e => {
+      if (e.target.classList.contains('td-ed')){ if (e.key === 'Enter'){ const x = item(e.target), t = e.target.value.trim(); if (x && t) x.text = t; editId = null; save(); draw(); } else if (e.key === 'Escape'){ e.stopPropagation(); editId = null; draw(); } }
+      else if (e.target.classList.contains('td-t') && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); editId = item(e.target).id; draw(); }
+      else if (e.target.closest('.td-i') && e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown') && filter === 'all'){ e.preventDefault(); const id = e.target.closest('.td-i').dataset.id, i = L().items.findIndex(x => x.id === id); move(id, i + (e.key === 'ArrowUp' ? -1 : 1)); const el = v.querySelector('[data-id="' + id + '"] .td-t, [data-id="' + id + '"] [data-a=chk]'); if (el) el.focus(); }
+    });
+    v.addEventListener('focusout', e => { if (e.target.classList.contains('td-ed') && editId){ const x = item(e.target), t = e.target.value.trim(); if (x && t) x.text = t; editId = null; save(); setTimeout(draw, 0); } });
+    v.addEventListener('change', e => {
+      if (e.target === f('list')){ st.cur = +e.target.value; save(); draw(); }
+      else if (e.target.dataset.a === 'chk'){ const x = item(e.target); x.done = e.target.checked; save(); draw(); }
+    });
+    v.addEventListener('click', async e => {
+      const b = e.target.closest('[data-a], [data-v]'); if (!b || !v.contains(b)) return; const a = b.dataset.a;
+      if (b.dataset.v){ filter = b.dataset.v; draw(); return; }
+      if (a === 'add') add();
+      else if (a === 'edit'){ editId = item(b).id; draw(); }
+      else if (a === 'del'){ const x = item(b), i = L().items.indexOf(x), l = L(); l.items.splice(i, 1); save(); draw(); showToast('Task deleted.', undefined, { label: 'Undo', run: () => { l.items.splice(Math.min(i, l.items.length), 0, x); save(); draw(); } }); }
+      else if (a === 'up' || a === 'down'){ const id = b.closest('[data-id]').dataset.id, i = L().items.findIndex(x => x.id === id); move(id, i + (a === 'up' ? -1 : 1)); }
+      else if (a === 'clear'){ const n = L().items.filter(x => x.done).length; if (!n) return showToast('Nothing completed yet.'); const ok = await appConfirm('Clear completed tasks?', 'This removes ' + plural(n, 'completed task') + ' from "' + L().name + '".', 'Clear', true); if (ok){ L().items = L().items.filter(x => !x.done); save(); draw(); } }
+      else if (a === 'lnew'){ const n = await askName('New list name', ''); if (n){ if (st.lists.length >= 20) return showToast('Up to 20 lists.', 'error'); st.lists.push({ name: n, items: [] }); st.cur = st.lists.length - 1; save(); draw(); } }
+      else if (a === 'lren'){ const n = await askName('Rename list', L().name); if (n){ L().name = n; save(); draw(); } }
+      else if (a === 'ldel'){ if (st.lists.length < 2) return showToast('Keep at least one list.', 'error'); const ok = await appConfirm('Delete this list?', '"' + L().name + '" and its ' + plural(L().items.length, 'task') + ' will be removed.', 'Delete list', true); if (ok){ st.lists.splice(st.cur, 1); st.cur = Math.max(0, st.cur - 1); save(); draw(); } }
+    });
+    // drag to reorder (only while the filter is All, so positions are real)
+    v.addEventListener('dragstart', e => { const li = e.target.closest && e.target.closest('.td-i'); if (!li || filter !== 'all'){ e.preventDefault(); return; } dragId = li.dataset.id; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch(er){} li.classList.add('drag'); });
+    v.addEventListener('dragover', e => { if (!dragId) return; const li = e.target.closest('.td-i'); if (li){ e.preventDefault(); v.querySelectorAll('.td-i.over').forEach(x => x.classList.remove('over')); if (li.dataset.id !== dragId) li.classList.add('over'); } });
+    v.addEventListener('drop', e => { if (!dragId) return; e.preventDefault(); const li = e.target.closest('.td-i'); const id = dragId; dragId = null; if (li){ const to = L().items.findIndex(x => x.id === li.dataset.id); move(id, to); } draw(); });
+    v.addEventListener('dragend', () => { dragId = null; v.querySelectorAll('.td-i.drag, .td-i.over').forEach(x => x.classList.remove('drag', 'over')); });
+    reg(V, { refresh(){ draw(); }, _state: () => JSON.parse(JSON.stringify(st)) });
+    draw();
+  })();
+
+  /* ---------------------------------------------------------------- Date Calculator */
+  (function dateApp(){
+    const V = 'datecalc', SK = 'spacepad_datecalc_v1';
+    const st = Object.assign({ cdDate: '', cdTime: '00:00', cdLabel: '' }, sJson(SK, {}));
+    let mode = 'diff';
+    const t0 = ymd(new Date());
+    // years/months/days between two calendar dates (a <= b)
+    function ymdDiff(a, b){ let mo = (b.y - a.y) * 12 + (b.m - a.m), mid = addMonths(a, mo); if (utcDay(mid) > utcDay(b)){ mo--; mid = addMonths(a, mo); } return { y: Math.floor(mo / 12), m: mo % 12, d: utcDay(b) - utcDay(mid) }; }
+    function addMonths(p, n){ const idx = p.y * 12 + (p.m - 1) + n, y = Math.floor(idx / 12), m = idx % 12 + 1; return { y: y, m: m, d: Math.min(p.d, dim(y, m)) }; }
+    function addDays(p, n){ const t = new Date(Date.UTC(p.y, p.m - 1, p.d + n)); return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() }; }
+    function isoWeek(p){ const d = new Date(Date.UTC(p.y, p.m - 1, p.d)), n = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - n); const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return { w: Math.ceil(((d - y0) / 86400000 + 1) / 7), y: d.getUTCFullYear() }; }
+    function bizDays(a, b){ let n = 0; const total = utcDay(b) - utcDay(a), wd0 = new Date(Date.UTC(a.y, a.m - 1, a.d)).getUTCDay(); for (let i = 0; i < total; i++){ const wd = (wd0 + i) % 7; if (wd !== 0 && wd !== 6) n++; } return n; }
+    const inp = (n, val, type) => '<input type="' + (type || 'date') + '" data-f="' + n + '" value="' + (val || '') + '">';
+    const v = mount(V,
+      seg('mode', [['diff', 'Difference'], ['add', 'Add/Sub'], ['age', 'Age'], ['info', 'Day info'], ['cd', 'Countdown']], mode, 'Calculator type') +
+      '<div data-p="diff" class="ac-col">' + fld('From', inp('d1', t0)) + fld('To', inp('d2', t0)) + '<div class="dc-out ac-card" data-o="diff" role="status"></div></div>' +
+      '<div data-p="add" class="ac-col">' + fld('Start date', inp('a0', t0)) + '<div class="ac-row">' + seg('sign', [['+', 'Add'], ['-', 'Subtract']], '+', 'Add or subtract') + '</div><div class="ac-row">' + fld('Years', '<input type="number" data-f="ay" value="0" min="0" max="9999">', 'ac-s') + fld('Months', '<input type="number" data-f="am" value="0" min="0" max="99999">', 'ac-s') + fld('Weeks', '<input type="number" data-f="aw" value="0" min="0" max="99999">', 'ac-s') + fld('Days', '<input type="number" data-f="ad" value="30" min="0" max="999999">', 'ac-s') + '</div><div class="dc-out ac-card" data-o="add" role="status"></div></div>' +
+      '<div data-p="age" class="ac-col">' + fld('Date of birth', inp('b0', '')) + fld('Age on', inp('b1', t0)) + '<div class="dc-out ac-card" data-o="age" role="status"></div></div>' +
+      '<div data-p="info" class="ac-col">' + fld('Date', inp('i0', t0)) + '<div class="dc-out ac-card" data-o="info" role="status"></div></div>' +
+      '<div data-p="cd" class="ac-col">' + fld('Event name', '<input type="text" data-f="cl" maxlength="40" placeholder="Optional" value="' + esc(st.cdLabel) + '">') + '<div class="ac-row">' + fld('Date', inp('c0', st.cdDate), 'ac-g') + fld('Time', inp('c1', st.cdTime, 'time'), 'ac-g') + '</div><div class="dc-out ac-card" data-o="cd" role="status"></div></div>');
+    const f = n => v.querySelector('[data-f="' + n + '"]'), out = n => v.querySelector('[data-o="' + n + '"]');
+    let sign = '+';
+    const row = (k, val) => '<div class="dc-r"><span class="ac-lbl">' + k + '</span><b>' + val + '</b></div>';
+    const bad = el => { el.innerHTML = '<span class="ac-lbl">Pick valid dates.</span>'; };
+    const ymdStr = d => [d.y ? plural(d.y, 'year') : '', d.m ? plural(d.m, 'month') : '', d.d || (!d.y && !d.m) ? plural(d.d, 'day') : ''].filter(Boolean).join(', ');
+    function calc(){
+      let a = parseYmd(f('d1').value), b = parseYmd(f('d2').value), o = out('diff');
+      if (!a || !b) bad(o); else {
+        const neg = utcDay(b) < utcDay(a); if (neg){ const t = a; a = b; b = t; }
+        const days = utcDay(b) - utcDay(a), d = ymdDiff(a, b);
+        o.innerHTML = row('Difference', ymdStr(d) + (neg ? ' (To is earlier)' : '')) + row('Total days', days.toLocaleString()) + row('Weeks', Math.floor(days / 7) + ' weeks, ' + days % 7 + ' days') + row('Weekdays (Mon to Fri)', bizDays(a, b).toLocaleString()) + row('Hours', (days * 24).toLocaleString());
+      }
+      const s = parseYmd(f('a0').value); o = out('add');
+      if (!s) bad(o); else {
+        const k = sign === '+' ? 1 : -1, ny = +f('ay').value || 0, nm = +f('am').value || 0, nw = +f('aw').value || 0, nd = +f('ad').value || 0;
+        const r = addDays(addMonths(s, k * (ny * 12 + nm)), k * (nw * 7 + nd));
+        o.innerHTML = row('Result', fmtDate(r)) + row('ISO date', r.y + '-' + pad(r.m) + '-' + pad(r.d)) + row('Week number', 'Week ' + isoWeek(r).w);
+      }
+      const bd = parseYmd(f('b0').value), on = parseYmd(f('b1').value); o = out('age');
+      if (!bd || !on) o.innerHTML = '<span class="ac-lbl">Enter a date of birth.</span>';
+      else if (utcDay(on) < utcDay(bd)) o.innerHTML = '<span class="ac-lbl">The birth date is after that day.</span>';
+      else {
+        const d = ymdDiff(bd, on); let nb = { y: on.y, m: bd.m, d: Math.min(bd.d, dim(on.y, bd.m)) }; if (utcDay(nb) < utcDay(on)) nb = { y: on.y + 1, m: bd.m, d: Math.min(bd.d, dim(on.y + 1, bd.m)) };
+        const until = utcDay(nb) - utcDay(on);
+        o.innerHTML = row('Age', plural(d.y, 'year') + ', ' + plural(d.m, 'month') + ', ' + plural(d.d, 'day')) + row('Days lived', (utcDay(on) - utcDay(bd)).toLocaleString()) + row('Born on a', DOW[new Date(Date.UTC(bd.y, bd.m - 1, bd.d)).getUTCDay()]) + row('Next birthday', until === 0 ? 'Today' : 'in ' + plural(until, 'day') + ' (' + fmtDate(nb) + ')');
+      }
+      const i = parseYmd(f('i0').value); o = out('info');
+      if (!i) bad(o); else {
+        const doy = utcDay(i) - utcDay({ y: i.y, m: 1, d: 1 }) + 1, leap = dim(i.y, 2) === 29, w = isoWeek(i);
+        o.innerHTML = row('Weekday', DOW[new Date(Date.UTC(i.y, i.m - 1, i.d)).getUTCDay()]) + row('Day of year', doy + ' of ' + (leap ? 366 : 365)) + row('ISO week', 'Week ' + w.w + ' of ' + w.y) + row('Quarter', 'Q' + Math.ceil(i.m / 3)) + row('Days in month', dim(i.y, i.m)) + row('Leap year', leap ? 'Yes' : 'No');
+      }
+      countdown();
+    }
+    function countdown(){
+      const o = out('cd'), p = parseYmd(f('c0').value);
+      if (!p){ o.innerHTML = '<span class="ac-lbl">Pick a date to count down to.</span>'; return; }
+      const tm = /^(\d{2}):(\d{2})$/.exec(f('c1').value) || [0, '00', '00'], target = new Date(p.y, p.m - 1, p.d, +tm[1], +tm[2]).getTime(), diff = target - Date.now(), lab = f('cl').value.trim();
+      if (diff <= 0){ o.innerHTML = row(lab || 'Event', 'Already happened (' + plural(Math.floor(-diff / 86400000), 'day') + ' ago)'); return; }
+      const s = Math.floor(diff / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+      o.innerHTML = '<div class="ck-big">' + d + 'd ' + pad(h) + 'h ' + pad(m) + 'm ' + pad(s % 60) + 's</div>' + row(lab || 'Event', fmtDate(p)) + row('Calendar days', plural(utcDay(p) - utcDay(parseYmd(ymd(new Date()))), 'day'));
+    }
+    function show(){ setSeg(v, 'mode', mode); v.querySelectorAll('[data-p]').forEach(p => { p.hidden = p.dataset.p !== mode; }); if (mode === 'cd') tk.start(); else tk.stop(); calc(); }
+    const tk = ticker(V, () => { if (mode === 'cd') countdown(); }, 1000);
+    v.addEventListener('input', () => { st.cdDate = f('c0').value; st.cdTime = f('c1').value; st.cdLabel = f('cl').value; sSave(SK, st); calc(); });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || !b.dataset.v) return;
+      if (b.closest('[data-seg="mode"]')){ mode = b.dataset.v; show(); }
+      else if (b.closest('[data-seg="sign"]')){ sign = b.dataset.v; setSeg(v, 'sign', sign); calc(); }
+    });
+    reg(V, { refresh(){ if (mode === 'cd') tk.start(); calc(); }, onClose(){ tk.stop(); }, _ymdDiff: ymdDiff, _tick: () => tk.on });
+    show();
+  })();
+
+  /* ---------------------------------------------------------------- Quick Paint */
+  (function paintApp(){
+    const V = 'paint', W = 480, H = 320, MAXU = 25;
+    const st = { tool: 'pen', color: '#2b2f6b', size: 4, fill: false };
+    let undo = [], redo = [], drawing = false, snap = null, sx = 0, sy = 0, lx = 0, ly = 0, dirty = false;
+    const PAL = ['#000000', '#ffffff', '#7f7f7f', '#c3c3c3', '#e11d48', '#f97316', '#facc15', '#22c55e', '#06b6d4', '#2563eb', '#7c3aed', '#db2777', '#8b4513', '#14532d'];
+    const TOOLS = [['pen', 'Pencil', 'pencil'], ['eraser', 'Eraser', 'eraser'], ['line', 'Line', 'slash'], ['rect', 'Rectangle', 'square'], ['ellipse', 'Ellipse', 'circle'], ['fill', 'Fill', 'bucket'], ['pick', 'Pick color', 'pipette']];
+    const v = mount(V,
+      '<div class="ac-row pt-tools" role="group" aria-label="Tools">' + TOOLS.map(t => '<button type="button" class="ghost-btn ac-i" data-tool="' + t[0] + '" title="' + t[1] + '" aria-label="' + t[1] + '" aria-pressed="' + (t[0] === st.tool) + '">' + icon(t[2]) + '</button>').join('') +
+      '<span class="ac-sp"></span>' + ibtn('undo', 'Undo (Ctrl+Z)', 'undo', ' disabled') + ibtn('redo', 'Redo (Ctrl+Y)', 'redo', ' disabled') + ibtn('clear', 'Clear canvas', 'trash') + ibtn('save', 'Save as PNG', 'download') + '</div>' +
+      '<div class="ac-row"><input type="color" data-f="color" value="' + st.color + '" aria-label="Color"><div class="pt-pal" role="group" aria-label="Palette">' + PAL.map(c => '<button type="button" class="pt-c" data-c="' + c + '" style="background:' + c + '" title="' + c + '" aria-label="' + c + '"></button>').join('') + '</div></div>' +
+      '<div class="ac-row"><label class="ac-f ac-g"><span class="ac-lbl">Size <output data-sz>4</output></span><input type="range" min="1" max="40" value="4" data-f="size" aria-label="Brush size"></label><label class="ac-chk"><input type="checkbox" data-f="fill"> Fill shapes</label></div>' +
+      '<div class="pt-stage"><canvas width="' + W + '" height="' + H + '" tabindex="0" aria-label="Drawing canvas. Draw with a mouse, pen or finger."></canvas></div>');
+    const cv = v.querySelector('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+    const f = n => v.querySelector('[data-f="' + n + '"]');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+    const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
+    function sync(){ v.querySelector('[data-a="undo"]').disabled = !undo.length; v.querySelector('[data-a="redo"]').disabled = !redo.length; }
+    function push(){ undo.push(ctx.getImageData(0, 0, W, H)); if (undo.length > MAXU) undo.shift(); redo = []; sync(); }
+    function stroke(x0, y0, x1, y1){
+      ctx.lineCap = ctx.lineJoin = 'round'; ctx.lineWidth = st.size; ctx.strokeStyle = st.tool === 'eraser' ? '#ffffff' : st.color;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    }
+    function dot(x, y){ ctx.fillStyle = st.tool === 'eraser' ? '#ffffff' : st.color; ctx.beginPath(); ctx.arc(x, y, st.size / 2, 0, Math.PI * 2); ctx.fill(); }
+    function shape(x0, y0, x1, y1){
+      ctx.putImageData(snap, 0, 0); ctx.lineWidth = st.size; ctx.lineJoin = ctx.lineCap = 'round'; ctx.strokeStyle = ctx.fillStyle = st.color; ctx.beginPath();
+      if (st.tool === 'line'){ ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); return; }
+      if (st.tool === 'rect') ctx.rect(x0, y0, x1 - x0, y1 - y0); else ctx.ellipse((x0 + x1) / 2, (y0 + y1) / 2, Math.abs(x1 - x0) / 2, Math.abs(y1 - y0) / 2, 0, 0, Math.PI * 2);
+      if (st.fill) ctx.fill(); ctx.stroke();
+    }
+    const rgba = hx => [1, 3, 5].map(i => parseInt(hx.substr(i, 2), 16)).concat(255);
+    function flood(x, y){
+      x = Math.floor(x); y = Math.floor(y); if (x < 0 || y < 0 || x >= W || y >= H) return;
+      const img = ctx.getImageData(0, 0, W, H), d = img.data, i0 = (y * W + x) * 4, t = [d[i0], d[i0 + 1], d[i0 + 2], d[i0 + 3]], c = rgba(st.color);
+      if (Math.abs(t[0] - c[0]) + Math.abs(t[1] - c[1]) + Math.abs(t[2] - c[2]) < 6 && t[3] === 255) return;
+      const near = i => Math.abs(d[i] - t[0]) + Math.abs(d[i + 1] - t[1]) + Math.abs(d[i + 2] - t[2]) + Math.abs(d[i + 3] - t[3]) <= 48;
+      const seen = new Uint8Array(W * H), stack = [y * W + x];
+      while (stack.length){
+        const i = stack.pop(); if (seen[i] || !near(i * 4)) continue;
+        seen[i] = 1; d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
+        const cx = i % W; if (cx > 0) stack.push(i - 1); if (cx < W - 1) stack.push(i + 1); if (i >= W) stack.push(i - W); if (i < W * (H - 1)) stack.push(i + W);
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    cv.addEventListener('pointerdown', e => {
+      if (e.button > 0) return; e.preventDefault(); cv.focus({ preventScroll: true });
+      const p = pos(e); sx = lx = p[0]; sy = ly = p[1];
+      if (st.tool === 'pick'){ const px = ctx.getImageData(Math.floor(sx), Math.floor(sy), 1, 1).data; st.color = '#' + [px[0], px[1], px[2]].map(n => pad(n.toString(16))).join(''); f('color').value = st.color; return; }
+      push(); dirty = true;
+      if (st.tool === 'fill'){ flood(sx, sy); return; }
+      drawing = true; try { cv.setPointerCapture(e.pointerId); } catch(er){}
+      if (st.tool === 'pen' || st.tool === 'eraser') dot(sx, sy); else snap = ctx.getImageData(0, 0, W, H);
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!drawing) return; const p = pos(e);
+      if (st.tool === 'pen' || st.tool === 'eraser'){ stroke(lx, ly, p[0], p[1]); lx = p[0]; ly = p[1]; } else shape(sx, sy, p[0], p[1]);
+    });
+    const end = () => { drawing = false; snap = null; };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    function restore(from, to){ if (!from.length) return; to.push(ctx.getImageData(0, 0, W, H)); ctx.putImageData(from.pop(), 0, 0); sync(); }
+    v.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && /^[zy]$/i.test(e.key) && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ e.preventDefault(); if (e.key.toLowerCase() === 'y' || e.shiftKey) restore(redo, undo); else restore(undo, redo); }
+    });
+    v.addEventListener('input', e => {
+      const n = e.target.dataset.f;
+      if (n === 'color') st.color = e.target.value; else if (n === 'size'){ st.size = +e.target.value; v.querySelector('[data-sz]').textContent = st.size; } else if (n === 'fill') st.fill = e.target.checked;
+    });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.tool){ st.tool = b.dataset.tool; v.querySelectorAll('[data-tool]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }
+      else if (b.dataset.c){ st.color = b.dataset.c; f('color').value = st.color; if (st.tool === 'eraser' || st.tool === 'pick'){ st.tool = 'pen'; v.querySelectorAll('[data-tool]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.tool === 'pen'))); } }
+      else if (b.dataset.a === 'undo') restore(undo, redo); else if (b.dataset.a === 'redo') restore(redo, undo);
+      else if (b.dataset.a === 'clear'){ push(); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); }
+      else if (b.dataset.a === 'save') cv.toBlob(bl => { if (bl) dlBlob('quick-paint-' + Date.now() + '.png', bl); else showToast('Could not create the PNG.', 'error'); }, 'image/png');
+    });
+    reg(V, { refresh(){ sync(); }, onClose(){ drawing = false; snap = null; }, _canvas: () => cv });
+    sync();
+  })();
+
+  /* ---------------------------------------------------------------- Scratchpad */
+  (function scratchApp(){
+    const V = 'scratch', SK = 'spacepad_scratch_v1', MAXN = 30, MAXC = 20000;
+    let st = sJson(SK, null);
+    if (!st || !Array.isArray(st.notes)) st = { notes: [{ id: 1, text: '' }], next: 2 };
+    st.notes = st.notes.slice(0, MAXN).map((n, i) => ({ id: +n.id || i + 1, text: String(n.text || '').slice(0, MAXC) }));
+    st.next = Math.max(st.next | 0, ...st.notes.map(n => n.id + 1), 1);
+    let q = '', tm = 0;
+    const save = () => sSave(SK, st);
+    flushHooks.push(() => { if (tm){ clearTimeout(tm); tm = 0; save(); } });
+    const v = mount(V,
+      '<div class="ac-row"><input type="search" data-f="q" placeholder="Search snippets" aria-label="Search snippets" class="ac-g">' + btn('new', 'New', 'plus') + btn('clip', 'From clipboard', 'clipboard') + '</div>' +
+      '<div class="sp-list" data-list></div><div class="ac-lbl" data-count></div>');
+    const list = v.querySelector('[data-list]');
+    const title = t => (t.split('\n').find(l => l.trim()) || 'Empty snippet').slice(0, 40);
+    function draw(){
+      const m = st.notes.filter(n => !q || n.text.toLowerCase().indexOf(q) !== -1);
+      list.innerHTML = m.length ? m.map(n => '<div class="sp-n ac-card" data-id="' + n.id + '"><div class="ac-row"><b class="sp-t">' + esc(title(n.text)) + '</b><span class="ac-sp"></span><span class="ac-lbl" data-len>' + n.text.length + '</span>' + ibtn('copy', 'Copy snippet', 'copy') + ibtn('del', 'Delete snippet', 'x') + '</div><textarea class="ac-ta" rows="3" maxlength="' + MAXC + '" spellcheck="false" aria-label="Snippet: ' + esc(title(n.text)) + '">' + esc(n.text) + '</textarea></div>').join('') : '<div class="ac-lbl">' + (st.notes.length ? 'No snippet matches that search.' : 'No snippets. Press New to add one.') + '</div>';
+      v.querySelector('[data-count]').textContent = plural(st.notes.length, 'snippet') + '. Kept for this visit and included in Export everything.';
+    }
+    const noteOf = el => st.notes.find(n => n.id === +el.closest('[data-id]').dataset.id);
+    function add(text){ if (st.notes.length >= MAXN) return showToast('Up to ' + MAXN + ' snippets. Delete one first.', 'error'); const n = { id: st.next++, text: String(text || '').slice(0, MAXC) }; st.notes.unshift(n); q = ''; v.querySelector('[data-f="q"]').value = ''; save(); draw(); const ta = list.querySelector('[data-id="' + n.id + '"] textarea'); if (ta && !text) ta.focus(); }
+    v.addEventListener('input', e => {
+      if (e.target.dataset.f === 'q'){ q = e.target.value.toLowerCase().trim(); draw(); return; }
+      if (e.target.tagName === 'TEXTAREA'){ const n = noteOf(e.target); n.text = e.target.value; const c = e.target.closest('.sp-n'); c.querySelector('[data-len]').textContent = n.text.length; c.querySelector('.sp-t').textContent = title(n.text); clearTimeout(tm); tm = setTimeout(() => { tm = 0; save(); }, 300); }
+    });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
+      if (a === 'new') add('');
+      else if (a === 'clip'){ try { navigator.clipboard.readText().then(t => { if (t) add(t); else showToast('The clipboard is empty.', 'error'); }, () => showToast('Allow clipboard access, or paste into a snippet by hand.', 'error')); } catch(er){ showToast('Reading the clipboard is not available here.', 'error'); } }
+      else if (a === 'copy'){ const n = noteOf(b); if (n.text) sCopy(n.text, 'Snippet copied.'); else showToast('That snippet is empty.', 'error'); }
+      else if (a === 'del'){ const n = noteOf(b), i = st.notes.indexOf(n); st.notes.splice(i, 1); save(); draw(); showToast('Snippet deleted.', undefined, { label: 'Undo', run: () => { st.notes.splice(Math.min(i, st.notes.length), 0, n); save(); draw(); } }); }
+    });
+    reg(V, { refresh(){ draw(); }, _state: () => JSON.parse(JSON.stringify(st)) });
+    draw();
+  })();
+
+  /* ---------------------------------------------------------------- Finance Calc */
+  (function financeApp(){
+    const V = 'finance';
+    let tab = 'loan', tipPct = 18;
+    const n = (v, d) => { const x = parseFloat(String(v).replace(/,/g, '')); return isFinite(x) ? x : d; };
+    const money = x => isFinite(x) ? x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
+    const num = (k, label, val, extra) => fld(label, '<input type="text" inputmode="decimal" data-f="' + k + '" value="' + val + '" autocomplete="off"' + (extra || '') + '>', 'ac-g');
+    const row = (k, val, big) => '<div class="dc-r"><span class="ac-lbl">' + k + '</span><b' + (big ? ' class="fc-big"' : '') + '>' + val + '</b></div>';
+    const v = mount(V,
+      seg('tab', [['loan', 'Loan'], ['tip', 'Tip & split'], ['pct', 'Percent'], ['save', 'Savings']], tab, 'Calculator type') +
+      '<div data-p="loan" class="ac-col"><div class="ac-row">' + num('la', 'Loan amount', '200000') + num('lr', 'Rate % per year', '6') + num('ly', 'Years', '30') + '</div><div class="ac-card" data-o="loan" role="status"></div><details><summary>First year schedule</summary><div class="uc-tbl" data-sched></div></details></div>' +
+      '<div data-p="tip" class="ac-col"><div class="ac-row">' + num('tb', 'Bill', '86.40') + num('tp', 'People', '2') + '</div><div class="ac-seg" data-seg="tipp" role="group" aria-label="Tip percent">' + [10, 15, 18, 20, 25].map(p => '<button type="button" class="ghost-btn" data-v="' + p + '" aria-pressed="' + (p === tipPct) + '">' + p + '%</button>').join('') + '</div><div class="ac-row">' + num('tc', 'Custom tip %', '') + '<label class="ac-chk"><input type="checkbox" data-f="tr"> Round each share up</label></div><div class="ac-card" data-o="tip" role="status"></div></div>' +
+      '<div data-p="pct" class="ac-col"><div class="ac-card"><div class="ac-row"><span>What is</span>' + num('p1', '', '15', ' aria-label="Percent"') + '<span>% of</span>' + num('p2', '', '240', ' aria-label="Of amount"') + '</div><div class="dc-r" data-o="p1" role="status"></div></div>' +
+      '<div class="ac-card"><div class="ac-row">' + num('p3', '', '30', ' aria-label="Part"') + '<span>is what % of</span>' + num('p4', '', '120', ' aria-label="Whole"') + '</div><div class="dc-r" data-o="p2" role="status"></div></div>' +
+      '<div class="ac-card"><div class="ac-row"><span>Change from</span>' + num('p5', '', '80', ' aria-label="Old value"') + '<span>to</span>' + num('p6', '', '100', ' aria-label="New value"') + '</div><div class="dc-r" data-o="p3" role="status"></div></div></div>' +
+      '<div data-p="save" class="ac-col"><div class="ac-row">' + num('sp', 'Start amount', '1000') + num('sm', 'Monthly deposit', '100') + '</div><div class="ac-row">' + num('sr', 'Rate % per year', '5') + num('sy', 'Years', '10') + fld('Compounding', '<select data-f="sc"><option value="1">Yearly</option><option value="4">Quarterly</option><option value="12" selected>Monthly</option><option value="365">Daily</option></select>', 'ac-g') + '</div><div class="ac-card" data-o="save" role="status"></div></div>');
+    const f = k => v.querySelector('[data-f="' + k + '"]'), o = k => v.querySelector('[data-o="' + k + '"]');
+    const bad = '<span class="ac-lbl">Enter valid numbers.</span>';
+    function loan(P, rate, yrs){ const N = Math.round(yrs * 12), r = rate / 1200; const pmt = r ? P * r / (1 - Math.pow(1 + r, -N)) : P / N; return { N: N, r: r, pmt: pmt }; }
+    function calc(){
+      const P = n(f('la').value, NaN), rate = n(f('lr').value, NaN), yrs = n(f('ly').value, NaN);
+      if (!(P > 0) || !(rate >= 0) || !(yrs > 0) || yrs > 100) { o('loan').innerHTML = bad; v.querySelector('[data-sched]').innerHTML = ''; }
+      else {
+        const L = loan(P, rate, yrs), total = L.pmt * L.N;
+        o('loan').innerHTML = row('Monthly payment', money(L.pmt), 1) + row('Total paid', money(total)) + row('Total interest', money(total - P)) + row('Payments', L.N);
+        let bal = P; const rows = []; for (let i = 1; i <= Math.min(12, L.N); i++){ const int = bal * L.r, pr = L.pmt - int; bal -= pr; rows.push('<div class="uc-row"><span>' + i + '</span><span class="ac-lbl">interest ' + money(int) + '</span><b>' + money(Math.max(0, bal)) + '</b></div>'); }
+        v.querySelector('[data-sched]').innerHTML = rows.join('');
+      }
+      const bill = n(f('tb').value, NaN), ppl = Math.max(1, Math.floor(n(f('tp').value, 1))), cust = f('tc').value.trim(), pc = cust !== '' ? n(cust, NaN) : tipPct;
+      if (!(bill >= 0) || !(pc >= 0)) o('tip').innerHTML = bad; else {
+        const tip = bill * pc / 100, tot = bill + tip; let share = tot / ppl; if (f('tr').checked) share = Math.ceil(share * 100 - 1e-9) / 100;
+        o('tip').innerHTML = row('Tip', money(tip)) + row('Total', money(tot)) + row('Each person pays', money(share), 1) + (f('tr').checked ? row('Collected', money(share * ppl)) : '');
+      }
+      const a = n(f('p1').value, NaN), b = n(f('p2').value, NaN), c = n(f('p3').value, NaN), d = n(f('p4').value, NaN), e = n(f('p5').value, NaN), g = n(f('p6').value, NaN);
+      o('p1').innerHTML = isFinite(a * b) ? row(fmtNum(a, 8) + '% of ' + fmtNum(b, 8), fmtNum(a * b / 100, 10)) : bad;
+      o('p2').innerHTML = isFinite(c / d) && d !== 0 ? row(fmtNum(c, 8) + ' of ' + fmtNum(d, 8), fmtNum(c / d * 100, 8) + '%') : bad;
+      o('p3').innerHTML = isFinite(g - e) && e !== 0 ? row('Change', (g >= e ? '+' : '') + fmtNum((g - e) / Math.abs(e) * 100, 8) + '%') : bad;
+      const p0 = n(f('sp').value, NaN), m = n(f('sm').value, NaN), sr = n(f('sr').value, NaN), sy = n(f('sy').value, NaN), cf = +f('sc').value;
+      if (!(p0 >= 0) || !(m >= 0) || !(sr >= 0) || !(sy > 0) || sy > 100) o('save').innerHTML = bad; else {
+        const mr = Math.pow(1 + sr / 100 / cf, cf / 12) - 1; let bal = p0, dep = p0; for (let i = 0; i < Math.round(sy * 12); i++){ bal = bal * (1 + mr) + m; dep += m; }
+        o('save').innerHTML = row('Final balance', money(bal), 1) + row('Total deposited', money(dep)) + row('Interest earned', money(bal - dep));
+      }
+    }
+    function show(){ setSeg(v, 'tab', tab); v.querySelectorAll('[data-p]').forEach(p => { p.hidden = p.dataset.p !== tab; }); calc(); }
+    v.addEventListener('input', calc); v.addEventListener('change', calc);
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || !b.dataset.v) return;
+      if (b.closest('[data-seg="tab"]')){ tab = b.dataset.v; show(); }
+      else { tipPct = +b.dataset.v; f('tc').value = ''; setSeg(v, 'tipp', String(tipPct)); calc(); }
+    });
+    reg(V, { refresh(){ calc(); }, _loan: loan });
+    show();
+  })();
+
+  /* ---------------------------------------------------------------- Dev Calc */
+  (function devApp(){
+    const V = 'devcalc';
+    let tab = 'bases', base = 10, bits = 32, val = 0n;
+    const mask = () => (1n << BigInt(bits)) - 1n, wrap = x => ((x % (mask() + 1n)) + mask() + 1n) % (mask() + 1n);
+    const sgn = x => x >> BigInt(bits - 1) ? x - (1n << BigInt(bits)) : x;
+    function parse(s, b){
+      s = String(s).trim().replace(/[_\s]/g, ''); let neg = false;
+      if (s[0] === '-'){ neg = true; s = s.slice(1); } else if (s[0] === '+') s = s.slice(1);
+      if (b === 0){ const m = /^0([xbo])/i.exec(s); if (m){ b = { x: 16, b: 2, o: 8 }[m[1].toLowerCase()]; s = s.slice(2); } else b = 10; }
+      const dg = '0123456789abcdef'.slice(0, b);
+      if (!s || !Array.from(s.toLowerCase()).every(c => dg.indexOf(c) !== -1)) throw new Error('Not a valid base-' + b + ' number.');
+      let r = 0n; const B = BigInt(b); for (const c of s.toLowerCase()) r = r * B + BigInt(dg.indexOf(c)); return neg ? -r : r;
+    }
+    const grp = (s, n) => s.replace(new RegExp('\\B(?=(.{' + n + '})+$)', 'g'), ' ');
+    const forms = x => ({ dec: x.toString(10), sdec: sgn(x).toString(10), hex: x.toString(16).toUpperCase(), oct: x.toString(8), bin: x.toString(2) });
+    const outRows = x => { const o = forms(x); return [['Decimal (unsigned)', o.dec], ['Decimal (signed)', o.sdec], ['Hex', grp(o.hex.length % 2 ? '0' + o.hex : o.hex, 2)], ['Octal', o.oct], ['Binary', grp(o.bin.padStart(bits, '0'), 4)]].map(r => '<div class="ac-hash"><span class="ac-lbl">' + r[0] + '</span><code>' + r[1] + '</code>' + ibtn('cp', 'Copy ' + r[0], 'copy') + '</div>').join(''); };
+    const v = mount(V,
+      seg('tab', [['bases', 'Number bases'], ['bit', 'Bitwise'], ['unix', 'Unix time']], tab, 'Tool') +
+      '<div data-p="bases" class="ac-col"><div class="ac-row">' + seg('base', [['2', 'Bin'], ['8', 'Oct'], ['10', 'Dec'], ['16', 'Hex']], '10', 'Input base') + seg('bits', [['8', '8-bit'], ['16', '16-bit'], ['32', '32-bit'], ['64', '64-bit']], '32', 'Word size') + '</div>' +
+      '<input type="text" data-f="num" value="0" autocomplete="off" spellcheck="false" aria-label="Number"><div class="jt-msg" data-msg role="status"></div><div class="dv-bits" data-bits></div><div class="ac-hashes" data-rows></div></div>' +
+      '<div data-p="bit" class="ac-col"><div class="ac-row">' + fld('A', '<input type="text" data-f="ba" value="0xF0" spellcheck="false">', 'ac-g') + fld('Operation', '<select data-f="bo"><option>AND</option><option>OR</option><option>XOR</option><option>NAND</option><option>NOR</option><option>XNOR</option><option>NOT A</option><option>A &lt;&lt; B</option><option>A &gt;&gt; B</option></select>', 'ac-g') + fld('B', '<input type="text" data-f="bb" value="0x3C" spellcheck="false">', 'ac-g') + '</div><div class="ac-lbl">Numbers accept 0x (hex), 0b (binary), 0o (octal) or plain decimal. Uses the word size from the other tab.</div><div class="jt-msg" data-bmsg role="status"></div><div class="ac-hashes" data-brows></div></div>' +
+      '<div data-p="unix" class="ac-col"><div class="ac-row">' + fld('Unix time (seconds or ms)', '<input type="text" data-f="ut" spellcheck="false" inputmode="numeric">', 'ac-g') + btn('now', 'Now', 'clock') + '</div><div class="dc-out ac-card" data-uout role="status"></div>' + fld('Date and time (your time zone)', '<input type="datetime-local" step="1" data-f="ud">') + '<div class="dc-out ac-card" data-uout2 role="status"></div></div>');
+    const f = k => v.querySelector('[data-f="' + k + '"]'), q = s => v.querySelector(s);
+    const say = (s, bad, sel) => { const m = q(sel || '[data-msg]'); m.textContent = s || ''; m.classList.toggle('err', !!bad); };
+    const rowx = (k, x) => '<div class="dc-r"><span class="ac-lbl">' + k + '</span><b>' + x + '</b></div>';
+    function drawBases(fromInput){
+      val = wrap(val); const o = forms(val);
+      if (!fromInput) f('num').value = base === 10 ? o.dec : val.toString(base).toUpperCase();
+      q('[data-rows]').innerHTML = outRows(val);
+      let h = ''; for (let i = bits - 1; i >= 0; i--){ const on = (val >> BigInt(i)) & 1n; h += '<button type="button" class="dv-bit" data-bit="' + i + '" aria-pressed="' + (on === 1n) + '" aria-label="Bit ' + i + ' is ' + on + '">' + on + '</button>' + (i % 4 === 0 && i ? '<i></i>' : ''); }
+      q('[data-bits]').innerHTML = h;
+    }
+    function fromInput(){
+      try { const raw = parse(f('num').value, base); const w = wrap(raw); say(raw !== w && !(raw < 0n && raw >= -(1n << BigInt(bits - 1))) ? 'Value does not fit in ' + bits + ' bits; it was wrapped.' : ''); val = w; }
+      catch(e){ if (f('num').value.trim() === '') { val = 0n; say(''); } else { say(e.message, true); return; } }
+      drawBases(true);
+    }
+    function bitwise(){
+      const m = q('[data-brows]');
+      try {
+        const a = wrap(parse(f('ba').value, 0)), b = wrap(parse(f('bb').value, 0)), op = f('bo').value; let r;
+        if (op === 'AND') r = a & b; else if (op === 'OR') r = a | b; else if (op === 'XOR') r = a ^ b; else if (op === 'NAND') r = ~(a & b); else if (op === 'NOR') r = ~(a | b); else if (op === 'XNOR') r = ~(a ^ b);
+        else if (op === 'NOT A') r = ~a; else if (op === 'A << B') r = a << (b % BigInt(bits)); else r = a >> (b % BigInt(bits));
+        say('', false, '[data-bmsg]'); m.innerHTML = outRows(wrap(r));
+      } catch(e){ say(e.message, true, '[data-bmsg]'); m.innerHTML = ''; }
+    }
+    function unix(){
+      const t = f('ut').value.trim(), o = q('[data-uout]');
+      if (!/^-?\d+(\.\d+)?$/.test(t)){ o.innerHTML = '<span class="ac-lbl">Enter a number of seconds or milliseconds.</span>'; return; }
+      let x = parseFloat(t); const ms = Math.abs(x) >= 1e11; if (!ms) x *= 1000; const d = new Date(x);
+      if (isNaN(d.getTime())){ o.innerHTML = '<span class="ac-lbl">Out of range.</span>'; return; }
+      o.innerHTML = rowx('Read as', ms ? 'milliseconds' : 'seconds') + rowx('UTC', d.toISOString()) + rowx('Local', d.toString().replace(/ GMT.*$/, ' ') + (Intl.DateTimeFormat().resolvedOptions().timeZone || ''));
+    }
+    function unixFromDate(){
+      const t = f('ud').value, o = q('[data-uout2]'); if (!t){ o.innerHTML = ''; return; }
+      const d = new Date(t); if (isNaN(d.getTime())){ o.innerHTML = ''; return; }
+      o.innerHTML = rowx('Seconds', Math.floor(d.getTime() / 1000)) + rowx('Milliseconds', d.getTime());
+    }
+    function show(){ setSeg(v, 'tab', tab); v.querySelectorAll('[data-p]').forEach(p => { p.hidden = p.dataset.p !== tab; }); if (tab === 'bit') bitwise(); }
+    v.addEventListener('input', e => {
+      const k = e.target.dataset.f;
+      if (k === 'num') fromInput(); else if (k === 'ba' || k === 'bb') bitwise(); else if (k === 'ut') unix(); else if (k === 'ud') unixFromDate();
+    });
+    v.addEventListener('change', e => { if (e.target.dataset.f === 'bo') bitwise(); });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.v){
+        const s = b.closest('[data-seg]').dataset.seg;
+        if (s === 'tab'){ tab = b.dataset.v; show(); } else if (s === 'base'){ base = +b.dataset.v; setSeg(v, 'base', b.dataset.v); drawBases(false); say(''); } else if (s === 'bits'){ bits = +b.dataset.v; setSeg(v, 'bits', b.dataset.v); drawBases(false); if (tab === 'bit') bitwise(); }
+      }
+      else if (b.dataset.bit !== undefined){ val = val ^ (1n << BigInt(b.dataset.bit)); drawBases(false); }
+      else if (b.dataset.a === 'cp') sCopy(b.parentNode.querySelector('code').textContent.replace(/ /g, ''), 'Copied.');
+      else if (b.dataset.a === 'now'){ f('ut').value = String(Math.floor(Date.now() / 1000)); unix(); }
+    });
+    reg(V, { refresh(){ }, _parse: parse });
+    show(); drawBases(false); unix();
+  })();
+
+  /* ---------------------------------------------------------------- Accessories launcher */
+  (function launcherApp(){
+    const V = 'accessories';
+    const apps = ACC_APPS.filter(a => a.view !== V);
+    const v = mount(V,
+      '<p class="ac-lbl ax-intro">Small everyday tools. Open one in its own window. Tick Desktop to give a tool its own desktop icon.</p>' +
+      '<div class="ax-grid" data-grid></div>' +
+      '<div class="ac-lbl ax-h">Also in Spacepad</div><div class="ax-grid ax-more">' +
+      '<button type="button" class="ax-open" data-more="password">' + icon('lock') + '<b>Password Generator</b><span>Part of the Tools app</span></button>' +
+      '<button type="button" class="ax-open" data-more="regex">' + icon('code') + '<b>Regex Tester</b><span>Part of the Tools app</span></button>' +
+      '<button type="button" class="ax-open" data-more="sticky">' + icon('file-plus') + '<b>Sticky Note</b><span>Add a note to the desktop</span></button></div>' +
+      '<div class="ac-row">' + btn('reset', 'Reset desktop icons to the default six', 'rotate-cw') + '</div>');
+    const shown = view => hiddenBuiltins.indexOf(view) === -1;
+    function draw(){
+      v.querySelector('[data-grid]').innerHTML = apps.map(a => '<div class="ax-t"><button type="button" class="ax-open" data-open="' + a.view + '">' + icon(a.icon) + '<b>' + esc(a.label) + '</b><span>' + esc(a.desc) + '</span></button>' +
+        '<label class="ac-chk ax-desk"><input type="checkbox" data-desk="' + a.view + '"' + (shown(a.view) ? ' checked' : '') + ' aria-label="Show ' + esc(a.label) + ' on desktop"> Desktop</label></div>').join('');
+    }
+    function sync(){ v.querySelectorAll('[data-desk]').forEach(c => { c.checked = shown(c.dataset.desk); }); }
+    v.addEventListener('change', e => { const c = e.target; if (c.dataset.desk){ setBuiltinHidden(c.dataset.desk, !c.checked); const a = ACC_APPS.find(x => x.view === c.dataset.desk); showToast(a.label + (c.checked ? ' added to the desktop.' : ' removed from the desktop.')); } });
+    v.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.open) switchAppView(b.dataset.open);
+      else if (b.dataset.more === 'sticky'){ const s = document.getElementById('header-sticky-add-btn'); if (s) s.click(); }
+      else if (b.dataset.more){ switchAppView('tools'); const i = document.getElementById('toolsSearch'); if (i){ i.value = b.dataset.more; i.dispatchEvent(new Event('input', { bubbles: true })); } }
+      else if (b.dataset.a === 'reset'){ ACC_APPS.forEach(a => { hiddenBuiltins = hiddenBuiltins.filter(x => x !== a.view); if (!a.desk) hiddenBuiltins.push(a.view); }); saveHiddenBuiltins(); renderDesktopIcons(); renderHiddenIconsList(); sync(); showToast('Desktop icons reset: only the default six are shown.'); }
+    });
+    v.addEventListener('pointerenter', sync);
+    reg(V, { refresh(){ sync(); } });
+    draw();
+  })();
+})();
+/*ACC-END*/
 
 // Apply the saved startup screen now that every view and its setup
 // exists. Defaults to the Desktop screen for anyone who hasn't picked a
