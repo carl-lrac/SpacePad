@@ -2205,7 +2205,9 @@
     .group + .group { padding-left: 10px; }
 
     /* Stack every split-pane view instead of squeezing columns side by side */
-    #view-editor, #view-chat, #view-github, #view-convert, #view-python, #editor-main, #python-main { flex-direction: column; }
+    #view-editor, #view-chat, #view-github, #view-convert, #view-python, #view-tools, #editor-main, #python-main { flex-direction: column; }
+    #view-tools { min-width: 0; }
+    #view-tools .side-rail { display: none; } /* its About/Notes rail would squeeze the tool cards at phone widths */
 
     #editors { width: 100% !important; height: 46%; border-right: none; border-bottom: 1px solid var(--border); }
     #divider { display: none; } /* mouse-drag resize doesn't apply once panes are stacked */
@@ -2600,6 +2602,120 @@
   html.perf-mode .acc-view *, html.reduce-motion .acc-view * { transition: none !important; animation: none !important; }
   @media (max-width: 480px) { .acc-view { padding: 6px 6px 10px; } .cp-top .ac-col { flex-basis: 110px; } .cc-ex { font-size: 22px; } }
   #view-unilab > .studio-wrap, #view-zalgo > .studio-wrap { align-self: flex-start; width: 100%; box-sizing: border-box; }
+  /* ---- File-open result panel (Editor import + Tools Quick Open) ---- */
+  #view-editor { position: relative; }
+  .fo-panel { background: #11142e; border: 1px solid var(--accent-dim); border-radius: 10px; color: var(--text); font-size: 12.5px; min-width: 0; box-sizing: border-box; animation: foIn .18s ease-out; }
+  .fo-panel[hidden] { display: none; }
+  .fo-panel.fo-float { position: absolute; right: 12px; bottom: 12px; z-index: 40; width: min(430px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow: auto; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
+  .fo-panel.fo-inline { margin-top: 8px; }
+  .fo-panel[data-kind="warn"] { border-color: #d9a93a; }
+  .fo-panel[data-kind="error"] { border-color: var(--error); }
+  .fo-head { display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 10px; border-bottom: 1px solid var(--border); background: #1a1e45; border-radius: 10px 10px 0 0; }
+  html[data-theme="day"] .fo-panel { background: #ffffff; } html[data-theme="day"] .fo-head { background: #e6ecfb; }
+  .fo-ico { display: inline-flex; color: var(--accent-cyan); } .fo-panel[data-kind="error"] .fo-ico { color: var(--error); } .fo-panel[data-kind="warn"] .fo-ico { color: #d9a93a; }
+  .fo-ico .icon { width: 16px; height: 16px; }
+  .fo-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  .fo-x { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--panel); color: var(--text-dim); border-radius: 6px; cursor: pointer; padding: 0; }
+  .fo-x:hover { color: var(--accent); border-color: var(--accent-dim); }
+  .fo-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .fo-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fo-chip { border: 1px solid var(--border); background: var(--panel-2); border-radius: 999px; padding: 2px 9px; font-size: 11px; color: var(--text-dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fo-msg { margin: 0; line-height: 1.5; color: var(--text); }
+  .fo-method, .qo-method { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .fo-method[hidden] { display: none; }
+  .fo-method label, .qo-type { font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-dim); }
+  .fo-method select { flex: 1 1 140px; min-width: 0; }
+  .fo-note { margin: -2px 0 0; font-size: 11px; line-height: 1.4; color: var(--text-dim); }
+  .fo-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fo-actions .ghost-btn { min-height: 32px; display: inline-flex; align-items: center; gap: 5px; }
+  .fo-actions .ghost-btn[hidden] { display: none; }
+  .fo-actions .ghost-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .fo-actions .icon { width: 14px; height: 14px; }
+  .fo-primary { background: var(--accent) !important; color: #14132b !important; border-color: var(--accent) !important; font-weight: 700; }
+  html[data-theme="day"] .fo-primary { background: #4b32d6 !important; border-color: #4b32d6 !important; color: #fff !important; }
+  .fo-st { min-height: 15px; font-size: 11.5px; color: var(--text-dim); } .fo-st.err { color: var(--error); }
+  .fo-view { border: 1px solid var(--border); border-radius: 8px; background: #0a0c22; max-height: 320px; overflow: auto; }
+  html[data-theme="day"] .fo-view { background: #f3f6ff; }
+  .fo-view[hidden] { display: none; }
+  .fo-view iframe { width: 100%; height: 280px; border: 0; background: #fff; display: block; }
+  .fo-view img, .fo-view video { max-width: 100%; max-height: 300px; display: block; margin: 0 auto; }
+  .fo-view audio { width: 100%; display: block; }
+  .fo-view pre { margin: 0; padding: 8px; font: 11.5px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word; color: var(--text); }
+  .fo-nopv { margin: 0; padding: 10px; color: var(--text-dim); }
+  .fo-drop { position: absolute; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(6,8,26,.66); pointer-events: none; }
+  html[data-theme="day"] .fo-drop { background: rgba(214,228,252,.7); }
+  .fo-drop[hidden] { display: none; }
+  .fo-drop > div { border: 2px dashed var(--accent); border-radius: 14px; background: var(--panel); padding: 20px 26px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 100%; box-sizing: border-box; }
+  .fo-drop .icon { width: 30px; height: 30px; color: var(--accent); } .fo-drop b { font-size: 15px; } .fo-drop small { color: var(--text-dim); max-width: 36ch; line-height: 1.4; }
+  @keyframes foIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  html.reduce-motion .fo-panel, html.perf-mode .fo-panel { animation: none; }
+  @media (prefers-reduced-motion: reduce) { .fo-panel { animation: none; } }
+  @media (max-width: 480px) { .fo-panel.fo-float { right: 6px; left: 6px; bottom: 6px; width: auto; } }
+  #toolQuickOpenCard .conv-btn-row { align-items: center; }
+  #toolQuickOpenCard #qoType { width: auto; }
+  /* ---- Cipher Capsule (a dark space scene in Day and Night) ---- */
+  #view-capsule { flex-direction: column; overflow: auto; color: #e7e9ff; font-size: 12.5px; background:
+    radial-gradient(ellipse 80% 45% at 90% -8%, rgba(139,124,246,.42), transparent 62%),
+    radial-gradient(ellipse 70% 45% at -8% 104%, rgba(34,211,238,.22), transparent 62%),
+    radial-gradient(1px 1px at 22px 34px, #fff, transparent), radial-gradient(1px 1px at 96px 118px, #cfe9ff, transparent),
+    radial-gradient(1.4px 1.4px at 156px 58px, #fff, transparent), radial-gradient(1px 1px at 60px 150px, #e8d9ff, transparent),
+    #04051a; background-size: auto, auto, 180px 170px, 180px 170px, 180px 170px, 180px 170px, auto; }
+  .cc-wrap { padding: 12px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 660px; margin: 0 auto; box-sizing: border-box; }
+  .cc-hero { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #2f3580; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(135deg, rgba(48,38,128,.78), rgba(8,12,48,.86)); }
+  .cc-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background:
+    radial-gradient(1.5px 1.5px at 78% 22%, #fff, transparent), radial-gradient(1px 1px at 90% 64%, #bfefff, transparent), radial-gradient(1px 1px at 58% 78%, #fff, transparent), radial-gradient(1.5px 1.5px at 34% 18%, #e5d6ff, transparent);
+    animation: ccTwinkle 3.4s ease-in-out infinite alternate; }
+  .cc-planet { flex: none; filter: drop-shadow(0 0 9px var(--accent)); position: relative; z-index: 1; }
+  .cc-hero > div { position: relative; z-index: 1; min-width: 0; }
+  .cc-hero h2 { margin: 0; font-size: 17px; color: #fff; letter-spacing: .3px; }
+  .cc-hero p { margin: 3px 0 0; color: #b7bdf2; font-size: 11.8px; line-height: 1.45; }
+  .cc-tabs { display: flex; gap: 6px; }
+  .cc-tab { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 6px; min-height: 44px; border: 1px solid #343b8a; border-radius: 10px; background: rgba(14,17,52,.9); color: #b7bdf2; font: inherit; cursor: pointer; }
+  .cc-tab b { font-size: 13px; color: #e9ecff; } .cc-tab small { font-size: 10.5px; opacity: .85; }
+  .cc-tab:hover { border-color: var(--accent); }
+  .cc-tab[aria-selected="true"] { border-color: var(--accent); background: linear-gradient(180deg, rgba(60,48,150,.85), rgba(20,22,70,.95)); box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); }
+  .cc-tab[aria-selected="true"] b { color: #fff; }
+  .cc-tab:focus-visible, .cc-btn:focus-visible, .cc-eye:focus-visible, .cc-drop:focus-visible, .cc-link:focus-visible { outline: 2px solid #b6adff; outline-offset: 2px; }
+  .cc-card { border: 1px solid #2f3580; border-radius: 12px; background: rgba(9,12,42,.9); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .cc-card[hidden], .cc-hide, .cc-wrap [hidden] { display: none !important; }
+  .cc-lbl { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #aeb4ec; }
+  #view-capsule .cc-ta, #view-capsule .cc-in { width: 100%; box-sizing: border-box; background: #050722; color: #eef0ff; border: 1px solid #353c8c; border-radius: 8px; padding: 8px 10px; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  #view-capsule .cc-ta { resize: vertical; min-height: 70px; word-break: break-all; }
+  #view-capsule .cc-ta:disabled { opacity: .45; }
+  #view-capsule .cc-ta:focus, #view-capsule .cc-in:focus { outline: 2px solid #8b7cf6; outline-offset: 0; border-color: #8b7cf6; background: #070a2c; }
+  #view-capsule ::placeholder { color: #7f86c4; }
+  .cc-hash { color: #8ee9ff !important; letter-spacing: .2px; }
+  .cc-drop { border: 1px dashed #4a52a8; border-radius: 10px; padding: 11px; text-align: center; color: #aeb4ec; font-size: 12px; cursor: pointer; }
+  .cc-drop b { color: #fff; } .cc-drop:hover, .cc-drop.over { border-color: var(--accent); background: rgba(139,124,246,.14); color: #fff; }
+  .cc-chip { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 10px; background: #050722; border: 1px solid #353c8c; border-radius: 8px; font-size: 12px; overflow-wrap: anywhere; }
+  .cc-link { background: none; border: 0; color: #8ee9ff; cursor: pointer; font: inherit; font-size: 12px; text-decoration: underline; flex: none; padding: 4px; }
+  .cc-pw { position: relative; } .cc-pw .cc-in { padding-right: 46px; }
+  .cc-eye { position: absolute; right: 3px; top: 3px; bottom: 3px; width: 38px; border: 0; border-left: 1px solid #353c8c; border-radius: 0 6px 6px 0; background: #0d1038; color: #b7bdf2; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+  .cc-eye:hover { color: #fff; } .cc-eye .icon { width: 16px; height: 16px; }
+  .cc-str { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #aeb4ec; }
+  .cc-bars { display: flex; gap: 3px; flex: 0 0 74px; } .cc-bars i { flex: 1; height: 5px; border-radius: 3px; background: #1c2058; }
+  .cc-bars[data-s="1"] i:nth-child(-n+1) { background: #ff6b7d; } .cc-bars[data-s="2"] i:nth-child(-n+2) { background: #ffb454; }
+  .cc-bars[data-s="3"] i:nth-child(-n+3) { background: #7fdc8a; } .cc-bars[data-s="4"] i { background: #4be3c1; }
+  .cc-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  #view-capsule .cc-btn { background: #14173a; color: #e9ecff; border: 1px solid #3a3f86; border-radius: 8px; padding: 7px 12px; min-height: 34px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  #view-capsule .cc-btn:hover:not(:disabled) { border-color: var(--accent); }
+  #view-capsule .cc-btn:disabled { opacity: .5; cursor: not-allowed; }
+  #view-capsule .cc-btn .icon { width: 14px; height: 14px; }
+  #view-capsule .cc-go { background: linear-gradient(135deg, var(--accent), #5ee6ff); color: #10112a; border-color: transparent; font-size: 13px; padding: 8px 18px; box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 55%, transparent); }
+  #view-capsule .cc-go:hover:not(:disabled) { filter: brightness(1.08); }
+  .cc-work { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #2f3580; border-radius: 10px; background: rgba(5,7,34,.85); color: #cfd4ff; font-size: 12px; }
+  .cc-ring { flex: none; } .cc-orb { transform-origin: 22px 22px; animation: ccSpin 1.1s linear infinite; }
+  .cc-msg { min-height: 1.3em; font-size: 12px; line-height: 1.45; } .cc-msg.ok { color: #7ef0b4; } .cc-msg.err { color: #ff9aa8; }
+  .cc-foot { margin: 0; font-size: 11px; line-height: 1.5; color: #8d94cf; text-align: center; padding: 0 6px 4px; }
+  @keyframes ccSpin { to { transform: rotate(360deg); } }
+  @keyframes ccTwinkle { from { opacity: .45; } to { opacity: 1; } }
+  html.perf-mode .cc-hero::after, html.reduce-motion .cc-hero::after, html.perf-mode .cc-orb, html.reduce-motion .cc-orb { animation: none; }
+  html.perf-mode .cc-hero::after, html.reduce-motion .cc-hero::after { opacity: .8; }
+  html.perf-mode .cc-planet, html.perf-mode .cc-tab[aria-selected="true"], html.perf-mode #view-capsule .cc-go { filter: none; box-shadow: none; }
+  html.perf-mode #view-capsule *, html.reduce-motion #view-capsule * { transition: none !important; }
+  @media (prefers-reduced-motion: reduce) { .cc-hero::after, .cc-orb { animation: none; } }
+  @media (max-width: 480px) { .cc-wrap { padding: 8px; } .cc-tab small { display: none; } .cc-hero p { font-size: 11.3px; } }
   /* ---- Planet Cracker (the scene stays dark in Day and Night themes) ---- */
   #view-planets { flex-direction: column; background: #03040d; color: #e9ecff; overflow: hidden; font-size: 12px; }
   .pc-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 7px 10px; background: #0a0c22; border-bottom: 1px solid #262a56; flex: 0 0 auto; }
@@ -3341,8 +3457,8 @@
           <button type="button" class="dropdown-item" data-template="bootstrap">Bootstrap CDN</button>
           <button type="button" class="dropdown-item" data-template="react">React CDN</button>
           <div class="dropdown-divider"></div>
-          <label class="dropdown-item" for="open-file"><svg class="icon"><use href="#icon-folder"></use></svg> Open…</label>
-          <input type="file" id="open-file" accept=".html,.htm" style="display:none">
+          <label class="dropdown-item" for="open-file" title="Open or import a file: HTML loads as a page, other files are wrapped or opened in a tab"><svg class="icon"><use href="#icon-folder"></use></svg> Open or import…</label>
+          <input type="file" id="open-file" accept=".html,.htm,.xhtml,.svg,.md,.markdown,.txt,.json,.css,.js,.mjs,.xml,.csv,text/*,image/*,audio/*,video/*,application/pdf" style="display:none">
           <button type="button" class="dropdown-item" id="save-btn"><svg class="icon"><use href="#icon-download"></use></svg> Download .html</button>
         </div>
       </div>
@@ -3972,6 +4088,33 @@
         <div id="toolStickyStatus" class="cust-saved-status" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
       </section>
 
+      <!-- ---- Tool: Quick Open — drop or choose any file (or paste text) and it opens in a new tab with the shared method ---- -->
+      <section class="conv-card" id="toolQuickOpenCard">
+        <div class="conv-card-head">
+          <h3><svg class="icon"><use href="#icon-external-link"></use></svg> Quick Open <span class="conv-card-badge">any file</span></h3>
+          <p>Drop or choose any file and it opens right away in a new tab: HTML, SVG, text, Markdown, JSON, images, audio, video and PDF are shown by the browser from a Blob with the right type. Or paste text below. Pick the method (shared with Settings), then use Send to Editor to edit it.</p>
+        </div>
+        <div class="fo-method qo-method"><label for="qoMethod">Open with</label><select id="qoMethod" data-nt-sync></select></div>
+        <div class="drop-zone" id="qoDrop" tabindex="0" role="button" aria-label="Drop a file here or press Enter to choose one">
+          <span class="dz-icon"><svg class="icon icon-lg"><use href="#icon-upload"></use></svg></span>
+          <span>Drop any file here, or click to choose one</span>
+          <input type="file" id="qoFile" style="display:none">
+        </div>
+        <div class="conv-or">or paste text</div>
+        <textarea id="qoText" placeholder="Paste HTML, SVG, Markdown, JSON or plain text…" spellcheck="false" style="height:80px;" aria-label="Text to open"></textarea>
+        <div class="conv-btn-row">
+          <label class="qo-type" for="qoType">Treat as</label>
+          <select id="qoType" aria-label="Type of the pasted text">
+            <option value="auto">Auto-detect</option><option value="html">HTML</option><option value="svg">SVG</option><option value="markdown">Markdown</option>
+            <option value="json">JSON</option><option value="css">CSS</option><option value="js">JavaScript</option><option value="text">Plain text</option>
+          </select>
+          <button type="button" class="ghost-btn fo-primary" id="qoOpenText" disabled>Open pasted text</button>
+          <button type="button" class="ghost-btn" id="qoClear">Clear</button>
+        </div>
+        <div id="qoStatus" class="cust-saved-status" role="status" aria-live="polite" style="text-align:left; height:auto; min-height:16px;">&nbsp;</div>
+        <div id="qoPanelHost"></div>
+      </section>
+
       <!-- ---- Tool: Quick launch — paste/drag/browse HTML, open it without ever showing the code ---- -->
       <section class="conv-card" id="toolLaunchCard">
         <div class="conv-card-head">
@@ -4381,6 +4524,7 @@
             <option value="scratch">Scratchpad</option>
             <option value="finance">Finance Calc</option>
             <option value="devcalc">Dev Calc</option>
+            <option value="capsule">Cipher Capsule</option>
             <option value="accessories">Accessories</option>
             <option value="settings">Settings</option>
           </select>
@@ -4743,6 +4887,7 @@
   <div id="view-scratch" class="app-view"></div>
   <div id="view-finance" class="app-view"></div>
   <div id="view-devcalc" class="app-view"></div>
+  <div id="view-capsule" class="app-view"></div>
   <div id="view-accessories" class="app-view"></div>
 
   <!-- Media Player (App Store app; built by the MEDIA PLAYER script block). Only reachable once installed from the App Store. -->
@@ -5225,7 +5370,8 @@ const ICONS = {
   circle: { svg: '<circle cx="12" cy="12" r="8"/>' },
   slash: { svg: '<line x1="5" y1="19" x2="19" y2="5"/>' },
   bucket: { svg: '<path d="M5 11l6-6 8 8-6 6z"/><line x1="5" y1="11" x2="13" y2="19"/><path d="M20 14s2 2.5 2 4a2 2 0 0 1-4 0c0-1.5 2-4 2-4z"/>' },
-  pencil: { svg: '<path d="M4 20l1-5L16 4l4 4L9 19z"/><line x1="13" y1="7" x2="17" y2="11"/>' }
+  pencil: { svg: '<path d="M4 20l1-5L16 4l4 4L9 19z"/><line x1="13" y1="7" x2="17" y2="11"/>' },
+  capsule: { svg: '<circle cx="12" cy="12" r="4.2"/><path d="M3.2 15.4c-1.4-2.2 2.6-5.8 8.8-5.8s10.2 3.6 8.8 5.8c-1.2 1.9-5 2.9-8.8 2.9s-7.6-1-8.8-2.9z" transform="rotate(-18 12 12)"/><circle cx="19.4" cy="6" r="1" fill="currentColor"/>' }
 };
 function icon(name, cls){
   return '<svg class="icon' + (cls ? ' ' + cls : '') + '"><use href="#icon-' + name + '"></use></svg>';
@@ -6892,6 +7038,7 @@ function setNewTabMethod(id){
   newTabMethod = id;
   try { memStore.setItem(NEWTAB_METHOD_KEY, id); } catch(e){}
   document.querySelectorAll('.newtab-picker input[type="radio"]').forEach(r => { r.checked = (r.value === id); });
+  document.querySelectorAll('select[data-nt-sync]').forEach(s => { s.value = id; const n = s.closest('.fo-panel'); if (n){ const t = n.querySelector('[data-note]'); if (t) t.textContent = FileOpen.methodNote(id); } });
   try { if (typeof lockNtSync === 'function') lockNtSync(); } catch(e){}
   refreshNewTabTitles();
 }
@@ -6992,6 +7139,334 @@ function launchHtmlHere(html, isApp){
     window.location.href = blobUrl;
   }
 }
+
+/* =========================================================================
+   FILE OPEN CORE — shared by the Editor's import panel and the Tools app's
+   Quick Open. read(file) turns any file into a record { name, size, kind,
+   mime, bytes, text }; open(rec, method) opens it with one of the shared
+   NEWTAB_METHODS (HTML goes through openHtmlWithMethod, everything else is
+   served from a Blob URL with the right MIME type, or shown in a small viewer
+   page for About:blank / Cloak / Popup); createPanel() builds the result
+   panel (file info, message, method dropdown, Open / Preview / Download).
+   Nothing is stored: records live only in the panel that shows them.
+   ========================================================================= */
+const FileOpen = (function(){
+  const MAX_BYTES = 50 * 1048576;          // larger files are refused with an inline message
+  const MAX_EDITOR_BYTES = 3 * 1048576;    // larger text files are not loaded into the Editor
+  const PREVIEW_CHARS = 200000;
+  const TYPES = [
+    ['html', 'HTML page', 'text/html', 'html htm xhtml'],
+    ['svg', 'SVG image', 'image/svg+xml', 'svg'],
+    ['markdown', 'Markdown', 'text/markdown', 'md markdown'],
+    ['json', 'JSON', 'application/json', 'json'],
+    ['css', 'CSS', 'text/css', 'css'],
+    ['js', 'JavaScript', 'text/javascript', 'js mjs cjs'],
+    ['text', 'Text', 'text/plain', 'txt text log ini cfg conf yml yaml toml csv tsv xml py ts tsx jsx java c h cpp hpp cs rs go rb php sh bat sql tex rtf'],
+    ['image', 'Image', 'image/png', 'png jpg jpeg gif webp avif bmp ico'],
+    ['audio', 'Audio', 'audio/mpeg', 'mp3 wav ogg oga m4a aac flac opus weba'],
+    ['video', 'Video', 'video/mp4', 'mp4 webm ogv mov m4v mkv'],
+    ['pdf', 'PDF document', 'application/pdf', 'pdf']
+  ];
+  const EXT_MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif', bmp: 'image/bmp', ico: 'image/x-icon',
+    mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', oga: 'audio/ogg', m4a: 'audio/mp4', aac: 'audio/aac', flac: 'audio/flac', opus: 'audio/ogg', weba: 'audio/webm',
+    mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg', mov: 'video/quicktime', m4v: 'video/mp4', mkv: 'video/x-matroska', csv: 'text/csv', xml: 'application/xml' };
+  const TEXT_KINDS = ['html', 'svg', 'markdown', 'json', 'css', 'js', 'text'];
+  const LABELS = {}; TYPES.forEach(t => { LABELS[t[0]] = t[1]; });
+  LABELS.other = 'Binary file';
+  const ICON_FOR = { html: 'globe', svg: 'image', image: 'image', audio: 'music', video: 'film', pdf: 'file-text', other: 'file-text' };
+
+  const fmtSize = n => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+  const extOf = name => { const m = /\.([A-Za-z0-9]+)$/.exec(String(name || '')); return m ? m[1].toLowerCase() : ''; };
+  function kindFor(name, ftype){
+    const ext = extOf(name);
+    if (ext){ for (const t of TYPES) if (t[3].split(' ').indexOf(ext) !== -1) return t[0]; }
+    const ty = String(ftype || '').toLowerCase();
+    if (ty === 'text/html' || ty === 'application/xhtml+xml') return 'html';
+    if (ty === 'image/svg+xml') return 'svg';
+    if (ty.indexOf('image/') === 0) return 'image';
+    if (ty.indexOf('audio/') === 0) return 'audio';
+    if (ty.indexOf('video/') === 0) return 'video';
+    if (ty === 'application/pdf') return 'pdf';
+    if (ty === 'application/json') return 'json';
+    if (ty === 'text/markdown') return 'markdown';
+    if (ty === 'text/css') return 'css';
+    if (ty === 'text/javascript' || ty === 'application/javascript') return 'js';
+    if (ty.indexOf('text/') === 0 || ty === 'application/xml') return 'text';
+    return 'other';
+  }
+  function mimeFor(kind, name, ftype){
+    const ext = extOf(name), ty = String(ftype || '').toLowerCase();
+    if (kind === 'image' || kind === 'audio' || kind === 'video'){
+      if (ty.indexOf(kind + '/') === 0) return ty;
+      return EXT_MIME[ext] || (TYPES.find(t => t[0] === kind)[2]);
+    }
+    if (kind === 'other') return ty || 'application/octet-stream';
+    if (kind === 'text') return EXT_MIME[ext] || 'text/plain';
+    return TYPES.find(t => t[0] === kind)[2];
+  }
+  function decodeText(bytes){
+    try { return { text: new TextDecoder('utf-8', { fatal: true }).decode(bytes), utf8: true }; }
+    catch(e){ return { text: new TextDecoder('windows-1252').decode(bytes), utf8: false }; }
+  }
+  function looksText(bytes){
+    const n = Math.min(bytes.length, 4096);
+    for (let i = 0; i < n; i++) if (bytes[i] === 0) return false;
+    try { new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(0, n < bytes.length ? Math.max(0, n - 3) : n)); return true; } catch(e){ return false; }
+  }
+  // Builds a record from raw bytes (used by read() and by pasted text).
+  function build(name, bytes, ftype, forceKind){
+    let kind = forceKind || kindFor(name, ftype);
+    if (kind === 'other' && bytes.length && looksText(bytes)) kind = 'text';
+    const rec = { ok: true, name: name || 'untitled', size: bytes.length, kind: kind, label: LABELS[kind], mime: mimeFor(kind, name, ftype), bytes: bytes, text: null, utf8: true, textLike: TEXT_KINDS.indexOf(kind) !== -1 };
+    if (rec.textLike){ const d = decodeText(bytes); rec.text = d.text; rec.utf8 = d.utf8; }
+    return rec;
+  }
+  async function read(file){
+    if (!file) return { ok: false, error: 'No file was provided.' };
+    const name = file.name || 'untitled';
+    if (file.size > MAX_BYTES) return { ok: false, name: name, size: file.size, error: '"' + name + '" is ' + fmtSize(file.size) + '. The limit here is ' + fmtSize(MAX_BYTES) + '.' };
+    let bytes;
+    try { bytes = new Uint8Array(await file.arrayBuffer()); }
+    catch(e){ return { ok: false, name: name, size: file.size, error: 'The browser could not read "' + name + '". Try choosing it again.' }; }
+    return build(name, bytes, file.type);
+  }
+  function fromText(text, kind, name){
+    return build(name || ('pasted.' + ({ html: 'html', svg: 'svg', markdown: 'md', json: 'json', css: 'css', js: 'js', text: 'txt' }[kind] || 'txt')), new TextEncoder().encode(text), '', kind);
+  }
+  function detect(text){
+    const t = String(text).replace(/^﻿/, '').trim();
+    if (/^<svg[\s>]/i.test(t) || (/^<\?xml/i.test(t) && /<svg[\s>]/i.test(t))) return 'svg';
+    if (/^<!doctype html|^<html[\s>]|^<head[\s>]|^<body[\s>]/i.test(t) || /<\/(div|p|h[1-6]|body|html|script|style|span|a|ul|table)>/i.test(t) || /^<([a-z][a-z0-9-]*)(\s[^>]*)?>/i.test(t)) return 'html';
+    if (/^[\[{]/.test(t)){ try { JSON.parse(t); return 'json'; } catch(e){} }
+    if (/^#{1,6}\s|^```|^\s*[-*]\s+\S|\]\(https?:\/\//m.test(t) && !/[{};]\s*$/m.test(t.split('\n')[0])) return 'markdown';
+    return 'text';
+  }
+
+  // What the browser is served for a record.
+  function viewPayload(rec){
+    if (rec.kind === 'html') return { type: 'text/html;charset=utf-8', parts: [rec.text] };
+    if (rec.kind === 'markdown') return { type: 'text/html;charset=utf-8', parts: [textFrameDoc({ format: 'md', content: rec.text })] };
+    if (rec.kind === 'svg') return { type: 'image/svg+xml', parts: [rec.text] };
+    if (rec.kind === 'json') return { type: 'application/json;charset=utf-8', parts: [rec.text] };
+    if (rec.textLike) return { type: 'text/plain;charset=utf-8', parts: [rec.text] };
+    return { type: rec.mime, parts: [rec.bytes] };
+  }
+  const liveUrls = [];
+  function keepUrl(url){ if (!url) return; liveUrls.push(url); while (liveUrls.length > 8) { try { URL.revokeObjectURL(liveUrls.shift()); } catch(e){} } }
+  function downloadRec(rec){
+    const type = (rec.kind === 'other' ? rec.mime : rec.mime) || 'application/octet-stream';
+    const url = URL.createObjectURL(new Blob([rec.bytes], { type: type }));
+    const a = document.createElement('a'); a.href = url; a.download = safeFileBase(rec.name.replace(/\.[^.]*$/, '')) + (extOf(rec.name) ? '.' + extOf(rec.name) : ''); a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+  const VIEWER_CSS = 'html,body{margin:0;height:100%;background:#0a0c1a;color:#e9ecff;font:14px system-ui,sans-serif}body{display:flex;align-items:center;justify-content:center}' +
+    'img,video{max-width:100%;max-height:100%}audio{width:min(560px,92%)}iframe{position:fixed;top:0;left:0;width:100%;height:100%;border:0;background:#fff}' +
+    'pre{margin:0;padding:16px;white-space:pre-wrap;word-break:break-word;font:13px/1.55 ui-monospace,Menlo,monospace;align-self:flex-start;width:100%;box-sizing:border-box;overflow:auto;height:100%}';
+  function writeViewer(win, rec, vp, method){
+    const d = win.document;
+    d.open();
+    d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + escapeHtml(rec.name) + '</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + VIEWER_CSS + '</style></head><body></body></html>');
+    d.close();
+    const blobUrl = () => win.URL.createObjectURL(new win.Blob(vp.parts, { type: vp.type }));
+    if (method === 'cloak' || rec.kind === 'pdf'){
+      const f = d.createElement('iframe'); f.setAttribute('allow', 'fullscreen; autoplay'); f.src = blobUrl(); d.body.appendChild(f); return;
+    }
+    if (rec.kind === 'image' || rec.kind === 'svg'){ const i = d.createElement('img'); i.alt = rec.name; i.src = blobUrl(); d.body.appendChild(i); return; }
+    if (rec.kind === 'audio' || rec.kind === 'video'){ const m = d.createElement(rec.kind); m.controls = true; m.src = blobUrl(); d.body.appendChild(m); return; }
+    const pre = d.createElement('pre');
+    pre.textContent = rec.kind === 'json' ? prettyJson(rec.text) : rec.text;
+    d.body.appendChild(pre);
+  }
+  function prettyJson(t){ try { return JSON.stringify(JSON.parse(t), null, 2); } catch(e){ return t; } }
+
+  // Opens a record with a method id. Returns { ok, blocked, method, url, downloaded }.
+  function open(rec, method){
+    if (!newTabMethodValid(method)) method = getNewTabMethod();
+    if (rec.kind === 'other'){ downloadRec(rec); return { ok: true, downloaded: true, method: method }; }
+    if (rec.kind === 'html' || rec.kind === 'markdown'){
+      const html = rec.kind === 'html' ? rec.text : textFrameDoc({ format: 'md', content: rec.text });
+      const r = openHtmlWithMethod(html, { method: method, onBlocked: function(){} });
+      if (r.url) keepUrl(r.url);
+      return { ok: !r.blocked, blocked: !!r.blocked, method: r.method, url: r.url || null };
+    }
+    const vp = viewPayload(rec);
+    if (method === 'blob' || method === 'here'){
+      const url = URL.createObjectURL(new Blob(vp.parts, { type: vp.type }));
+      const win = window.open(url, '_blank');
+      if (!win){ URL.revokeObjectURL(url); return { ok: false, blocked: true, method: 'blob' }; }
+      keepUrl(url);
+      return { ok: true, method: 'blob', url: url };
+    }
+    let win;
+    if (method === 'popup'){
+      const w = 1100, h = 720, left = Math.max(0, Math.round((screen.width - w) / 2)), top = Math.max(0, Math.round((screen.height - h) / 2));
+      win = window.open('about:blank', '_blank', 'popup=yes,width=' + w + ',height=' + h + ',left=' + left + ',top=' + top);
+    } else win = window.open('about:blank', '_blank');
+    if (!win) return { ok: false, blocked: true, method: method };
+    try { writeViewer(win, rec, vp, method); } catch(e){ return { ok: false, blocked: false, error: (e && e.message) || 'The new tab could not be filled.', method: method }; }
+    return { ok: true, method: method };
+  }
+  function methodNote(id){
+    if (id === 'here') return 'Files open in a Blob tab so this SpacePad session stays where it is.';
+    const m = NEWTAB_METHODS.find(x => x.id === id); return m ? m.desc : '';
+  }
+  function fillMethodSelect(sel){
+    if (!sel.options.length) NEWTAB_METHODS.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.label; sel.appendChild(o); });
+    sel.value = getNewTabMethod();
+  }
+
+  let panelSeq = 0;
+  // The result panel. opts: { host, id, float, autoHide (ms), sendToEditor (bool) }.
+  function createPanel(opts){
+    const uid = 'fo' + (++panelSeq);
+    const el = document.createElement('div');
+    el.className = 'fo-panel ' + (opts.float ? 'fo-float' : 'fo-inline');
+    if (opts.id) el.id = opts.id;
+    el.hidden = true;
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', 'File result');
+    el.innerHTML =
+      '<div class="fo-head"><span class="fo-ico" aria-hidden="true"></span><strong class="fo-title"></strong>' +
+        '<button type="button" class="fo-x" data-act="dismiss" aria-label="Dismiss">' + icon('x') + '</button></div>' +
+      '<div class="fo-body">' +
+        '<div class="fo-meta" data-meta></div>' +
+        '<p class="fo-msg" data-msg role="status" aria-live="polite"></p>' +
+        '<div class="fo-method"><label for="' + uid + '-sel">Open with</label><select id="' + uid + '-sel" class="fo-sel" data-nt-sync aria-describedby="' + uid + '-note"></select></div>' +
+        '<p class="fo-note" id="' + uid + '-note" data-note></p>' +
+        '<div class="fo-actions">' +
+          '<button type="button" class="ghost-btn fo-primary" data-act="open">' + icon('external-link') + ' Open in new tab</button>' +
+          '<button type="button" class="ghost-btn" data-act="preview" aria-expanded="false">' + icon('eye') + ' Preview</button>' +
+          '<button type="button" class="ghost-btn" data-act="download">' + icon('download') + ' Download</button>' +
+          (opts.sendToEditor ? '<button type="button" class="ghost-btn" data-act="send">' + icon('edit') + ' Send to Editor</button>' : '') +
+          '<button type="button" class="ghost-btn" data-act="undo" hidden>' + icon('undo') + ' Undo</button>' +
+          '<button type="button" class="ghost-btn" data-act="dismiss">Dismiss</button>' +
+        '</div>' +
+        '<div class="fo-st" data-st role="status" aria-live="polite"></div>' +
+        '<div class="fo-view" data-view hidden></div>' +
+      '</div>';
+    opts.host.appendChild(el);
+    const q = s => el.querySelector(s);
+    const sel = q('.fo-sel'); fillMethodSelect(sel);
+    let rec = null, extra = {}, timer = 0, remaining = 0, startedAt = 0, hovering = false, previewUrl = null;
+    function note(){ q('[data-note]').textContent = methodNote(sel.value); }
+    note();
+    sel.addEventListener('change', () => { setNewTabMethod(sel.value); note(); });
+    function clearPreview(){
+      const v = q('[data-view]'); v.hidden = true; v.innerHTML = '';
+      if (previewUrl){ try { URL.revokeObjectURL(previewUrl); } catch(e){} previewUrl = null; }
+      const pb = q('[data-act="preview"]'); pb.setAttribute('aria-expanded', 'false'); pb.lastChild.textContent = ' Preview';
+    }
+    function setSt(text, bad){ const s = q('[data-st]'); s.textContent = text || ''; s.classList.toggle('err', !!bad); }
+    function stopTimer(){ clearTimeout(timer); timer = 0; }
+    function armTimer(ms){
+      stopTimer();
+      if (!opts.autoHide || !el || el.hidden) return;
+      remaining = ms; startedAt = Date.now();
+      timer = setTimeout(() => api.hide(), ms);
+      el.dataset.autohide = 'running';
+    }
+    function pause(){
+      if (!timer) return;
+      remaining = Math.max(2500, remaining - (Date.now() - startedAt));
+      stopTimer(); el.dataset.autohide = 'paused';
+    }
+    function resume(){
+      if (!opts.autoHide || el.hidden || timer) return;
+      if (hovering || el.contains(document.activeElement)) return;
+      if (!q('[data-view]').hidden) { el.dataset.autohide = 'off'; return; }
+      armTimer(remaining || opts.autoHide);
+    }
+    el.addEventListener('pointerenter', () => { hovering = true; pause(); });
+    el.addEventListener('pointerleave', () => { hovering = false; resume(); });
+    el.addEventListener('focusin', pause);
+    el.addEventListener('focusout', () => setTimeout(resume, 0));
+    el.addEventListener('keydown', (e) => { if (e.key === 'Escape'){ e.stopPropagation(); api.hide(); } });
+    function doOpen(){
+      if (!rec) return;
+      const r = open(rec, sel.value);
+      if (r.downloaded) setSt('This type cannot be shown by the browser, so it was downloaded instead.');
+      else if (r.blocked) setSt('The browser blocked the new tab or popup. Allow popups for this page, then press Open in new tab again.', true);
+      else if (!r.ok) setSt(r.error || 'Could not open it.', true);
+      else setSt('Opened with ' + (NEWTAB_METHODS.find(m => m.id === r.method) || { label: r.method }).label + '.');
+      return r;
+    }
+    function doPreview(){
+      if (!rec) return;
+      const v = q('[data-view]'), pb = q('[data-act="preview"]');
+      if (!v.hidden){ clearPreview(); resume(); return; }
+      stopTimer(); el.dataset.autohide = 'off';
+      v.innerHTML = '';
+      const vp = viewPayload(rec);
+      if (rec.kind === 'html' || rec.kind === 'markdown'){
+        const f = document.createElement('iframe'); f.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups'); f.title = 'Preview of ' + rec.name; f.srcdoc = vp.parts[0]; v.appendChild(f);
+      } else if (rec.kind === 'image' || rec.kind === 'svg'){
+        previewUrl = URL.createObjectURL(new Blob(vp.parts, { type: vp.type }));
+        const i = document.createElement('img'); i.alt = rec.name; i.src = previewUrl; v.appendChild(i);
+      } else if (rec.kind === 'audio' || rec.kind === 'video'){
+        previewUrl = URL.createObjectURL(new Blob(vp.parts, { type: vp.type }));
+        const m = document.createElement(rec.kind); m.controls = true; m.src = previewUrl; v.appendChild(m);
+      } else if (rec.kind === 'pdf'){
+        previewUrl = URL.createObjectURL(new Blob(vp.parts, { type: vp.type }));
+        const f = document.createElement('iframe'); f.title = 'Preview of ' + rec.name; f.src = previewUrl; v.appendChild(f);
+      } else if (rec.textLike){
+        const pre = document.createElement('pre'); const t = rec.kind === 'json' ? prettyJson(rec.text) : rec.text;
+        pre.textContent = t.length > PREVIEW_CHARS ? t.slice(0, PREVIEW_CHARS) + '\n\n[preview cut at ' + PREVIEW_CHARS.toLocaleString() + ' characters]' : t; v.appendChild(pre);
+      } else {
+        const p = document.createElement('p'); p.className = 'fo-nopv'; p.textContent = 'No preview for this type (' + fmtSize(rec.size) + '). Use Download to save it.'; v.appendChild(p);
+      }
+      v.hidden = false; pb.setAttribute('aria-expanded', 'true'); pb.lastChild.textContent = ' Hide preview';
+    }
+    el.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-act]'); if (!b || !el.contains(b)) return;
+      const a = b.dataset.act;
+      if (a === 'dismiss') api.hide();
+      else if (a === 'open') doOpen();
+      else if (a === 'preview') doPreview();
+      else if (a === 'download'){ if (rec){ downloadRec(rec); setSt('Saved ' + rec.name + ' (the original bytes).'); } }
+      else if (a === 'send'){ if (rec && opts.onSend) opts.onSend(rec, api); }
+      else if (a === 'undo'){ if (extra.onUndo){ extra.onUndo(); b.hidden = true; setSt('Previous editor content restored.'); } }
+    });
+    const api = {
+      el: el,
+      get rec(){ return rec; },
+      select: sel,
+      // info: { kind: 'ok'|'warn'|'error', title, message, undo, noFile }
+      show(r, info){
+        info = info || {};
+        clearPreview(); setSt('');
+        rec = r && r.ok ? r : null; extra = info;
+        el.dataset.kind = info.kind || 'ok';
+        const k = rec ? rec.kind : 'other';
+        q('.fo-ico').innerHTML = icon(info.kind === 'error' ? 'alert-triangle' : (rec ? ICON_FOR[k] || 'file-text' : 'file-text'));
+        q('.fo-title').textContent = info.title || (rec ? rec.name : 'File');
+        const meta = q('[data-meta]');
+        meta.innerHTML = '';
+        const chips = rec ? [rec.name, fmtSize(rec.size), rec.label + (rec.mime && rec.kind !== 'markdown' ? ' (' + rec.mime + ')' : '')] : (r && r.name ? [r.name].concat(r.size != null ? [fmtSize(r.size)] : []) : []);
+        chips.forEach(c => { const s = document.createElement('span'); s.className = 'fo-chip'; s.textContent = c; s.title = c; meta.appendChild(s); });
+        q('[data-msg]').textContent = info.message || '';
+        sel.value = getNewTabMethod(); note();
+        const has = !!rec;
+        ['open', 'preview', 'download', 'send'].forEach(a => { const b = q('[data-act="' + a + '"]'); if (b) b.disabled = !has; });
+        q('.fo-method').hidden = !has; q('[data-note]').hidden = !has;
+        const ub = q('[data-act="undo"]'); ub.hidden = !info.onUndo;
+        if (has && rec.kind === 'other') q('[data-act="open"]').lastChild.textContent = ' Download (cannot be shown)';
+        else q('[data-act="open"]').lastChild.textContent = ' Open in new tab';
+        if (has && !rec.textLike && rec.kind === 'other') q('[data-act="preview"]').disabled = true;
+        el.hidden = false;
+        armTimer(opts.autoHide || 0);
+        if (opts.autoHide && el.matches(':hover')){ hovering = true; pause(); }
+      },
+      setStatus: setSt,
+      hide(){ stopTimer(); el.dataset.autohide = 'off'; clearPreview(); el.hidden = true; rec = null; },
+      get visible(){ return !el.hidden; }
+    };
+    return api;
+  }
+  return { read: read, build: build, fromText: fromText, detect: detect, open: open, download: downloadRec, createPanel: createPanel, fmtSize: fmtSize, extOf: extOf, kindFor: kindFor,
+    MAX_BYTES: MAX_BYTES, MAX_EDITOR_BYTES: MAX_EDITOR_BYTES, TEXT_KINDS: TEXT_KINDS, prettyJson: prettyJson, methodNote: methodNote, fillMethodSelect: fillMethodSelect };
+})();
+
 // "Open in new tab" on the lock screen: uses the app's shared new-tab method setting (NEWTAB_METHODS /
 // setNewTabMethod) and launcher (openHtmlWithMethod). While locked the page it opens is built from the pristine
 // app source plus ONLY the method + theme settings -- never the session snapshot (documents, chat, keys) and never
@@ -7107,6 +7582,7 @@ const ACC_APPS = [
   { view: 'scratch', icon: 'clipboard', label: 'Scratchpad', desc: 'Quick snippets with copy buttons', desk: false, w: 340, h: 440 },
   { view: 'finance', icon: 'coin', label: 'Finance Calc', desc: 'Loan, tip split, percent, savings', desk: false, w: 350, h: 480 },
   { view: 'devcalc', icon: 'binary', label: 'Dev Calc', desc: 'Number bases, bitwise, Unix time', desk: false, w: 370, h: 500 },
+  { view: 'capsule', icon: 'capsule', label: 'Cipher Capsule', desc: 'Seal text and files with AES-256, unseal them, or take a SHA-256 fingerprint', desk: false, w: 560, h: 660 },
   { view: 'accessories', icon: 'apps', label: 'Accessories', desc: 'All the small tools in one place', desk: true, w: 360, h: 520 }
 ];
 const DESKTOP_APPS = [
@@ -8175,6 +8651,7 @@ const BASE_COMMANDS = [
   { id: 'open-zalgo', label: 'Open Zalgo Text Generator', iconName: 'zalgo', def: '', run: () => switchAppView('zalgo') },
   { id: 'open-unilab', label: 'Open Random Unicode Generator', iconName: 'unicode', def: '', run: () => switchAppView('unilab') },
   { id: 'open-planets', label: 'Play Planet Cracker', iconName: 'planet', def: '', run: () => switchAppView('planets') },
+  { id: 'quick-open', label: 'Quick Open file…', iconName: 'external-link', def: '', run: () => { if (quickOpenPick) quickOpenPick(); } },
   ...ACC_APPS.map(a => ({ id: 'open-' + a.view, label: 'Open ' + a.label, iconName: a.icon, def: '', run: () => switchAppView(a.view) })),
   { id: 'chaos-fire', label: 'Chaos: run a random action', iconName: 'zap', def: '', run: () => studioCall('chaos', 'fire') },
   { id: 'lock-spacepad', label: 'Lock SpacePad', iconName: 'lock', def: 'Alt+L', run: () => lockNow() },
@@ -10029,6 +10506,69 @@ safeInit(function(){
   update();
 });
 
+/* ---- Tool: Quick Open — any file (or pasted text) opens in a new tab with the shared method ---- */
+let quickOpenPick = null; // set below: opens the Tools card's file chooser (used by the Ctrl+K command)
+safeInit(function(){
+  const card = document.getElementById('toolQuickOpenCard');
+  const drop = document.getElementById('qoDrop'), input = document.getElementById('qoFile'), ta = document.getElementById('qoText');
+  const typeSel = document.getElementById('qoType'), openBtn = document.getElementById('qoOpenText'), status = document.getElementById('qoStatus');
+  const methodSel = document.getElementById('qoMethod');
+  FileOpen.fillMethodSelect(methodSel);
+  methodSel.addEventListener('change', () => setNewTabMethod(methodSel.value));
+  const panel = FileOpen.createPanel({ host: document.getElementById('qoPanelHost'), id: 'qo-result', float: false, autoHide: 0, sendToEditor: true,
+    onSend: (rec) => {
+      if (!rec.textLike){ panel.setStatus('Only text files (HTML, SVG, Markdown, JSON, CSS, JavaScript, text) can be sent to the Editor.', true); return; }
+      switchAppView('editor');
+      editorImportRecord(rec, {});
+      panel.setStatus('Sent to the Editor.');
+    } });
+  const say = (t, bad) => setInlineStatus(status, t, bad ? 'var(--error)' : 'var(--text-dim)');
+  function present(rec, from){
+    const r = FileOpen.open(rec, getNewTabMethod());
+    let msg, kind = 'ok';
+    if (r.downloaded){ msg = 'The browser cannot show this type of file, so it was downloaded instead.'; kind = 'warn'; }
+    else if (r.blocked){ msg = 'Loaded, but the browser blocked the new tab or popup. Allow popups for this page, then press Open in new tab.'; kind = 'warn'; }
+    else if (!r.ok){ msg = r.error || 'Could not open it.'; kind = 'error'; }
+    else msg = 'Opened with ' + (NEWTAB_METHODS.find(m => m.id === r.method) || { label: r.method }).label + '. ' + (rec.kind === 'html' || rec.kind === 'markdown' ? 'It runs as a page.' : 'Shown by the browser as ' + rec.label + '.');
+    panel.show(rec, { kind: kind, title: (from || 'Opened') + ' ' + rec.name, message: msg });
+    say(r.blocked ? 'The browser blocked the new tab.' : r.ok ? 'Opened ' + rec.name + '.' : 'Not opened.', r.blocked || !r.ok);
+  }
+  async function handleFile(file){
+    if (!file) return;
+    say('Reading ' + file.name + '…');
+    const rec = await FileOpen.read(file);
+    if (!rec.ok){ panel.show(rec, { kind: 'error', title: 'Could not open', message: rec.error }); say(rec.error, true); return; }
+    present(rec, 'Opened');
+  }
+  quickOpenPick = function(){
+    switchAppView('tools');
+    const s = document.getElementById('toolsSearch'); if (s && s.value){ s.value = ''; s.dispatchEvent(new Event('input', { bubbles: true })); }
+    card.scrollIntoView({ block: 'start' });
+    try { drop.focus({ preventScroll: true }); } catch(e){}
+    try { input.click(); } catch(e){}
+  };
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); input.click(); } });
+  input.addEventListener('change', () => { const f = input.files[0]; input.value = ''; handleFile(f); });
+  const hasFiles = (e) => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1);
+  drop.addEventListener('dragenter', (e) => { if (hasFiles(e)){ e.preventDefault(); drop.classList.add('drag-over'); } });
+  drop.addEventListener('dragover', (e) => { if (hasFiles(e)){ e.preventDefault(); drop.classList.add('drag-over'); } });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault(); drop.classList.remove('drag-over');
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  ta.addEventListener('input', () => { openBtn.disabled = !ta.value.trim(); });
+  openBtn.addEventListener('click', () => {
+    const text = ta.value; if (!text.trim()) return;
+    if (new Blob([text]).size > FileOpen.MAX_BYTES){ say('That text is over the ' + FileOpen.fmtSize(FileOpen.MAX_BYTES) + ' limit.', true); return; }
+    const kind = typeSel.value === 'auto' ? FileOpen.detect(text) : typeSel.value;
+    present(FileOpen.fromText(text, kind), 'Opened pasted');
+  });
+  document.getElementById('qoClear').addEventListener('click', () => { ta.value = ''; openBtn.disabled = true; panel.hide(); say(''); });
+});
+
 /* ---- Tools search bar — filters the cards above by title/description ---- */
 safeInit(function(){
   const search = document.getElementById('toolsSearch');
@@ -10537,22 +11077,87 @@ document.getElementById('save-btn').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-document.getElementById('open-file').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    // The editor is a single HTML file now, so an opened file's content
-    // loads straight in as-is — no more splitting it into separate
-    // html/css/js pieces.
-    editors.html.value = reader.result;
+/* ---- Editor import: File > Open or import…, and drag-and-drop onto the Editor.
+   The file loads into the single index.html as before (HTML as-is; other text
+   wrapped in a small page so the preview shows it) and a result panel offers
+   Open in new tab (shared method dropdown), Preview, Download and Dismiss. ---- */
+let editorFOPanel = null;
+function editorWrapRecord(rec){
+  const title = escapeHtml(rec.name);
+  const head = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + title + '</title>\n';
+  if (rec.kind === 'svg') return head + '<style>\n  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #fff; }\n  svg { max-width: 90vw; max-height: 90vh; }\n</style>\n</head>\n<body>\n' + rec.text.replace(/^\s*<\?xml[^>]*\?>\s*/i, '') + '\n</body>\n</html>\n';
+  if (rec.kind === 'css') return head + '<style>\n' + rec.text.replace(/<\/style/gi, '<\\/style') + '\n</style>\n</head>\n<body>\n<h1>Heading</h1>\n<p>A paragraph with <a href="#">a link</a> and <code>code</code>.</p>\n<button>Button</button>\n</body>\n</html>\n';
+  if (rec.kind === 'js') return head + '</head>\n<body>\n<script>\n' + rec.text.replace(/<\/script/gi, '<\\/script') + '\n<\/script>\n</body>\n</html>\n';
+  if (rec.kind === 'markdown') return head + '<style>\n  body { max-width: 72ch; margin: 24px auto; padding: 0 16px; font: 16px/1.6 system-ui, sans-serif; }\n  pre { overflow: auto; background: #f3f3f8; padding: 10px; border-radius: 6px; }\n</style>\n</head>\n<body>\n' + mdToSafeHtml(rec.text) + '\n</body>\n</html>\n';
+  const body = rec.kind === 'json' ? FileOpen.prettyJson(rec.text) : rec.text;
+  return head + '<style>\n  body { margin: 0; padding: 16px; }\n  pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 13px/1.55 ui-monospace, Menlo, monospace; }\n</style>\n</head>\n<body>\n<pre>' + escapeHtml(body) + '</pre>\n</body>\n</html>\n';
+}
+function editorImportRecord(rec, ctx){
+  ctx = ctx || {};
+  const panel = editorFOPanel; if (!panel) return false;
+  const prev = editors.html.value;
+  const more = ctx.extra ? ' ' + ctx.extra + ' more file' + (ctx.extra === 1 ? ' was' : 's were') + ' ignored; import them one at a time.' : '';
+  const decoded = rec.textLike && !rec.utf8 ? ' It was not valid UTF-8, so it was read as Windows-1252.' : '';
+  let kind = 'ok', message, loaded = false;
+  if (rec.textLike && rec.size > FileOpen.MAX_EDITOR_BYTES){
+    kind = 'warn';
+    message = 'This ' + rec.label + ' is ' + FileOpen.fmtSize(rec.size) + ', which is over the ' + FileOpen.fmtSize(FileOpen.MAX_EDITOR_BYTES) + ' the editor takes, so the editor is unchanged. You can still open, preview or download it.';
+  } else if (rec.textLike){
+    editors.html.value = rec.kind === 'html' ? rec.text : editorWrapRecord(rec);
     Object.keys(editors).forEach(updateGutter);
-    run();
-    scheduleAutosave();
-    statusEl.textContent = 'loaded ' + file.name;
-  };
-  reader.readAsText(file);
-});
+    run(); scheduleAutosave();
+    statusEl.textContent = 'loaded ' + rec.name;
+    loaded = true;
+    message = rec.kind === 'html'
+      ? 'Loaded into the editor as index.html. HTML opens as a page: pick a method and choose Open in new tab.'
+      : rec.label + ' is not a page by itself, so it was placed in a small HTML page and now shows in the preview. Download gives back your original file.';
+  } else if (rec.kind === 'image' || rec.kind === 'audio' || rec.kind === 'video' || rec.kind === 'pdf'){
+    kind = 'warn';
+    message = rec.label + ' files cannot be edited as code, so the editor is unchanged. Open it in a tab (shown by the browser), preview it or download it.';
+  } else {
+    kind = 'warn';
+    message = 'SpacePad cannot show this file type, and it is not text, so the editor is unchanged. Open in new tab will download it instead.';
+  }
+  panel.show(rec, {
+    kind: kind, title: (loaded ? 'Imported ' : 'Received ') + rec.name, message: message + decoded + more,
+    onUndo: loaded ? () => { editors.html.value = prev; Object.keys(editors).forEach(updateGutter); run(); scheduleAutosave(); statusEl.textContent = 'restored previous content'; } : null
+  });
+  return loaded;
+}
+async function editorImportFile(file, extraCount){
+  const panel = editorFOPanel; if (!panel || !file) return;
+  const rec = await FileOpen.read(file);
+  if (!rec.ok){ panel.show(rec, { kind: 'error', title: 'Could not import', message: rec.error }); return; }
+  editorImportRecord(rec, { extra: extraCount || 0 });
+}
+(function wireEditorImport(){
+  const view = document.getElementById('view-editor');
+  editorFOPanel = FileOpen.createPanel({ host: view, id: 'editor-upload-toast', float: true, autoHide: 14000 });
+  const hint = document.createElement('div');
+  hint.className = 'fo-drop'; hint.id = 'editor-drop-hint'; hint.hidden = true; hint.setAttribute('aria-hidden', 'true');
+  hint.innerHTML = '<div>' + icon('upload') + '<b>Drop a file to import it</b><small>HTML opens as a page. Text files are wrapped so they preview. Images, audio, video and PDF can be opened in a tab.</small></div>';
+  view.appendChild(hint);
+  document.getElementById('open-file').addEventListener('change', (e) => {
+    const file = e.target.files[0]; const extra = Math.max(0, e.target.files.length - 1);
+    e.target.value = '';
+    if (file) editorImportFile(file, extra);
+  });
+  const hasFiles = (e) => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1);
+  let depth = 0;
+  const off = () => { depth = 0; hint.hidden = true; };
+  view.addEventListener('dragenter', (e) => { if (!hasFiles(e) || spLocked) return; e.preventDefault(); depth++; hint.hidden = false; });
+  view.addEventListener('dragover', (e) => { if (!hasFiles(e) || spLocked) return; e.preventDefault(); try { e.dataTransfer.dropEffect = 'copy'; } catch(x){} hint.hidden = false; });
+  view.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) hint.hidden = true; });
+  view.addEventListener('drop', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); off();
+    if (spLocked) return;
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length) editorImportFile(files[0], files.length - 1);
+  });
+  window.addEventListener('dragend', off);
+  window.addEventListener('blur', off);
+})();
 
 const divider = document.getElementById('divider');
 const editorsPane = document.getElementById('editors');
@@ -12547,6 +13152,10 @@ function renderCustomizeAppList(){
    removed; the 'gh-online'/'page' custom-app types (and their
    helpers below) remain only so apps a user added via Customize → Add app
    → GitHub repo, Import, or installed earlier keep opening. ---- */
+/* Paper Editor (App Store): the user's standalone page, embedded byte for byte as a string (its own password gate, fonts and icons
+   are untouched; fonts/icons still load from the network). Installs as an ordinary 'html' app, so it runs through srcdoc like the other store apps. */
+const PAPER_EDITOR_HTML = "<!DOCTYPE html> \n\n<html lang=\"en\"> \n\n<head> \n\n<meta charset=\"UTF-8\"> \n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \n\n<title>Paper Editor</title> \n\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"> \n\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> \n\n<link href=\"https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\"> \n\n<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\"> \n\n<style> \n\n  * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0 !important; } \n\n \n\n  :root { \n\n    --paper: #f3ead9; \n\n    --paper-panel: #faf5e9; \n\n    --paper-panel-alt: #efe4c9; \n\n    --ink: #2f2a22; \n\n    --ink-soft: #5b5343; \n\n    --ink-faint: #9a8f76; \n\n    --border: #cdbe98; \n\n    --border-strong: #a8935f; \n\n \n\n    --accent: #b5502f; \n\n    --accent-soft: #ecd6c2; \n\n    --accent-hover: #963f24; \n\n \n\n    --accent-blue: #3d6b96; \n\n    --accent-blue-hover: #2f5578; \n\n    --accent-teal: #3f7d69; \n\n    --accent-teal-hover: #316354; \n\n    --accent-mustard: #c48a2e; \n\n    --accent-mustard-hover: #a37124; \n\n \n\n    --good: #5c7a52; \n\n    --warn: #c48a2e; \n\n    --danger: #a83232; \n\n    --danger-hover: #8a2727; \n\n \n\n    --shadow-sm: 3px 3px 0 rgba(47,42,34,0.16); \n\n    --shadow-md: 6px 6px 0 rgba(47,42,34,0.16); \n\n    --shadow-lg: 9px 9px 0 rgba(47,42,34,0.18); \n\n    --font-body: 'Lora', Georgia, 'Times New Roman', serif; \n\n    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace; \n\n  } \n\n \n\n  :root.dark { \n\n    --paper: #17140f; \n\n    --paper-panel: #201c15; \n\n    --paper-panel-alt: #2a2419; \n\n    --ink: #ece3ce; \n\n    --ink-soft: #b5a98d; \n\n    --ink-faint: #7c715a; \n\n    --border: #453b28; \n\n    --border-strong: #6b5a37; \n\n \n\n    --accent: #d97b53; \n\n    --accent-soft: #4a3325; \n\n    --accent-hover: #c1673f; \n\n \n\n    --accent-blue: #6f9ec9; \n\n    --accent-blue-hover: #5786b3; \n\n    --accent-teal: #63ab8f; \n\n    --accent-teal-hover: #4f9179; \n\n    --accent-mustard: #dba53f; \n\n    --accent-mustard-hover: #c18f2f; \n\n \n\n    --good: #83a873; \n\n    --warn: #dba53f; \n\n    --danger: #cc5c5c; \n\n    --danger-hover: #b34b4b; \n\n  } \n\n \n\n  html, body { \n\n    height: 100%; \n\n    background: var(--paper); \n\n    background-image: radial-gradient(var(--border) 1px, transparent 1px); \n\n    background-size: 22px 22px; \n\n    color: var(--ink); \n\n    font-family: var(--font-body); \n\n    overflow: hidden; \n\n    transition: background-color 0.2s ease, color 0.2s ease; \n\n  } \n\n \n\n  #topbar { \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: space-between; \n\n    height: 54px; \n\n    padding: 0 18px; \n\n    background: var(--paper-panel-alt); \n\n    border-bottom: 4px solid; \n\n    border-image: linear-gradient(90deg, var(--accent), var(--accent-blue), var(--accent-teal), var(--accent-mustard)) 1; \n\n    flex-shrink: 0; \n\n    user-select: none; \n\n  } \n\n \n\n  #topbar .logo { \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 10px; \n\n    font-size: 17px; \n\n    font-weight: 700; \n\n    letter-spacing: 0.02em; \n\n    color: var(--ink); \n\n  } \n\n \n\n  #topbar .logo .stamp { \n\n    display: inline-flex; \n\n    align-items: center; \n\n    justify-content: center; \n\n    width: 30px; height: 30px; \n\n    border: 2px solid var(--accent); \n\n    color: var(--accent); \n\n    font-size: 15px; \n\n    background: var(--paper); \n\n    transform: rotate(-4deg); \n\n  } \n\n \n\n  #topbar .actions { \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 10px; \n\n  } \n\n \n\n  .btn { \n\n    display: inline-flex; \n\n    align-items: center; \n\n    gap: 7px; \n\n    padding: 8px 14px; \n\n    border: 2px solid var(--border-strong); \n\n    background: var(--paper-panel); \n\n    color: var(--ink-soft); \n\n    font-size: 13px; \n\n    font-weight: 500; \n\n    cursor: pointer; \n\n    font-family: var(--font-body); \n\n    box-shadow: var(--shadow-sm); \n\n    transition: transform 0.1s ease, box-shadow 0.1s ease, color 0.15s, background 0.15s; \n\n  } \n\n \n\n  .btn:hover { \n\n    color: var(--ink); \n\n    transform: translate(-1px, -1px); \n\n    box-shadow: 5px 5px 0 rgba(47,42,34,0.18); \n\n  } \n\n \n\n  .btn:active { \n\n    transform: translate(1px, 1px); \n\n    box-shadow: 1px 1px 0 rgba(47,42,34,0.18); \n\n  } \n\n \n\n  .btn.primary { \n\n    background: var(--accent); \n\n    border-color: var(--accent-hover); \n\n    color: #fbf3ea; \n\n  } \n\n  .btn.primary:hover { color: #fff; background: var(--accent-hover); } \n\n \n\n  .btn.ghost { background: var(--paper-panel); } \n\n \n\n  .btn.accent-blue { border-color: var(--accent-blue); color: var(--accent-blue); } \n\n  .btn.accent-blue:hover { background: var(--accent-blue); color: #fff; } \n\n \n\n  .btn.accent-teal { border-color: var(--accent-teal); color: var(--accent-teal); } \n\n  .btn.accent-teal:hover { background: var(--accent-teal); color: #fff; } \n\n \n\n  .btn.accent-mustard { border-color: var(--accent-mustard); color: var(--accent-mustard); } \n\n  .btn.accent-mustard:hover { background: var(--accent-mustard); color: #fff; } \n\n \n\n  .btn svg, .btn i { flex-shrink: 0; } \n\n \n\n  #tabstrip { \n\n    display: flex; \n\n    align-items: center; \n\n    height: 38px; \n\n    background: var(--paper-panel-alt); \n\n    border-bottom: 3px solid var(--border-strong); \n\n    padding: 0 0 0 6px; \n\n    flex-shrink: 0; \n\n  } \n\n \n\n  .tab { \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 8px; \n\n    padding: 0 16px; \n\n    height: 100%; \n\n    font-size: 13px; \n\n    color: var(--ink-soft); \n\n    border-right: 2px solid var(--border); \n\n    cursor: default; \n\n    user-select: none; \n\n  } \n\n \n\n  .tab.active { \n\n    color: var(--ink); \n\n    font-weight: 600; \n\n    background: var(--paper-panel); \n\n    border-bottom: 3px solid var(--accent); \n\n    margin-bottom: -3px; \n\n  } \n\n \n\n  .tab .dot { \n\n    width: 7px; height: 7px; \n\n    background: var(--warn); \n\n    display: none; \n\n  } \n\n \n\n  .tab.modified .dot { display: block; } \n\n \n\n  #layout { \n\n    display: flex; \n\n    position: relative; \n\n    height: calc(100vh - 92px - 26px); \n\n  } \n\n \n\n  #sticky-layer { \n\n    position: absolute; \n\n    inset: 0; \n\n    pointer-events: none; \n\n    z-index: 50; \n\n  } \n\n \n\n  #divider { \n\n    width: 5px; \n\n    background: var(--border); \n\n    border-left: 1px solid var(--border-strong); \n\n    border-right: 1px solid var(--border-strong); \n\n    cursor: col-resize; \n\n    flex-shrink: 0; \n\n    transition: background 0.15s; \n\n  } \n\n \n\n  #divider:hover, #divider.dragging { background: var(--accent); } \n\n \n\n  #editor-pane { \n\n    display: flex; \n\n    flex-direction: column; \n\n    width: 50%; \n\n    min-width: 200px; \n\n    background: var(--paper-panel); \n\n    overflow: hidden; \n\n  } \n\n \n\n  #editor-header, #preview-header { \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: space-between; \n\n    padding: 0 14px; \n\n    height: 36px; \n\n    background: var(--paper-panel-alt); \n\n    border-bottom: 2px solid var(--border); \n\n    flex-shrink: 0; \n\n  } \n\n \n\n  .pane-label { \n\n    font-size: 11px; \n\n    text-transform: uppercase; \n\n    letter-spacing: 0.12em; \n\n    color: var(--ink-soft); \n\n    font-weight: 600; \n\n  } \n\n \n\n  .pane-status { \n\n    font-size: 11px; \n\n    color: var(--ink-faint); \n\n    font-family: var(--font-mono); \n\n  } \n\n \n\n  #editor-wrap { \n\n    display: flex; \n\n    flex: 1; \n\n    overflow: hidden; \n\n    position: relative; \n\n  } \n\n \n\n  #line-numbers { \n\n    width: 46px; \n\n    min-width: 46px; \n\n    padding: 14px 0; \n\n    background: var(--paper-panel-alt); \n\n    border-right: 2px solid var(--border); \n\n    text-align: right; \n\n    overflow: hidden; \n\n    font-family: var(--font-mono); \n\n    font-size: 13px; \n\n    line-height: 1.65; \n\n    color: var(--ink-faint); \n\n    user-select: none; \n\n    flex-shrink: 0; \n\n  } \n\n \n\n  #line-numbers span { display: block; padding-right: 10px; } \n\n \n\n  #code { \n\n    flex: 1; \n\n    padding: 14px 16px; \n\n    background: var(--paper-panel); \n\n    color: var(--ink); \n\n    border: none; \n\n    outline: none; \n\n    resize: none; \n\n    font-family: var(--font-mono); \n\n    font-size: 13px; \n\n    line-height: 1.65; \n\n    tab-size: 2; \n\n    white-space: pre; \n\n    overflow: auto; \n\n    caret-color: var(--accent); \n\n  } \n\n \n\n  #code::selection { background: var(--accent-soft); } \n\n  #code::-webkit-scrollbar { width: 9px; height: 9px; } \n\n  #code::-webkit-scrollbar-track { background: transparent; } \n\n  #code::-webkit-scrollbar-thumb { background: var(--border-strong); } \n\n  #code::-webkit-scrollbar-thumb:hover { background: var(--accent); } \n\n \n\n  #preview-pane { \n\n    display: flex; \n\n    flex-direction: column; \n\n    flex: 1; \n\n    min-width: 200px; \n\n    background: var(--paper-panel); \n\n    overflow: hidden; \n\n    border-left: 1px solid var(--border-strong); \n\n  } \n\n \n\n  #preview-frame { flex: 1; border: none; background: #fff; } \n\n \n\n  #statusbar { \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: space-between; \n\n    height: 26px; \n\n    padding: 0 14px; \n\n    background: var(--accent); \n\n    border-top: 2px solid var(--accent-hover); \n\n    flex-shrink: 0; \n\n    font-size: 11px; \n\n    color: #fbf3ea; \n\n    font-weight: 600; \n\n    letter-spacing: 0.03em; \n\n  } \n\n \n\n  #statusbar .status-left { display: flex; gap: 16px; } \n\n  #statusbar .status-right { display: flex; gap: 16px; } \n\n \n\n  .modal-overlay { \n\n    display: none; \n\n    position: fixed; \n\n    inset: 0; \n\n    background: rgba(15, 13, 9, 0.55); \n\n    z-index: 1000; \n\n    align-items: center; \n\n    justify-content: center; \n\n    padding: 30px; \n\n  } \n\n \n\n  .modal-overlay.open { display: flex; } \n\n \n\n  .modal { \n\n    background: var(--paper-panel); \n\n    border: 3px solid var(--border-strong); \n\n    box-shadow: var(--shadow-lg); \n\n    width: 100%; \n\n    max-width: 1080px; \n\n    max-height: 88vh; \n\n    display: flex; \n\n    flex-direction: column; \n\n    overflow: hidden; \n\n  } \n\n \n\n  .modal-header { \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: space-between; \n\n    padding: 16px 20px; \n\n    border-bottom: 3px solid var(--border-strong); \n\n    background: var(--paper-panel-alt); \n\n    flex-shrink: 0; \n\n  } \n\n \n\n  .modal-header h2 { \n\n    font-size: 18px; \n\n    font-weight: 700; \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 10px; \n\n    color: var(--ink); \n\n  } \n\n \n\n  #gh-modal .modal-header { border-bottom-color: var(--accent-blue); } \n\n  #gh-modal .modal-header h2, #gh-modal .modal-header h2 i { color: var(--accent-blue); } \n\n  #conv-modal .modal-header { border-bottom-color: var(--accent-teal); } \n\n  #conv-modal .modal-header h2, #conv-modal .modal-header h2 i { color: var(--accent-teal); } \n\n \n\n  .modal-close { \n\n    width: 30px; height: 30px; \n\n    display: flex; align-items: center; justify-content: center; \n\n    border: 2px solid var(--border-strong); \n\n    background: var(--paper); \n\n    color: var(--ink-soft); \n\n    cursor: pointer; \n\n    font-size: 15px; \n\n    box-shadow: var(--shadow-sm); \n\n  } \n\n \n\n  .modal-close:hover { color: var(--accent); border-color: var(--accent); } \n\n \n\n  .modal-body { flex: 1; overflow: hidden; display: flex; } \n\n \n\n  input[type=\"text\"], input[type=\"password\"], input[type=\"number\"], select, textarea { \n\n    font-family: var(--font-body); \n\n    background: var(--paper); \n\n    border: 2px solid var(--border-strong); \n\n    color: var(--ink); \n\n    padding: 9px 11px; \n\n    font-size: 14px; \n\n    outline: none; \n\n  } \n\n \n\n  input[type=\"text\"]:focus, input[type=\"password\"]:focus, input[type=\"number\"]:focus, select:focus, textarea:focus { \n\n    border-color: var(--accent); \n\n  } \n\n \n\n  ::placeholder { color: var(--ink-faint); } \n\n \n\n  #gh-sidebar { \n\n    width: 250px; \n\n    flex-shrink: 0; \n\n    background: var(--paper-panel-alt); \n\n    border-right: 3px solid var(--border-strong); \n\n    overflow-y: auto; \n\n    padding: 16px; \n\n  } \n\n \n\n  .filter-section { margin-bottom: 22px; } \n\n \n\n  .filter-section h4 { \n\n    color: var(--accent-blue); \n\n    margin-bottom: 10px; \n\n    font-size: 12px; \n\n    font-weight: 700; \n\n    text-transform: uppercase; \n\n    letter-spacing: 0.08em; \n\n  } \n\n \n\n  .filter-option { \n\n    display: flex; \n\n    align-items: center; \n\n    margin-bottom: 8px; \n\n  } \n\n \n\n  .filter-option input[type=\"checkbox\"], .filter-option input[type=\"radio\"] { \n\n    margin-right: 9px; \n\n    accent-color: var(--accent-blue); \n\n    width: 15px; height: 15px; \n\n  } \n\n \n\n  .filter-option label { \n\n    color: var(--ink-soft); \n\n    font-size: 13px; \n\n    cursor: pointer; \n\n    user-select: none; \n\n  } \n\n \n\n  .lang-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6px; } \n\n \n\n  .num-row { display: flex; align-items: center; gap: 8px; } \n\n  .num-row input { width: 100%; } \n\n \n\n  #gh-main { \n\n    flex: 1; \n\n    display: flex; \n\n    flex-direction: column; \n\n    overflow: hidden; \n\n    padding: 18px 20px; \n\n  } \n\n \n\n  .gh-searchbar { display: flex; gap: 8px; margin-bottom: 14px; flex-shrink: 0; } \n\n  .gh-searchbar input { flex: 1; } \n\n \n\n  #gh-results { \n\n    flex: 1; \n\n    overflow-y: auto; \n\n    border: 2px solid var(--border); \n\n    background: var(--paper); \n\n    padding: 14px; \n\n  } \n\n \n\n  .results-info { font-size: 12px; color: var(--ink-faint); margin-bottom: 12px; } \n\n \n\n  .repo, .user-item { \n\n    margin-bottom: 12px; \n\n    padding: 12px; \n\n    border: 2px solid var(--border); \n\n    background: var(--paper-panel); \n\n  } \n\n \n\n  .repo a.repo-title, .user-item a.user-title { \n\n    font-weight: 700; \n\n    font-size: 15px; \n\n    color: var(--accent-blue); \n\n    text-decoration: none; \n\n  } \n\n \n\n  .repo a.repo-title:hover, .user-item a.user-title:hover { text-decoration: underline; } \n\n \n\n  .download-zip-button { \n\n    margin-left: 8px; \n\n    font-size: 12px; \n\n    padding: 5px 9px; \n\n    border: 2px solid var(--border-strong); \n\n    background: var(--paper); \n\n    color: var(--ink-soft); \n\n    cursor: pointer; \n\n    box-shadow: var(--shadow-sm); \n\n  } \n\n  .download-zip-button:hover { color: var(--accent-blue); border-color: var(--accent-blue); } \n\n \n\n  .repo-stats { margin-top: 6px; font-size: 12px; color: var(--ink-faint); } \n\n  .repo-stats span { margin-right: 14px; } \n\n \n\n  .repo p { margin-top: 6px; font-size: 13px; color: var(--ink-soft); } \n\n  .repo a { color: var(--accent-blue); } \n\n \n\n  .files { margin-top: 10px; } \n\n \n\n  .file { \n\n    display: flex; \n\n    justify-content: space-between; \n\n    align-items: center; \n\n    margin-bottom: 6px; \n\n    padding: 8px 10px; \n\n    border: 2px solid var(--border); \n\n    background: var(--paper); \n\n  } \n\n \n\n  .file-name { flex: 1; color: var(--ink); font-size: 13px; } \n\n  .file-icons { display: flex; gap: 12px; } \n\n  .file-icons a { color: var(--ink-soft); text-decoration: none; font-size: 15px; cursor: pointer; } \n\n  .file-icons a:hover { color: var(--accent-blue); } \n\n \n\n  .profile-button { \n\n    background: var(--paper); \n\n    color: var(--ink-soft); \n\n    border: 2px solid var(--border-strong); \n\n    padding: 5px 10px; \n\n    font-size: 12px; \n\n    cursor: pointer; \n\n    margin-left: 10px; \n\n    box-shadow: var(--shadow-sm); \n\n  } \n\n  .profile-button:hover { color: var(--accent-blue); border-color: var(--accent-blue); } \n\n \n\n  .user-details { \n\n    margin-top: 10px; \n\n    padding: 12px; \n\n    border: 2px solid var(--border); \n\n    background: var(--paper); \n\n  } \n\n \n\n  .user-avatar { \n\n    width: 64px; height: 64px; \n\n    float: left; \n\n    margin-right: 12px; \n\n    border: 2px solid var(--border-strong); \n\n  } \n\n \n\n  .user-info { overflow: hidden; } \n\n  .user-info h4 { margin: 0 0 4px 0; color: var(--accent-blue); font-size: 15px; } \n\n  .user-info p { margin: 3px 0; font-size: 13px; color: var(--ink-soft); } \n\n  .user-description { font-style: italic; color: var(--ink); margin: 4px 0; } \n\n \n\n  .user-stats { clear: both; margin-top: 12px; padding-top: 10px; border-top: 2px solid var(--border); } \n\n  .user-stats span { display: inline-block; margin-right: 14px; font-size: 12px; color: var(--ink-faint); } \n\n \n\n  .user-links { margin-top: 8px; } \n\n  .user-links a { display: block; margin-bottom: 3px; color: var(--accent-blue); text-decoration: none; font-size: 13px; } \n\n  .user-links a:hover { text-decoration: underline; } \n\n \n\n  .pagination { display: flex; align-items: center; justify-content: center; margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--border); } \n\n  .pagination button { \n\n    padding: 7px 14px; \n\n    border: 2px solid var(--border-strong); \n\n    background: var(--paper-panel); \n\n    color: var(--ink-soft); \n\n    cursor: pointer; \n\n    font-family: var(--font-body); \n\n    box-shadow: var(--shadow-sm); \n\n  } \n\n  .pagination button:disabled { opacity: 0.4; cursor: default; box-shadow: none; } \n\n  .pagination button:not(:disabled):hover { color: var(--accent-blue); border-color: var(--accent-blue); } \n\n \n\n  #conv-modal .modal-body { \n\n    flex-direction: column; \n\n    padding: 20px; \n\n    overflow-y: auto; \n\n    gap: 12px; \n\n  } \n\n \n\n  .conv-row { display: flex; gap: 12px; } \n\n  .conv-row > * { flex: 1; } \n\n  #conv-inputArea, #conv-resultOutput { width: 100%; height: 130px; resize: vertical; font-family: var(--font-mono); font-size: 13px; } \n\n  #conv-resultOutput { background: var(--paper-panel-alt); } \n\n  #conv-imagePreview { max-width: 100%; max-height: 200px; border: 2px solid var(--border-strong); display: none; } \n\n  .conv-hint { font-size: 12px; color: var(--ink-faint); font-style: italic; } \n\n  .conv-actions { display: flex; gap: 10px; flex-wrap: wrap; } \n\n  .hidden { display: none !important; } \n\n \n\n  #conv-fileInput, #upload-htmlInput { display: none; } \n\n \n\n  /* ---------- Upload result panel ---------- */ \n\n  #upload-toast { \n\n    display: none; \n\n    position: fixed; \n\n    right: 18px; \n\n    bottom: 44px; \n\n    z-index: 1300; \n\n    width: 400px; \n\n    max-width: calc(100vw - 36px); \n\n    background: var(--paper-panel); \n\n    border: 3px solid var(--accent-teal); \n\n    box-shadow: var(--shadow-md); \n\n  } \n\n  #upload-toast.open { display: block; } \n\n \n\n  #upload-toast .toast-head { \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: space-between; \n\n    gap: 10px; \n\n    padding: 9px 12px; \n\n    background: var(--paper-panel-alt); \n\n    border-bottom: 2px solid var(--accent-teal); \n\n    font-size: 13px; \n\n    font-weight: 700; \n\n    color: var(--accent-teal); \n\n  } \n\n  #upload-toast .toast-head span { display: flex; align-items: center; gap: 8px; min-width: 0; } \n\n  #upload-toast .toast-head #toast-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } \n\n  #upload-toast .toast-head.warn { border-bottom-color: var(--warn); color: var(--warn); } \n\n  #upload-toast .toast-head.error { border-bottom-color: var(--danger); color: var(--danger); } \n\n \n\n  #upload-toast .toast-close { \n\n    width: 24px; height: 24px; \n\n    flex-shrink: 0; \n\n    border: 2px solid var(--border-strong); \n\n    background: var(--paper); \n\n    color: var(--ink-soft); \n\n    cursor: pointer; \n\n    font-size: 14px; \n\n    line-height: 1; \n\n  } \n\n  #upload-toast .toast-close:hover { color: var(--accent); border-color: var(--accent); } \n\n \n\n  #upload-toast .toast-body { padding: 12px; } \n\n  #upload-toast .toast-msg { font-size: 13px; line-height: 1.5; color: var(--ink-soft); margin-bottom: 12px; } \n\n  #upload-toast .toast-actions { display: flex; flex-wrap: wrap; gap: 8px; } \n\n  #upload-toast .toast-actions .btn { padding: 6px 10px; font-size: 12px; } \n\n \n\n  #drop-hint { \n\n    display: none; \n\n    position: fixed; \n\n    inset: 0; \n\n    z-index: 1250; \n\n    background: rgba(15, 13, 9, 0.55); \n\n    align-items: center; \n\n    justify-content: center; \n\n    pointer-events: none; \n\n  } \n\n  #drop-hint.open { display: flex; } \n\n  #drop-hint div { \n\n    padding: 26px 40px; \n\n    background: var(--paper-panel); \n\n    border: 3px dashed var(--accent-teal); \n\n    box-shadow: var(--shadow-lg); \n\n    font-size: 17px; \n\n    font-weight: 700; \n\n    color: var(--accent-teal); \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 12px; \n\n  } \n\n \n\n  .sticky-note { \n\n    position: absolute; \n\n    width: 170px; \n\n    min-height: 160px; \n\n    padding: 32px 14px 16px; \n\n    pointer-events: auto; \n\n    box-shadow: 4px 8px 14px rgba(30,26,18,0.28); \n\n    transition: box-shadow 0.15s ease; \n\n    font-family: var(--font-body); \n\n    font-style: italic; \n\n  } \n\n \n\n  .sticky-note.dragging { \n\n    box-shadow: 9px 18px 24px rgba(30,26,18,0.38); \n\n    z-index: 60; \n\n    transition: none; \n\n  } \n\n \n\n  .sticky-note::after { \n\n    content: \"\"; \n\n    position: absolute; \n\n    right: 0; \n\n    bottom: 0; \n\n    width: 0; \n\n    height: 0; \n\n    border-style: solid; \n\n    border-width: 0 0 20px 20px; \n\n    border-color: transparent transparent rgba(0,0,0,0.16) transparent; \n\n  } \n\n \n\n  .sticky-pin { \n\n    position: absolute; \n\n    top: 6px; \n\n    left: 50%; \n\n    transform: translateX(-50%); \n\n    width: 26px; \n\n    height: 26px; \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: center; \n\n    color: rgba(47,42,34,0.5); \n\n    cursor: grab; \n\n    font-size: 14px; \n\n  } \n\n  .sticky-pin:active { cursor: grabbing; } \n\n \n\n  .sticky-text { \n\n    width: 100%; \n\n    height: 100%; \n\n    min-height: 108px; \n\n    outline: none; \n\n    font-size: 15px; \n\n    line-height: 1.5; \n\n    color: #2f2a22; \n\n    overflow-wrap: break-word; \n\n    cursor: text; \n\n  } \n\n  .sticky-text:empty:before { \n\n    content: attr(data-placeholder); \n\n    color: rgba(47,42,34,0.4); \n\n  } \n\n \n\n  .sticky-yellow { background: #f5e0a3; border: 2px solid #b6924f; } \n\n  .sticky-pink   { background: #f3c9c9; border: 2px solid #cf9a9a; } \n\n  .sticky-blue   { background: #c9dbe8; border: 2px solid #8fa9bd; } \n\n  .sticky-green  { background: #d3e5c4; border: 2px solid #9ab884; } \n\n  .sticky-orange { background: #f2d3a6; border: 2px solid #cf9f5c; } \n\n \n\n  .sticky-ghost { \n\n    position: fixed; \n\n    width: 120px; \n\n    height: 120px; \n\n    pointer-events: none; \n\n    z-index: 1200; \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: center; \n\n    opacity: 0.85; \n\n    box-shadow: 4px 8px 14px rgba(30,26,18,0.3); \n\n    font-size: 22px; \n\n    color: rgba(47,42,34,0.5); \n\n  } \n\n \n\n  .sticky-context-menu { \n\n    position: fixed; \n\n    z-index: 1100; \n\n    background: var(--paper-panel); \n\n    border: 2px solid var(--border-strong); \n\n    box-shadow: var(--shadow-md); \n\n    padding: 10px; \n\n    min-width: 168px; \n\n  } \n\n \n\n  .sticky-menu-label { \n\n    font-size: 10px; \n\n    text-transform: uppercase; \n\n    letter-spacing: 0.08em; \n\n    color: var(--ink-faint); \n\n    margin-bottom: 6px; \n\n    font-weight: 600; \n\n  } \n\n \n\n  .sticky-menu-colors { display: flex; gap: 8px; margin-bottom: 10px; } \n\n  .sticky-swatch { width: 22px; height: 22px; border: 2px solid var(--border-strong); cursor: pointer; padding: 0; } \n\n  .sticky-swatch-yellow { background: #f5e0a3; } \n\n  .sticky-swatch-pink   { background: #f3c9c9; } \n\n  .sticky-swatch-blue   { background: #c9dbe8; } \n\n  .sticky-swatch-green  { background: #d3e5c4; } \n\n  .sticky-swatch-orange { background: #f2d3a6; } \n\n  .sticky-swatch:hover { border-color: var(--ink); } \n\n \n\n  .sticky-menu-divider { height: 2px; background: var(--border); margin: 8px 0; } \n\n \n\n  .sticky-menu-delete { \n\n    width: 100%; \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 8px; \n\n    padding: 7px 8px; \n\n    background: var(--paper); \n\n    border: 2px solid var(--danger); \n\n    color: var(--danger); \n\n    cursor: pointer; \n\n    font-family: var(--font-body); \n\n    font-size: 13px; \n\n  } \n\n  .sticky-menu-delete:hover { background: var(--danger); color: #fff; } \n\n \n\n  /* ===================================================================== \n\n     PASSWORD GATE \n\n     ===================================================================== */ \n\n  #gate { \n\n    position: fixed; \n\n    inset: 0; \n\n    z-index: 5000; \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: center; \n\n    padding: 24px; \n\n    background: var(--paper); \n\n    background-image: radial-gradient(var(--border) 1px, transparent 1px); \n\n    background-size: 22px 22px; \n\n    font-family: var(--font-body); \n\n    opacity: 1; \n\n    transition: opacity 0.28s ease; \n\n  } \n\n  #gate::before { \n\n    content: \"\"; \n\n    position: absolute; \n\n    top: 0; left: 0; right: 0; \n\n    height: 6px; \n\n    background: linear-gradient(90deg, var(--accent), var(--accent-blue), var(--accent-teal), var(--accent-mustard)); \n\n  } \n\n  #gate.leaving { opacity: 0; pointer-events: none; } \n\n  #gate.unlocked { display: none; } \n\n \n\n  .gate-card { \n\n    width: 100%; \n\n    max-width: 420px; \n\n    background: var(--paper-panel); \n\n    border: 3px solid var(--border-strong); \n\n    box-shadow: var(--shadow-lg); \n\n    transform: rotate(-0.4deg); \n\n  } \n\n  .gate-card.shake { animation: gate-shake 0.42s cubic-bezier(.36,.07,.19,.97) both; } \n\n  @keyframes gate-shake { \n\n    10%, 90% { transform: translateX(-2px) rotate(-0.4deg); } \n\n    20%, 80% { transform: translateX(4px) rotate(-0.4deg); } \n\n    30%, 50%, 70% { transform: translateX(-7px) rotate(-0.4deg); } \n\n    40%, 60% { transform: translateX(7px) rotate(-0.4deg); } \n\n  } \n\n \n\n  .gate-head { \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 12px; \n\n    padding: 16px 20px; \n\n    background: var(--paper-panel-alt); \n\n    border-bottom: 4px solid; \n\n    border-image: linear-gradient(90deg, var(--accent), var(--accent-blue), var(--accent-teal), var(--accent-mustard)) 1; \n\n    user-select: none; \n\n  } \n\n  .gate-head .stamp { \n\n    display: inline-flex; \n\n    align-items: center; \n\n    justify-content: center; \n\n    width: 34px; height: 34px; \n\n    border: 2px solid var(--accent); \n\n    color: var(--accent); \n\n    font-size: 16px; \n\n    background: var(--paper); \n\n    transform: rotate(-4deg); \n\n    flex-shrink: 0; \n\n  } \n\n  .gate-head .gate-title { \n\n    font-size: 18px; \n\n    font-weight: 700; \n\n    letter-spacing: 0.02em; \n\n    color: var(--ink); \n\n  } \n\n \n\n  .gate-body { padding: 22px 22px 20px; } \n\n  .gate-body .gate-heading { \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 8px; \n\n    margin-bottom: 8px; \n\n    color: var(--accent); \n\n  } \n\n  .gate-sub { \n\n    font-size: 14px; \n\n    line-height: 1.55; \n\n    color: var(--ink-soft); \n\n    font-style: italic; \n\n    margin-bottom: 18px; \n\n  } \n\n \n\n  .gate-field { position: relative; } \n\n  .gate-field > i.lead { \n\n    position: absolute; \n\n    left: 13px; top: 50%; \n\n    transform: translateY(-50%); \n\n    color: var(--ink-faint); \n\n    font-size: 14px; \n\n    pointer-events: none; \n\n  } \n\n  #gate-input { \n\n    width: 100%; \n\n    padding: 12px 46px 12px 38px; \n\n    font-size: 15px; \n\n    letter-spacing: 0.04em; \n\n    box-shadow: var(--shadow-sm); \n\n  } \n\n  #gate-input.bad { border-color: var(--danger); } \n\n  #gate-eye { \n\n    position: absolute; \n\n    right: 0; top: 0; bottom: 0; \n\n    width: 42px; \n\n    border: none; \n\n    border-left: 2px solid var(--border-strong); \n\n    background: var(--paper-panel-alt); \n\n    color: var(--ink-soft); \n\n    cursor: pointer; \n\n    font-size: 14px; \n\n  } \n\n  #gate-eye:hover { color: var(--accent); } \n\n  #gate-eye:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; } \n\n \n\n  #gate-error { \n\n    min-height: 22px; \n\n    margin: 10px 0 12px; \n\n    font-size: 13px; \n\n    font-weight: 600; \n\n    color: var(--danger); \n\n    display: flex; \n\n    align-items: center; \n\n    gap: 7px; \n\n    visibility: hidden; \n\n  } \n\n  #gate-error.show { visibility: visible; } \n\n \n\n  #gate-submit { \n\n    width: 100%; \n\n    justify-content: center; \n\n    padding: 11px 14px; \n\n    font-size: 14px; \n\n    font-weight: 600; \n\n  } \n\n \n\n  .gate-foot { \n\n    display: flex; \n\n    align-items: center; \n\n    justify-content: space-between; \n\n    padding: 9px 16px; \n\n    background: var(--accent); \n\n    border-top: 2px solid var(--accent-hover); \n\n    font-size: 11px; \n\n    font-weight: 600; \n\n    letter-spacing: 0.03em; \n\n    color: #fbf3ea; \n\n    user-select: none; \n\n  } \n\n</style> \n\n</head> \n\n<body> \n\n \n\n<\!-- ======================= PASSWORD GATE ======================= --> \n\n<div id=\"gate\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"gate-title\"> \n\n  <div class=\"gate-card\" id=\"gate-card\"> \n\n    <div class=\"gate-head\"> \n\n      <span class=\"stamp\"><i class=\"fa-solid fa-feather-pointed\"></i></span> \n\n      <span class=\"gate-title\" id=\"gate-title\">Paper Editor</span> \n\n    </div> \n\n    <div class=\"gate-body\"> \n\n      <div class=\"gate-heading pane-label\" style=\"color: var(--accent);\"> \n\n        <i class=\"fa-solid fa-lock\"></i> Restricted Access \n\n      </div> \n\n      <p class=\"gate-sub\">This editor is locked. Enter the password to continue.</p> \n\n      <div class=\"gate-field\"> \n\n        <i class=\"fa-solid fa-key lead\"></i> \n\n        <input type=\"password\" id=\"gate-input\" placeholder=\"Password\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" aria-label=\"Password\"> \n\n        <button type=\"button\" id=\"gate-eye\" title=\"Show / hide password\" aria-label=\"Show or hide password\"><i class=\"fa-regular fa-eye\"></i></button> \n\n      </div> \n\n      <div id=\"gate-error\" role=\"alert\"><i class=\"fa-solid fa-triangle-exclamation\"></i><span>Incorrect password. Try again.</span></div> \n\n      <button type=\"button\" class=\"btn primary\" id=\"gate-submit\"><i class=\"fa-solid fa-lock-open\"></i> Unlock Editor</button> \n\n    </div> \n\n    <div class=\"gate-foot\"> \n\n      <span>Paper Editor</span> \n\n      <span>Locked &#9679;</span> \n\n    </div> \n\n  </div> \n\n</div> \n\n \n\n<div id=\"topbar\"> \n\n  <div class=\"logo\"> \n\n    <span class=\"stamp\"><i class=\"fa-solid fa-feather-pointed\"></i></span> \n\n    Paper Editor \n\n  </div> \n\n  <div class=\"actions\"> \n\n    <button class=\"btn ghost\" id=\"btn-theme\" title=\"Toggle dark mode\"> \n\n      <i class=\"fa-solid fa-moon\"></i> Dark \n\n    </button> \n\n    <button class=\"btn ghost\" id=\"btn-clear\" title=\"Clear editor\"> \n\n      <i class=\"fa-solid fa-xmark\"></i> Clear \n\n    </button> \n\n    <button class=\"btn ghost\" id=\"btn-copy\" title=\"Copy code\"> \n\n      <i class=\"fa-regular fa-copy\"></i> Copy \n\n    </button> \n\n    <button class=\"btn ghost accent-teal\" id=\"btn-upload-html\" title=\"Choose an .html file (or drop one anywhere) and it opens in a new tab as a data: URL\"> \n\n      <i class=\"fa-solid fa-file-arrow-up\"></i> Upload HTML \n\n    </button> \n\n    <input type=\"file\" id=\"upload-htmlInput\" accept=\".html,.htm,text/html\"> \n\n    <button class=\"btn ghost accent-blue\" id=\"btn-github\" title=\"Search GitHub repositories\"> \n\n      <i class=\"fa-brands fa-github\"></i> GitHub \n\n    </button> \n\n    <button class=\"btn ghost accent-teal\" id=\"btn-convert\" title=\"Convert to Data / Blob URL\"> \n\n      <i class=\"fa-solid fa-right-left\"></i> Convert \n\n    </button> \n\n    <button class=\"btn ghost accent-mustard\" id=\"btn-sticky\" title=\"Click and drag onto the workspace to place a sticky note\"> \n\n      <i class=\"fa-solid fa-note-sticky\"></i> Sticky Note \n\n    </button> \n\n    <button class=\"btn primary\" id=\"btn-open\" title=\"Open result in new tab\"> \n\n      <i class=\"fa-solid fa-arrow-up-right-from-square\"></i> Open in Tab \n\n    </button> \n\n  </div> \n\n</div> \n\n \n\n<div id=\"tabstrip\"> \n\n  <div class=\"tab active modified\" id=\"main-tab\"> \n\n    <i class=\"fa-regular fa-file-code\" style=\"color: var(--accent);\"></i> \n\n    index.html \n\n    <span class=\"dot\"></span> \n\n  </div> \n\n</div> \n\n \n\n<div id=\"layout\"> \n\n  <div id=\"editor-pane\"> \n\n    <div id=\"editor-header\"> \n\n      <span class=\"pane-label\">Editor</span> \n\n      <span class=\"pane-status\" id=\"cursor-pos\">Ln 1, Col 1</span> \n\n    </div> \n\n    <div id=\"editor-wrap\"> \n\n      <div id=\"line-numbers\"><span>1</span></div> \n\n      <textarea id=\"code\" spellcheck=\"false\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" placeholder=\"<\!-- Write your HTML here -->\"></textarea> \n\n    </div> \n\n  </div> \n\n \n\n  <div id=\"divider\"></div> \n\n \n\n  <div id=\"preview-pane\"> \n\n    <div id=\"preview-header\"> \n\n      <span class=\"pane-label\">Preview</span> \n\n      <span class=\"pane-status\" id=\"preview-status\">Ready</span> \n\n    </div> \n\n    <iframe id=\"preview-frame\" sandbox=\"allow-scripts allow-same-origin allow-forms allow-popups\"></iframe> \n\n  </div> \n\n \n\n  <div id=\"sticky-layer\"></div> \n\n</div> \n\n \n\n<div id=\"statusbar\"> \n\n  <div class=\"status-left\"> \n\n    <span id=\"sb-chars\">0 chars</span> \n\n    <span id=\"sb-lines\">1 line</span> \n\n  </div> \n\n  <div class=\"status-right\"> \n\n    <span>HTML &middot; UTF-8</span> \n\n    <span>Live Preview &#9679;</span> \n\n  </div> \n\n</div> \n\n \n\n<div id=\"upload-toast\" role=\"status\" aria-live=\"polite\"> \n\n  <div class=\"toast-head\" id=\"toast-head\"> \n\n    <span><i class=\"fa-solid fa-file-arrow-up\" id=\"toast-icon\"></i><span id=\"toast-title\">Uploaded</span></span> \n\n    <button class=\"toast-close\" id=\"toast-close\" title=\"Dismiss\">&times;</button> \n\n  </div> \n\n  <div class=\"toast-body\"> \n\n    <div class=\"toast-msg\" id=\"toast-msg\"></div> \n\n    <div class=\"toast-actions\" id=\"toast-actions\"> \n\n      <button class=\"btn accent-teal\" id=\"toast-reopen\"><i class=\"fa-solid fa-arrow-up-right-from-square\"></i> Open data: URL</button> \n\n      <button class=\"btn ghost\" id=\"toast-blob\"><i class=\"fa-solid fa-cube\"></i> Open as blob tab</button> \n\n      <button class=\"btn ghost\" id=\"toast-copy\"><i class=\"fa-regular fa-copy\"></i> Copy data: URL</button> \n\n      <button class=\"btn ghost\" id=\"toast-load\"><i class=\"fa-solid fa-file-import\"></i> Load into editor</button> \n\n    </div> \n\n  </div> \n\n</div> \n\n \n\n<div id=\"drop-hint\"><div><i class=\"fa-solid fa-file-arrow-up\"></i> Drop an .html file to open it in a new tab</div></div> \n\n \n\n<div id=\"gh-overlay\" class=\"modal-overlay\"> \n\n  <div id=\"gh-modal\" class=\"modal\"> \n\n    <div class=\"modal-header\"> \n\n      <h2><i class=\"fa-brands fa-github\"></i> GitHub Repository Search</h2> \n\n      <button class=\"modal-close\" id=\"gh-close\">&times;</button> \n\n    </div> \n\n    <div class=\"modal-body\"> \n\n      <div id=\"gh-sidebar\"> \n\n        <div class=\"filter-section\"> \n\n          <h4>Display Options</h4> \n\n          <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-showStars\" checked><label for=\"gh-showStars\">Show Stars</label></div> \n\n          <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-showForks\" checked><label for=\"gh-showForks\">Show Forks</label></div> \n\n          <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-showWatchers\" checked><label for=\"gh-showWatchers\">Show Watchers</label></div> \n\n          <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-showIssues\" checked><label for=\"gh-showIssues\">Show Issues</label></div> \n\n        </div> \n\n        <div class=\"filter-section\"> \n\n          <h4>Search Type</h4> \n\n          <div class=\"filter-option\"><input type=\"radio\" id=\"gh-searchRepos\" name=\"ghSearchType\" value=\"repositories\" checked><label for=\"gh-searchRepos\">Repositories</label></div> \n\n          <div class=\"filter-option\"><input type=\"radio\" id=\"gh-searchUsers\" name=\"ghSearchType\" value=\"users\"><label for=\"gh-searchUsers\">Users</label></div> \n\n        </div> \n\n        <div class=\"filter-section\"> \n\n          <h4>Minimum Stars</h4> \n\n          <div class=\"num-row\"><input type=\"number\" id=\"gh-minStars\" min=\"0\" max=\"50000\" value=\"0\" step=\"1\"></div> \n\n        </div> \n\n        <div class=\"filter-section\"> \n\n          <h4>Minimum Forks</h4> \n\n          <div class=\"num-row\"><input type=\"number\" id=\"gh-minForks\" min=\"0\" max=\"20000\" value=\"0\" step=\"1\"></div> \n\n        </div> \n\n        <div class=\"filter-section\"> \n\n          <h4>Language</h4> \n\n          <div class=\"lang-grid\"> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langJavaScript\" value=\"javascript\"><label for=\"gh-langJavaScript\">JavaScript</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langPython\" value=\"python\"><label for=\"gh-langPython\">Python</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langJava\" value=\"java\"><label for=\"gh-langJava\">Java</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langCPP\" value=\"cpp\"><label for=\"gh-langCPP\">C++</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langHTML\" value=\"html\"><label for=\"gh-langHTML\">HTML</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langCSS\" value=\"css\"><label for=\"gh-langCSS\">CSS</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langTypeScript\" value=\"typescript\"><label for=\"gh-langTypeScript\">TypeScript</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langC\" value=\"c\"><label for=\"gh-langC\">C</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langCSharp\" value=\"csharp\"><label for=\"gh-langCSharp\">C#</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langPHP\" value=\"php\"><label for=\"gh-langPHP\">PHP</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langRuby\" value=\"ruby\"><label for=\"gh-langRuby\">Ruby</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langGo\" value=\"go\"><label for=\"gh-langGo\">Go</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langRust\" value=\"rust\"><label for=\"gh-langRust\">Rust</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langSwift\" value=\"swift\"><label for=\"gh-langSwift\">Swift</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langKotlin\" value=\"kotlin\"><label for=\"gh-langKotlin\">Kotlin</label></div> \n\n            <div class=\"filter-option\"><input type=\"checkbox\" id=\"gh-langDart\" value=\"dart\"><label for=\"gh-langDart\">Dart</label></div> \n\n          </div> \n\n        </div> \n\n      </div> \n\n      <div id=\"gh-main\"> \n\n        <div class=\"gh-searchbar\"> \n\n          <input type=\"text\" id=\"gh-repoSearch\" placeholder=\"Search GitHub repositories or users&hellip;\"> \n\n          <button class=\"btn accent-blue\" id=\"gh-searchBtn\"><i class=\"fa-solid fa-magnifying-glass\"></i> Search</button> \n\n        </div> \n\n        <div id=\"gh-results\"><p style=\"color: var(--ink-faint); font-size: 13px;\">Enter a search query to see up-to-date results straight from the GitHub API.</p></div> \n\n      </div> \n\n    </div> \n\n  </div> \n\n</div> \n\n \n\n<div id=\"conv-overlay\" class=\"modal-overlay\"> \n\n  <div id=\"conv-modal\" class=\"modal\"> \n\n    <div class=\"modal-header\"> \n\n      <h2><i class=\"fa-solid fa-right-left\"></i> Data / Blob URL Converter</h2> \n\n      <button class=\"modal-close\" id=\"conv-close\">&times;</button> \n\n    </div> \n\n    <div class=\"modal-body\"> \n\n      <div class=\"conv-row\"> \n\n        <div> \n\n          <label class=\"pane-label\" style=\"display:block;margin-bottom:6px;\">Source</label> \n\n          <select id=\"conv-conversionType\"> \n\n            <option value=\"editorCode\">Current Editor Code</option> \n\n            <option value=\"rawHtml\">Raw HTML Code</option> \n\n            <option value=\"githubLink\">Raw GitHub Link</option> \n\n            <option value=\"websiteSource\">Website Link</option> \n\n            <option value=\"uploadImage\">Upload an Image</option> \n\n            <option value=\"uploadTextFile\">Upload a .txt File</option> \n\n          </select> \n\n        </div> \n\n        <div> \n\n          <label class=\"pane-label\" style=\"display:block;margin-bottom:6px;\">Output</label> \n\n          <select id=\"conv-outputType\"> \n\n            <option value=\"dataUrl\">Data URL</option> \n\n            <option value=\"blobUrl\">Blob URL</option> \n\n          </select> \n\n        </div> \n\n      </div> \n\n \n\n      <p class=\"conv-hint\" id=\"conv-hint\">Using the current contents of the code editor.</p> \n\n \n\n      <textarea id=\"conv-inputArea\" placeholder=\"Enter your media / HTML / URL here\"></textarea> \n\n      <input type=\"file\" id=\"conv-fileInput\" accept=\"image/*,text/*\"> \n\n      <img id=\"conv-imagePreview\" alt=\"Image preview\"> \n\n \n\n      <div class=\"conv-actions\"> \n\n        <button class=\"btn ghost\" id=\"conv-chooseFileBtn\"><i class=\"fa-solid fa-upload\"></i> Choose File</button> \n\n        <button class=\"btn accent-teal\" id=\"conv-generateBtn\"><i class=\"fa-solid fa-bolt\"></i> Generate URL</button> \n\n        <button class=\"btn ghost\" id=\"conv-copyBtn\"><i class=\"fa-regular fa-copy\"></i> Copy</button> \n\n        <button class=\"btn ghost\" id=\"conv-openBtn\"><i class=\"fa-solid fa-arrow-up-right-from-square\"></i> Open</button> \n\n        <button class=\"btn ghost\" id=\"conv-clearBtn\"><i class=\"fa-solid fa-xmark\"></i> Clear</button> \n\n      </div> \n\n \n\n      <label class=\"pane-label\" style=\"display:block;\">Result</label> \n\n      <textarea id=\"conv-resultOutput\" placeholder=\"Your converted data:/blob: URL will appear here\" readonly></textarea> \n\n    </div> \n\n  </div> \n\n</div> \n\n \n\n<script> \n\n  const code    = document.getElementById('code'); \n\n  const frame   = document.getElementById('preview-frame'); \n\n  const lineNos = document.getElementById('line-numbers'); \n\n  const cursorPos = document.getElementById('cursor-pos'); \n\n  const previewStatus = document.getElementById('preview-status'); \n\n  const sbChars = document.getElementById('sb-chars'); \n\n  const sbLines = document.getElementById('sb-lines'); \n\n  const mainTab = document.getElementById('main-tab'); \n\n \n\n  const starter = `<!DOCTYPE html> \n\n<html> \n\n<head> \n\n    <meta charset=\"UTF-8\"> \n\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \n\n    <title>My Page</title> \n\n    <style> \n\n        body { \n\n            font-family: Georgia, serif; \n\n            text-align: center; \n\n            margin-top: 50px; \n\n        } \n\n    </style> \n\n</head> \n\n<body> \n\n    <h1>Welcome!</h1> \n\n    <p>Start editing to see changes</p> \n\n \n\n    <script> \n\n    console.log('Hello from JavaScript!'); \n\n    <\\/script> \n\n</body> \n\n</html>`; \n\n \n\n  code.value = starter; \n\n \n\n  let debounce; \n\n  function updatePreview() { \n\n    clearTimeout(debounce); \n\n    debounce = setTimeout(() => { \n\n      frame.srcdoc = code.value; \n\n      previewStatus.textContent = 'Updated'; \n\n      setTimeout(() => previewStatus.textContent = 'Live', 800); \n\n      updateStats(); \n\n    }, 120); \n\n  } \n\n \n\n  function updateStats() { \n\n    const val = code.value; \n\n    const lines = val.split('\\n').length; \n\n    sbChars.textContent = val.length + ' chars'; \n\n    sbLines.textContent = lines + (lines === 1 ? ' line' : ' lines'); \n\n    mainTab.classList.toggle('modified', val.length > 0); \n\n  } \n\n \n\n  function updateLineNumbers() { \n\n    const lines = code.value.split('\\n').length; \n\n    lineNos.innerHTML = Array.from({length: lines}, (_, i) => `<span>${i + 1}</span>`).join(''); \n\n    lineNos.scrollTop = code.scrollTop; \n\n  } \n\n \n\n  code.addEventListener('input', () => { updatePreview(); updateLineNumbers(); }); \n\n  code.addEventListener('scroll', () => { lineNos.scrollTop = code.scrollTop; }); \n\n \n\n  function updateCursor() { \n\n    const val = code.value; \n\n    const sel = code.selectionStart; \n\n    const lines = val.substring(0, sel).split('\\n'); \n\n    const ln = lines.length; \n\n    const col = lines[lines.length - 1].length + 1; \n\n    cursorPos.textContent = `Ln ${ln}, Col ${col}`; \n\n  } \n\n  code.addEventListener('keyup', updateCursor); \n\n  code.addEventListener('click', updateCursor); \n\n  code.addEventListener('selectionchange', updateCursor); \n\n \n\n  code.addEventListener('keydown', e => { \n\n    if (e.key === 'Tab') { \n\n      e.preventDefault(); \n\n      const s = code.selectionStart, en = code.selectionEnd; \n\n      code.value = code.value.substring(0, s) + '  ' + code.value.substring(en); \n\n      code.selectionStart = code.selectionEnd = s + 2; \n\n      updatePreview(); \n\n      updateLineNumbers(); \n\n    } \n\n    if ((e.ctrlKey || e.metaKey) && e.key === 's') { \n\n      e.preventDefault(); \n\n      openInTab(); \n\n    } \n\n  }); \n\n \n\n  function openInTab() { \n\n    const html = code.value; \n\n    if (!html.trim()) return; \n\n    const blob = new Blob([html], {type: 'text/html'}); \n\n    const url = URL.createObjectURL(blob); \n\n    window.open(url, '_blank'); \n\n    setTimeout(() => URL.revokeObjectURL(url), 5000); \n\n  } \n\n  document.getElementById('btn-open').addEventListener('click', openInTab); \n\n \n\n  document.getElementById('btn-clear').addEventListener('click', () => { \n\n    if (code.value && !confirm('Clear the editor?')) return; \n\n    code.value = ''; \n\n    updatePreview(); \n\n    updateLineNumbers(); \n\n    code.focus(); \n\n  }); \n\n \n\n  document.getElementById('btn-copy').addEventListener('click', () => { \n\n    navigator.clipboard.writeText(code.value).then(() => { \n\n      const btn = document.getElementById('btn-copy'); \n\n      const orig = btn.innerHTML; \n\n      btn.innerHTML = `<i class=\"fa-solid fa-check\" style=\"color: var(--good);\"></i> Copied!`; \n\n      setTimeout(() => { btn.innerHTML = orig; }, 1500); \n\n    }); \n\n  }); \n\n \n\n  const themeBtn = document.getElementById('btn-theme'); \n\n  themeBtn.addEventListener('click', () => { \n\n    const isDark = document.documentElement.classList.toggle('dark'); \n\n    themeBtn.innerHTML = isDark \n\n      ? `<i class=\"fa-solid fa-sun\"></i> Light` \n\n      : `<i class=\"fa-solid fa-moon\"></i> Dark`; \n\n  }); \n\n \n\n  /* ===================================================================== \n\n     UPLOAD HTML  ->  automatically opens in a new tab as a data: URL \n\n     ===================================================================== */ \n\n  const uploadHtmlBtn   = document.getElementById('btn-upload-html'); \n\n  const uploadHtmlInput = document.getElementById('upload-htmlInput'); \n\n  const toast        = document.getElementById('upload-toast'); \n\n  const toastHead    = document.getElementById('toast-head'); \n\n  const toastIcon    = document.getElementById('toast-icon'); \n\n  const toastTitle   = document.getElementById('toast-title'); \n\n  const toastMsg     = document.getElementById('toast-msg'); \n\n  const toastActions = document.getElementById('toast-actions'); \n\n  const dropHint     = document.getElementById('drop-hint'); \n\n \n\n  // Most recent upload, so the panel buttons can act on it. \n\n  let lastUpload = null; // { name, text, dataUrl } \n\n \n\n  function bytesToBase64(bytes) { \n\n    let bin = ''; \n\n    const chunk = 0x8000; \n\n    for (let i = 0; i < bytes.length; i += chunk) { \n\n      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)); \n\n    } \n\n    return btoa(bin); \n\n  } \n\n \n\n  function formatSize(n) { \n\n    if (n < 1024) return n + ' B'; \n\n    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB'; \n\n    return (n / (1024 * 1024)).toFixed(2) + ' MB'; \n\n  } \n\n \n\n  function isHtmlFile(file) { \n\n    return /\\.(html?|xhtml)$/i.test(file.name) || file.type === 'text/html' || file.type === 'application/xhtml+xml'; \n\n  } \n\n \n\n  function showToast(kind, title, message, iconClass, showActions) { \n\n    toastHead.className = 'toast-head' + (kind === 'ok' ? '' : ' ' + kind); \n\n    toastIcon.className = iconClass; \n\n    toastTitle.textContent = title; \n\n    toastMsg.textContent = message; \n\n    toastActions.style.display = showActions ? 'flex' : 'none'; \n\n    toast.classList.add('open'); \n\n  } \n\n  function hideToast() { toast.classList.remove('open'); } \n\n  document.getElementById('toast-close').addEventListener('click', hideToast); \n\n \n\n  // Returns true if the browser gave us a window handle (i.e. not popup-blocked). \n\n  function openDataUrlInNewTab(dataUrl) { \n\n    try { \n\n      const w = window.open(dataUrl, '_blank'); \n\n      return !!w; \n\n    } catch (err) { \n\n      console.error('Could not open data URL:', err); \n\n      return false; \n\n    } \n\n  } \n\n \n\n  function openBlobTab(text) { \n\n    const blob = new Blob([lastUpload.bytes], { type: 'text/html' }); \n\n    const url = URL.createObjectURL(blob); \n\n    const w = window.open(url, '_blank'); \n\n    setTimeout(() => URL.revokeObjectURL(url), 60000); \n\n    return !!w; \n\n  } \n\n \n\n  async function handleHtmlFile(file) { \n\n    if (!file) return; \n\n    if (!isHtmlFile(file)) { \n\n      showToast('error', 'Not an HTML file', '\"' + file.name + '\" doesn\\'t look like an .html or .htm file. Choose a different file.', 'fa-solid fa-triangle-exclamation', false); \n\n      return; \n\n    } \n\n \n\n    let bytes; \n\n    try { \n\n      bytes = new Uint8Array(await file.arrayBuffer()); \n\n    } catch (err) { \n\n      console.error(err); \n\n      showToast('error', 'Could not read file', 'The browser couldn\\'t read \"' + file.name + '\". Try selecting it again.', 'fa-solid fa-triangle-exclamation', false); \n\n      return; \n\n    } \n\n \n\n    // Decode for the \"Load into editor\" action, and pick the right charset for the data URL. \n\n    let text, charsetPart = ''; \n\n    try { \n\n      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); \n\n      charsetPart = ';charset=utf-8'; \n\n    } catch (e) { \n\n      text = new TextDecoder('windows-1252').decode(bytes); \n\n    } \n\n \n\n    const dataUrl = 'data:text/html' + charsetPart + ';base64,' + bytesToBase64(bytes); \n\n    lastUpload = { name: file.name, text, dataUrl, bytes }; \n\n \n\n    const opened = openDataUrlInNewTab(dataUrl); \n\n    const sizeNote = formatSize(bytes.length); \n\n    const big = dataUrl.length > 2 * 1024 * 1024; \n\n \n\n    if (!opened) { \n\n      showToast('warn', file.name + ' (' + sizeNote + ')', \n\n        'Your browser blocked the new tab. Click \"Open data: URL\" to open it now.', \n\n        'fa-solid fa-ban', true); \n\n    } else if (big) { \n\n      showToast('warn', file.name + ' (' + sizeNote + ')', \n\n        'Sent to a new tab, but data: URLs over ~2 MB often fail to load in browsers. If the tab is blank, use \"Open as blob tab\".', \n\n        'fa-solid fa-triangle-exclamation', true); \n\n    } else { \n\n      showToast('ok', 'Opened ' + file.name + ' (' + sizeNote + ')', \n\n        'Sent to a new tab as a data: URL. If the tab is blank (some browsers block scripted data: navigation), use \"Open as blob tab\" or copy the data: URL into the address bar.', \n\n        'fa-solid fa-circle-check', true); \n\n    } \n\n  } \n\n \n\n  uploadHtmlBtn.addEventListener('click', () => uploadHtmlInput.click()); \n\n  uploadHtmlInput.addEventListener('change', () => { \n\n    const file = uploadHtmlInput.files[0]; \n\n    uploadHtmlInput.value = '';   // allow re-uploading the same file later \n\n    handleHtmlFile(file); \n\n  }); \n\n \n\n  document.getElementById('toast-reopen').addEventListener('click', () => { \n\n    if (!lastUpload) return; \n\n    if (!openDataUrlInNewTab(lastUpload.dataUrl)) { \n\n      showToast('warn', lastUpload.name, 'Still blocked. Allow pop-ups for this page, or use \"Open as blob tab\".', 'fa-solid fa-ban', true); \n\n    } \n\n  }); \n\n \n\n  document.getElementById('toast-blob').addEventListener('click', () => { \n\n    if (!lastUpload) return; \n\n    if (!openBlobTab()) { \n\n      showToast('warn', lastUpload.name, 'The new tab was blocked. Allow pop-ups for this page and try again.', 'fa-solid fa-ban', true); \n\n    } \n\n  }); \n\n \n\n  document.getElementById('toast-copy').addEventListener('click', () => { \n\n    if (!lastUpload) return; \n\n    const btn = document.getElementById('toast-copy'); \n\n    const orig = btn.innerHTML; \n\n    const done = () => { \n\n      btn.innerHTML = '<i class=\"fa-solid fa-check\" style=\"color: var(--good);\"></i> Copied!'; \n\n      setTimeout(() => { btn.innerHTML = orig; }, 1500); \n\n    }; \n\n    navigator.clipboard.writeText(lastUpload.dataUrl).then(done).catch(() => { \n\n      const ta = document.createElement('textarea'); \n\n      ta.value = lastUpload.dataUrl; \n\n      document.body.appendChild(ta); \n\n      ta.select(); \n\n      try { document.execCommand('copy'); done(); } catch (e) { alert('Copy failed. Use Convert > Raw HTML Code instead.'); } \n\n      document.body.removeChild(ta); \n\n    }); \n\n  }); \n\n \n\n  document.getElementById('toast-load').addEventListener('click', () => { \n\n    if (!lastUpload) return; \n\n    if (code.value && !confirm('Replace the current editor contents with \"' + lastUpload.name + '\"?')) return; \n\n    code.value = lastUpload.text; \n\n    updatePreview(); \n\n    updateLineNumbers(); \n\n    updateCursor(); \n\n    hideToast(); \n\n  }); \n\n \n\n  // Drag & drop an .html file anywhere on the page. \n\n  let dragDepth = 0; \n\n  function dragHasFiles(e) { \n\n    return e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files'); \n\n  } \n\n  document.addEventListener('dragenter', e => { \n\n    if (!dragHasFiles(e) || gateLocked) return; \n\n    dragDepth++; \n\n    dropHint.classList.add('open'); \n\n  }); \n\n  document.addEventListener('dragleave', e => { \n\n    if (!dragHasFiles(e) || gateLocked) return; \n\n    dragDepth = Math.max(0, dragDepth - 1); \n\n    if (dragDepth === 0) dropHint.classList.remove('open'); \n\n  }); \n\n  document.addEventListener('dragover', e => { \n\n    if (!dragHasFiles(e)) return; \n\n    e.preventDefault(); \n\n  }); \n\n  document.addEventListener('drop', e => { \n\n    if (!dragHasFiles(e)) return; \n\n    e.preventDefault(); \n\n    dragDepth = 0; \n\n    dropHint.classList.remove('open'); \n\n    if (gateLocked) return; \n\n    const file = e.dataTransfer.files && e.dataTransfer.files[0]; \n\n    handleHtmlFile(file); \n\n  }); \n\n \n\n  /* ===================================================================== */ \n\n \n\n  const divider = document.getElementById('divider'); \n\n  const layout  = document.getElementById('layout'); \n\n  const editorPane = document.getElementById('editor-pane'); \n\n  let dragging = false, startX = 0, startW = 0; \n\n \n\n  divider.addEventListener('mousedown', e => { \n\n    dragging = true; \n\n    startX = e.clientX; \n\n    startW = editorPane.offsetWidth; \n\n    divider.classList.add('dragging'); \n\n    document.body.style.cursor = 'col-resize'; \n\n    document.body.style.userSelect = 'none'; \n\n  }); \n\n  document.addEventListener('mousemove', e => { \n\n    if (!dragging) return; \n\n    const dx = e.clientX - startX; \n\n    const total = layout.offsetWidth - 5; \n\n    const newW = Math.max(200, Math.min(total - 200, startW + dx)); \n\n    editorPane.style.width = newW + 'px'; \n\n    editorPane.style.flex = 'none'; \n\n  }); \n\n  document.addEventListener('mouseup', () => { \n\n    if (!dragging) return; \n\n    dragging = false; \n\n    divider.classList.remove('dragging'); \n\n    document.body.style.cursor = ''; \n\n    document.body.style.userSelect = ''; \n\n  }); \n\n \n\n  updatePreview(); \n\n  updateLineNumbers(); \n\n  updateStats(); \n\n \n\n  function openModal(overlay) { overlay.classList.add('open'); } \n\n  function closeModal(overlay) { overlay.classList.remove('open'); } \n\n \n\n  const ghOverlay = document.getElementById('gh-overlay'); \n\n  const convOverlay = document.getElementById('conv-overlay'); \n\n \n\n  document.getElementById('btn-github').addEventListener('click', () => openModal(ghOverlay)); \n\n  document.getElementById('gh-close').addEventListener('click', () => closeModal(ghOverlay)); \n\n  ghOverlay.addEventListener('click', e => { if (e.target === ghOverlay) closeModal(ghOverlay); }); \n\n \n\n  document.getElementById('btn-convert').addEventListener('click', () => { \n\n    openModal(convOverlay); \n\n    convToggleInputArea(); \n\n  }); \n\n  document.getElementById('conv-close').addEventListener('click', () => closeModal(convOverlay)); \n\n  convOverlay.addEventListener('click', e => { if (e.target === convOverlay) closeModal(convOverlay); }); \n\n \n\n  document.addEventListener('keydown', e => { \n\n    if (e.key === 'Escape') { \n\n      closeModal(ghOverlay); \n\n      closeModal(convOverlay); \n\n      closeStickyMenu(); \n\n      hideToast(); \n\n    } \n\n  }); \n\n \n\n  const ghInput = document.getElementById('gh-repoSearch'); \n\n  const ghResults = document.getElementById('gh-results'); \n\n  let ghCurrentPage = 1; \n\n  let ghTotalResults = 0; \n\n  const ghResultsPerPage = 30; \n\n \n\n  document.getElementById('gh-searchBtn').addEventListener('click', () => ghSearchRepos(1)); \n\n  ghInput.addEventListener('keypress', e => { if (e.key === 'Enter') ghSearchRepos(1); }); \n\n \n\n  document.getElementById('gh-minStars').addEventListener('input', () => { if (ghInput.value.trim()) ghSearchRepos(1); }); \n\n  document.getElementById('gh-minForks').addEventListener('input', () => { if (ghInput.value.trim()) ghSearchRepos(1); }); \n\n \n\n  document.querySelectorAll('#gh-sidebar input[type=\"checkbox\"], #gh-sidebar input[type=\"radio\"]').forEach(inp => { \n\n    inp.addEventListener('change', () => { \n\n      if (inp.name === 'ghSearchType') { \n\n        if (ghInput.value.trim()) ghSearchRepos(1); \n\n      } else if (inp.id.startsWith('gh-lang')) { \n\n        if (ghInput.value.trim()) ghSearchRepos(1); \n\n      } else { \n\n        ghFilterResults(); \n\n      } \n\n    }); \n\n  }); \n\n \n\n  function ghDownloadRepoZip(fullName) { \n\n    fetch(`https://api.github.com/repos/${fullName}`) \n\n      .then(r => { if (!r.ok) throw new Error('Failed to fetch repository info'); return r.json(); }) \n\n      .then(repo => { \n\n        if (!repo.default_branch) throw new Error('Default branch not found'); \n\n        const zipUrl = `https://github.com/${fullName}/archive/refs/heads/${repo.default_branch}.zip`; \n\n        const tmp = `https://api.codetabs.com/v1/tmp?quest=${encodeURIComponent(zipUrl)}`; \n\n        const proxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(zipUrl)}`; \n\n        fetch(tmp).then(r => { if (!r.ok) throw new Error('tmp failed'); return r.blob(); }) \n\n          .then(blob => ghTriggerDownload(blob, `${fullName.replace('/', '-')}-${repo.default_branch}.zip`)) \n\n          .catch(() => { \n\n            fetch(proxy).then(r => { if (!r.ok) throw new Error('proxy failed'); return r.blob(); }) \n\n              .then(blob => ghTriggerDownload(blob, `${fullName.replace('/', '-')}-${repo.default_branch}.zip`)) \n\n              .catch(err => { alert('Failed to download ZIP file. Please try again.'); console.error(err); }); \n\n          }); \n\n      }) \n\n      .catch(err => { alert('Failed to download ZIP file. Please try again.'); console.error(err); }); \n\n  } \n\n \n\n  function ghTriggerDownload(blob, filename) { \n\n    const a = document.createElement('a'); \n\n    a.href = URL.createObjectURL(blob); \n\n    a.download = filename; \n\n    document.body.appendChild(a); \n\n    a.click(); \n\n    document.body.removeChild(a); \n\n    URL.revokeObjectURL(a.href); \n\n  } \n\n \n\n  function ghSearchRepos(page = 1) { \n\n    const query = ghInput.value.trim(); \n\n    const searchType = document.querySelector('input[name=\"ghSearchType\"]:checked').value; \n\n \n\n    if (!query) { \n\n      ghResults.innerHTML = '<p style=\"color: var(--ink-faint); font-size: 13px;\">Please enter a search query.</p>'; \n\n      ghTotalResults = 0; \n\n      return; \n\n    } \n\n \n\n    ghResults.innerHTML = '<p style=\"color: var(--ink-faint); font-size: 13px;\">Searching GitHub&hellip;</p>'; \n\n \n\n    const searchQuery = ghBuildSearchQuery(query); \n\n    const apiUrl = `https://api.github.com/search/${searchType}?q=${encodeURIComponent(searchQuery)}&page=${page}&per_page=${ghResultsPerPage}`; \n\n \n\n    fetch(apiUrl) \n\n      .then(r => r.json()) \n\n      .then(data => { \n\n        if (data.items && data.items.length) { \n\n          ghTotalResults = data.total_count; \n\n          ghCurrentPage = page; \n\n          ghDisplayResults(data.items, searchType); \n\n        } else if (data.message) { \n\n          ghResults.innerHTML = `<p style=\"color: var(--accent); font-size: 13px;\">GitHub API error: ${data.message}</p>`; \n\n          ghTotalResults = 0; \n\n        } else { \n\n          ghResults.innerHTML = `<p style=\"color: var(--ink-faint); font-size: 13px;\">No ${searchType} found.</p>`; \n\n          ghTotalResults = 0; \n\n        } \n\n      }) \n\n      .catch(err => { \n\n        ghResults.innerHTML = `<p style=\"color: var(--accent); font-size: 13px;\">Error fetching ${searchType}.</p>`; \n\n        console.error(err); \n\n        ghTotalResults = 0; \n\n      }); \n\n  } \n\n \n\n  function ghBuildSearchQuery(query) { \n\n    let q = query; \n\n    const minStars = document.getElementById('gh-minStars').value; \n\n    const minForks = document.getElementById('gh-minForks').value; \n\n    if (minStars > 0) q += ` stars:>=${minStars}`; \n\n    if (minForks > 0) q += ` forks:>=${minForks}`; \n\n    const languages = []; \n\n    document.querySelectorAll('#gh-sidebar input[id^=\"gh-lang\"]:checked').forEach(inp => languages.push(`language:${inp.value}`)); \n\n    if (languages.length) q += ` ${languages.join(' ')}`; \n\n    return q; \n\n  } \n\n \n\n  function ghDisplayResults(items, searchType) { \n\n    ghResults.innerHTML = ''; \n\n \n\n    const info = document.createElement('div'); \n\n    info.className = 'results-info'; \n\n    const start = (ghCurrentPage - 1) * ghResultsPerPage + 1; \n\n    const end = Math.min(ghCurrentPage * ghResultsPerPage, ghTotalResults); \n\n    info.textContent = `Showing ${start}-${end} of ${ghTotalResults.toLocaleString()} results (Page ${ghCurrentPage})`; \n\n    ghResults.appendChild(info); \n\n \n\n    items.forEach(item => { \n\n      const div = document.createElement('div'); \n\n      div.className = 'repo'; \n\n \n\n      if (searchType === 'repositories') { \n\n        div.innerHTML = ` \n\n          <a href=\"#\" class=\"repo-title\" onclick=\"ghFetchRepoFiles('${item.full_name}', this); return false;\"> \n\n            ${item.name} by ${item.owner.login} \n\n          </a> \n\n          <button class=\"download-zip-button\" title=\"Download repository as ZIP\" onclick=\"ghDownloadRepoZip('${item.full_name}')\"> \n\n            <i class=\"fa-solid fa-file-zipper\"></i> Download ZIP \n\n          </button> \n\n          <div class=\"repo-stats\"> \n\n            <span class=\"stars-stat\" title=\"Stars\"><i class=\"fa-solid fa-star\"></i> ${item.stargazers_count}</span> \n\n            <span class=\"forks-stat\" title=\"Forks\"><i class=\"fa-solid fa-code-branch\"></i> ${item.forks_count}</span> \n\n            <span class=\"watchers-stat\" title=\"Watchers\"><i class=\"fa-solid fa-eye\"></i> ${item.watchers_count}</span> \n\n            <span class=\"issues-stat\" title=\"Open Issues\"><i class=\"fa-solid fa-circle-exclamation\"></i> ${item.open_issues_count}</span> \n\n          </div> \n\n          <p>${ghParseDescription(item.description)}</p> \n\n          ${item.homepage ? `<p><i class=\"fa-solid fa-link\"></i> <a href=\"${item.homepage}\" target=\"_blank\">${item.homepage}</a></p>` : ''} \n\n          <div class=\"files\" style=\"display:none;\"></div> \n\n        `; \n\n      } else { \n\n        div.className = 'user-item'; \n\n        div.innerHTML = ` \n\n          <a href=\"#\" class=\"user-title\" onclick=\"ghFetchUserDetails('${item.login}', this); return false;\">${item.login}</a> \n\n          <button class=\"profile-button\" onclick=\"window.open('${item.html_url}', '_blank')\"><i class=\"fa-brands fa-github\"></i> Profile</button> \n\n          <p>${item.bio || 'No bio available'}</p> \n\n          <div class=\"user-details\" style=\"display:none;\"></div> \n\n        `; \n\n      } \n\n      ghResults.appendChild(div); \n\n    }); \n\n \n\n    ghUpdatePagination(); \n\n    ghFilterResults(); \n\n  } \n\n \n\n  function ghUpdatePagination() { \n\n    const existing = ghResults.querySelector('.pagination'); \n\n    if (existing) existing.remove(); \n\n    if (ghTotalResults === 0) return; \n\n \n\n    const totalPages = Math.min(Math.ceil(ghTotalResults / ghResultsPerPage), 34); \n\n    const wrap = document.createElement('div'); \n\n    wrap.className = 'pagination'; \n\n \n\n    const prev = document.createElement('button'); \n\n    prev.textContent = 'Previous'; \n\n    prev.disabled = ghCurrentPage === 1; \n\n    prev.onclick = () => { if (ghCurrentPage > 1) ghSearchRepos(ghCurrentPage - 1); }; \n\n    wrap.appendChild(prev); \n\n \n\n    const info = document.createElement('span'); \n\n    info.style.margin = '0 16px'; \n\n    info.style.color = 'var(--ink-soft)'; \n\n    info.style.fontSize = '13px'; \n\n    info.textContent = `Page ${ghCurrentPage} of ${totalPages}`; \n\n    wrap.appendChild(info); \n\n \n\n    const next = document.createElement('button'); \n\n    next.textContent = 'Next'; \n\n    next.disabled = ghCurrentPage >= totalPages; \n\n    next.onclick = () => { if (ghCurrentPage < totalPages) ghSearchRepos(ghCurrentPage + 1); }; \n\n    wrap.appendChild(next); \n\n \n\n    ghResults.appendChild(wrap); \n\n  } \n\n \n\n  function ghFilterResults() { \n\n    const showStars = document.getElementById('gh-showStars').checked; \n\n    const showForks = document.getElementById('gh-showForks').checked; \n\n    const showWatchers = document.getElementById('gh-showWatchers').checked; \n\n    const showIssues = document.getElementById('gh-showIssues').checked; \n\n    document.querySelectorAll('.stars-stat').forEach(el => el.style.display = showStars ? '' : 'none'); \n\n    document.querySelectorAll('.forks-stat').forEach(el => el.style.display = showForks ? '' : 'none'); \n\n    document.querySelectorAll('.watchers-stat').forEach(el => el.style.display = showWatchers ? '' : 'none'); \n\n    document.querySelectorAll('.issues-stat').forEach(el => el.style.display = showIssues ? '' : 'none'); \n\n  } \n\n \n\n  function ghParseDescription(description) { \n\n    if (!description) return 'No description available'; \n\n    return description.replace(/(https?:\\/\\/[^\\s]+)/g, url => `<a href=\"${url}\" target=\"_blank\">${url}</a>`); \n\n  } \n\n \n\n  function ghFetchRepoFiles(fullName, element) { \n\n    const filesDiv = element.closest('.repo').querySelector('.files'); \n\n    const isVisible = filesDiv.style.display !== 'none'; \n\n    if (isVisible) { filesDiv.style.display = 'none'; return; } \n\n    if (filesDiv.innerHTML) { filesDiv.style.display = 'block'; return; } \n\n \n\n    fetch(`https://api.github.com/repos/${fullName}/contents`) \n\n      .then(r => r.json()) \n\n      .then(files => { \n\n        if (!Array.isArray(files)) { filesDiv.innerHTML = '<p style=\"font-size:12px;color:var(--ink-faint);\">No files found.</p>'; filesDiv.style.display = 'block'; return; } \n\n        files.forEach(file => { \n\n          const fd = document.createElement('div'); \n\n          fd.className = 'file'; \n\n          fd.innerHTML = ` \n\n            <span class=\"file-name\">${file.name}</span> \n\n            <div class=\"file-icons\"> \n\n              <a href=\"${file.html_url}\" target=\"_blank\" title=\"View on GitHub\"><i class=\"fa-brands fa-github\"></i></a> \n\n              ${file.download_url ? `<a title=\"Insert into editor\" onclick=\"ghInsertFileIntoEditor('${file.download_url}')\"><i class=\"fa-solid fa-file-import\"></i></a> \n\n              <a title=\"Download file\" onclick=\"ghDownloadFile('${file.download_url}', '${file.name}')\"><i class=\"fa-solid fa-download\"></i></a>` : ''} \n\n            </div> \n\n          `; \n\n          filesDiv.appendChild(fd); \n\n        }); \n\n        filesDiv.style.display = 'block'; \n\n      }) \n\n      .catch(err => console.error('Error fetching files:', err)); \n\n  } \n\n \n\n  function ghInsertFileIntoEditor(url) { \n\n    fetch(url) \n\n      .then(r => r.text()) \n\n      .then(text => { \n\n        if (code.value && !confirm('Replace the current editor contents with this file?')) return; \n\n        code.value = text; \n\n        updatePreview(); \n\n        updateLineNumbers(); \n\n        closeModal(ghOverlay); \n\n      }) \n\n      .catch(err => { alert('Could not load file content.'); console.error(err); }); \n\n  } \n\n \n\n  function ghFetchUserDetails(username, element) { \n\n    const detailsDiv = element.closest('.user-item').querySelector('.user-details'); \n\n    const isVisible = detailsDiv.style.display !== 'none'; \n\n    if (isVisible) { detailsDiv.style.display = 'none'; return; } \n\n    if (detailsDiv.innerHTML) { detailsDiv.style.display = 'block'; return; } \n\n \n\n    fetch(`https://api.github.com/users/${username}`) \n\n      .then(r => r.json()) \n\n      .then(user => { \n\n        const joinDate = new Date(user.created_at).toLocaleDateString(); \n\n        const lastUpdate = new Date(user.updated_at).toLocaleDateString(); \n\n        let links = []; \n\n        if (user.blog) links.push(`<a href=\"${user.blog.startsWith('http') ? user.blog : 'https://' + user.blog}\" target=\"_blank\">${user.blog}</a>`); \n\n        if (user.twitter_username) links.push(`<a href=\"https://twitter.com/${user.twitter_username}\" target=\"_blank\">twitter.com/${user.twitter_username}</a>`); \n\n        if (user.email) links.push(`<a href=\"mailto:${user.email}\">${user.email}</a>`); \n\n \n\n        detailsDiv.innerHTML = ` \n\n          <img src=\"${user.avatar_url}\" alt=\"${user.login}\" class=\"user-avatar\"> \n\n          <div class=\"user-info\"> \n\n            <h4>${user.name || user.login}</h4> \n\n            ${user.bio ? `<div class=\"user-description\">&ldquo;${user.bio}&rdquo;</div>` : ''} \n\n            <p><strong>Location:</strong> ${user.location || 'Not specified'}</p> \n\n            <p><strong>Company:</strong> ${user.company || 'Not specified'}</p> \n\n            <p><strong>Email:</strong> ${user.email || 'Not specified'}</p> \n\n            ${links.length ? `<p><strong>Links:</strong></p><div class=\"user-links\">${links.join('')}</div>` : ''} \n\n          </div> \n\n          <div class=\"user-stats\"> \n\n            <span title=\"Public repositories\"><i class=\"fa-solid fa-book\"></i> ${user.public_repos} repos</span> \n\n            <span title=\"Public gists\"><i class=\"fa-solid fa-file-code\"></i> ${user.public_gists} gists</span> \n\n            <span title=\"Followers\"><i class=\"fa-solid fa-users\"></i> ${user.followers} followers</span> \n\n            <span title=\"Following\"><i class=\"fa-solid fa-user-plus\"></i> ${user.following} following</span> \n\n            <br> \n\n            <span title=\"Joined\"><i class=\"fa-solid fa-calendar\"></i> Joined ${joinDate}</span> \n\n            <span title=\"Last updated\"><i class=\"fa-solid fa-clock\"></i> Updated ${lastUpdate}</span> \n\n          </div> \n\n        `; \n\n        detailsDiv.style.display = 'block'; \n\n      }) \n\n      .catch(err => { \n\n        console.error('Error fetching user details:', err); \n\n        detailsDiv.innerHTML = '<p style=\"font-size:12px;\">Error loading user details.</p>'; \n\n        detailsDiv.style.display = 'block'; \n\n      }); \n\n  } \n\n \n\n  function ghDownloadFile(url, filename) { \n\n    fetch(url) \n\n      .then(r => r.text()) \n\n      .then(data => { \n\n        const blob = new Blob([data], { type: 'text/plain' }); \n\n        const link = document.createElement('a'); \n\n        link.href = URL.createObjectURL(blob); \n\n        link.download = filename; \n\n        document.body.appendChild(link); \n\n        link.click(); \n\n        document.body.removeChild(link); \n\n        URL.revokeObjectURL(link.href); \n\n      }) \n\n      .catch(err => console.error('Error downloading file:', err)); \n\n  } \n\n \n\n  const convType = document.getElementById('conv-conversionType'); \n\n  const convOutputType = document.getElementById('conv-outputType'); \n\n  const convInputArea = document.getElementById('conv-inputArea'); \n\n  const convFileInput = document.getElementById('conv-fileInput'); \n\n  const convChooseFileBtn = document.getElementById('conv-chooseFileBtn'); \n\n  const convImagePreview = document.getElementById('conv-imagePreview'); \n\n  const convResultOutput = document.getElementById('conv-resultOutput'); \n\n  const convHint = document.getElementById('conv-hint'); \n\n \n\n  let convUploadedDataUrl = ''; \n\n  let convUploadedFileName = ''; \n\n \n\n  let convProxyIndex = 0; \n\n  const convCorsProxies = [ \n\n    'https://api.codetabs.com/v1/proxy?quest=', \n\n    'https://api.codetabs.com/v1/tmp/?quest=' \n\n  ]; \n\n \n\n  convType.addEventListener('change', convToggleInputArea); \n\n \n\n  function convIsUploadType(type) { \n\n    return type === 'uploadImage' || type === 'uploadTextFile'; \n\n  } \n\n \n\n  function convToggleInputArea() { \n\n    const type = convType.value; \n\n    convImagePreview.classList.add('hidden'); \n\n    convFileInput.classList.add('hidden'); \n\n    convChooseFileBtn.classList.add('hidden'); \n\n    convInputArea.classList.remove('hidden'); \n\n    convInputArea.readOnly = false; \n\n    convUploadedDataUrl = ''; \n\n    convUploadedFileName = ''; \n\n    convResultOutput.value = ''; \n\n \n\n    if (type === 'editorCode') { \n\n      convInputArea.value = code.value; \n\n      convInputArea.readOnly = true; \n\n      convHint.textContent = 'Using the current contents of the code editor (read-only preview).'; \n\n    } else if (type === 'rawHtml') { \n\n      convInputArea.value = ''; \n\n      convHint.textContent = 'Paste any raw HTML to convert it into a URL.'; \n\n    } else if (type === 'githubLink') { \n\n      convInputArea.value = ''; \n\n      convHint.textContent = 'Paste a raw.githubusercontent.com (or repo) link to fetch and convert.'; \n\n    } else if (type === 'websiteSource') { \n\n      convInputArea.value = ''; \n\n      convHint.textContent = 'Paste a website URL to fetch its HTML and convert it.'; \n\n    } else if (type === 'uploadImage') { \n\n      convInputArea.classList.add('hidden'); \n\n      convFileInput.classList.remove('hidden'); \n\n      convChooseFileBtn.classList.remove('hidden'); \n\n      convFileInput.accept = 'image/*'; \n\n      convFileInput.value = ''; \n\n      convHint.textContent = 'Choose an image file, then press Generate URL.'; \n\n    } else if (type === 'uploadTextFile') { \n\n      convInputArea.classList.add('hidden'); \n\n      convFileInput.classList.remove('hidden'); \n\n      convChooseFileBtn.classList.remove('hidden'); \n\n      convFileInput.accept = '.txt,text/plain'; \n\n      convFileInput.value = ''; \n\n      convHint.textContent = 'Choose a .txt file, then press Generate URL.'; \n\n    } \n\n  } \n\n \n\n  convChooseFileBtn.addEventListener('click', () => convFileInput.click()); \n\n \n\n  convFileInput.addEventListener('change', convHandleFile); \n\n  function convHandleFile() { \n\n    const type = convType.value; \n\n    const file = convFileInput.files[0]; \n\n    if (!file) return; \n\n    convUploadedFileName = file.name; \n\n    const reader = new FileReader(); \n\n \n\n    if (type === 'uploadImage') { \n\n      reader.onload = e => { \n\n        convUploadedDataUrl = e.target.result; \n\n        convImagePreview.src = convUploadedDataUrl; \n\n        convImagePreview.classList.remove('hidden'); \n\n        convHint.textContent = 'Loaded \"' + file.name + '\". Press Generate URL.'; \n\n      }; \n\n      reader.onerror = () => alert('Could not read that image file.'); \n\n      reader.readAsDataURL(file); \n\n    } else if (type === 'uploadTextFile') { \n\n      reader.onload = e => { \n\n        const b64 = btoa(unescape(encodeURIComponent(e.target.result))); \n\n        convUploadedDataUrl = 'data:text/plain;base64,' + b64; \n\n        convHint.textContent = 'Loaded \"' + file.name + '\". Press Generate URL.'; \n\n      }; \n\n      reader.onerror = () => alert('Could not read that text file.'); \n\n      reader.readAsText(file); \n\n    } \n\n  } \n\n \n\n  document.getElementById('conv-generateBtn').addEventListener('click', convGenerateUrl); \n\n  function convGenerateUrl() { \n\n    const type = convType.value; \n\n    const outputType = convOutputType.value; \n\n \n\n    if (type === 'editorCode') { \n\n      convInputArea.value = code.value; \n\n      convConvertRawHtmlToUrl(outputType, code.value); \n\n    } else if (type === 'rawHtml') { \n\n      convConvertRawHtmlToUrl(outputType, convInputArea.value); \n\n    } else if (type === 'githubLink' || type === 'websiteSource') { \n\n      convFetchAndConvertUrl(outputType); \n\n    } else if (convIsUploadType(type)) { \n\n      if (!convUploadedDataUrl) { \n\n        alert('Choose a file first.'); \n\n        return; \n\n      } \n\n      convResultOutput.value = convConvertOutput(convUploadedDataUrl, outputType); \n\n    } \n\n  } \n\n \n\n  function convConvertRawHtmlToUrl(outputType, htmlInput) { \n\n    const b64 = btoa(unescape(encodeURIComponent(htmlInput))); \n\n    const dataUrl = 'data:text/html;base64,' + b64; \n\n    convResultOutput.value = convConvertOutput(dataUrl, outputType); \n\n  } \n\n \n\n  function convFetchAndConvertUrl(outputType) { \n\n    const url = convInputArea.value.trim(); \n\n    if (!url) return; \n\n    const proxyUrl = convCorsProxies[convProxyIndex]; \n\n    convResultOutput.value = 'Fetching…'; \n\n \n\n    fetch(proxyUrl + url) \n\n      .then(r => r.text()) \n\n      .then(html => { \n\n        const b64 = btoa(unescape(encodeURIComponent(html))); \n\n        const dataUrl = 'data:text/html;base64,' + b64; \n\n        convResultOutput.value = convConvertOutput(dataUrl, outputType); \n\n      }) \n\n      .catch(err => { \n\n        convResultOutput.value = ''; \n\n        alert('Error fetching content: ' + err); \n\n      }); \n\n \n\n    convProxyIndex = (convProxyIndex + 1) % convCorsProxies.length; \n\n  } \n\n \n\n  function convConvertOutput(dataUrl, outputType) { \n\n    return outputType === 'blobUrl' ? convConvertToBlobUrl(dataUrl) : dataUrl; \n\n  } \n\n \n\n  function convConvertToBlobUrl(dataUrl) { \n\n    const blob = convDataUrlToBlob(dataUrl); \n\n    return URL.createObjectURL(blob); \n\n  } \n\n \n\n  function convDataUrlToBlob(dataUrl) { \n\n    const parts = dataUrl.split(','); \n\n    const mime = parts[0].match(/:(.*?);/)[1]; \n\n    const data = atob(parts[1]); \n\n    const arr = []; \n\n    for (let i = 0; i < data.length; i++) arr.push(data.charCodeAt(i)); \n\n    return new Blob([new Uint8Array(arr)], { type: mime }); \n\n  } \n\n \n\n  document.getElementById('conv-copyBtn').addEventListener('click', () => { \n\n    if (!convResultOutput.value) return; \n\n    navigator.clipboard.writeText(convResultOutput.value).then(() => { \n\n      const btn = document.getElementById('conv-copyBtn'); \n\n      const orig = btn.innerHTML; \n\n      btn.innerHTML = `<i class=\"fa-solid fa-check\" style=\"color: var(--good);\"></i> Copied!`; \n\n      setTimeout(() => { btn.innerHTML = orig; }, 1500); \n\n    }); \n\n  }); \n\n \n\n  document.getElementById('conv-openBtn').addEventListener('click', () => { \n\n    if (!convResultOutput.value) return; \n\n    window.open(convResultOutput.value, '_blank'); \n\n  }); \n\n \n\n  document.getElementById('conv-clearBtn').addEventListener('click', () => { \n\n    convInputArea.value = convType.value === 'editorCode' ? code.value : ''; \n\n    convResultOutput.value = ''; \n\n    convFileInput.value = ''; \n\n    convImagePreview.src = ''; \n\n    convImagePreview.classList.add('hidden'); \n\n    convUploadedDataUrl = ''; \n\n    convUploadedFileName = ''; \n\n  }); \n\n \n\n  const stickyLayer = document.getElementById('sticky-layer'); \n\n  const stickyBtn = document.getElementById('btn-sticky'); \n\n  const stickyColors = ['yellow', 'pink', 'blue', 'green', 'orange']; \n\n  let stickyColorCycle = 0; \n\n  let stickyNotesCreated = 0; \n\n  let activeStickyMenu = null; \n\n \n\n  stickyBtn.addEventListener('mousedown', stickyBtnMouseDown); \n\n \n\n  function stickyBtnMouseDown(e) { \n\n    e.preventDefault(); \n\n    let stickyDragStarted = false; \n\n    let stickyGhost = null; \n\n    const startX = e.clientX; \n\n    const startY = e.clientY; \n\n    const colorName = stickyColors[stickyColorCycle % stickyColors.length]; \n\n \n\n    function onMove(ev) { \n\n      const dx = ev.clientX - startX; \n\n      const dy = ev.clientY - startY; \n\n      if (!stickyDragStarted && Math.hypot(dx, dy) > 5) { \n\n        stickyDragStarted = true; \n\n        stickyGhost = document.createElement('div'); \n\n        stickyGhost.className = 'sticky-ghost sticky-' + colorName; \n\n        stickyGhost.innerHTML = '<i class=\"fa-solid fa-note-sticky\"></i>'; \n\n        document.body.appendChild(stickyGhost); \n\n      } \n\n      if (stickyDragStarted && stickyGhost) { \n\n        stickyGhost.style.left = (ev.clientX - 60) + 'px'; \n\n        stickyGhost.style.top = (ev.clientY - 60) + 'px'; \n\n      } \n\n    } \n\n \n\n    function onUp(ev) { \n\n      document.removeEventListener('mousemove', onMove); \n\n      document.removeEventListener('mouseup', onUp); \n\n      if (stickyGhost) { stickyGhost.remove(); stickyGhost = null; } \n\n \n\n      const layoutRect = layout.getBoundingClientRect(); \n\n      let x, y; \n\n      if (stickyDragStarted) { \n\n        x = ev.clientX - layoutRect.left - 85; \n\n        y = ev.clientY - layoutRect.top - 85; \n\n      } else { \n\n        const offset = (stickyNotesCreated % 5) * 18; \n\n        x = layoutRect.width / 2 - 85 + offset; \n\n        y = layoutRect.height / 2 - 85 + offset; \n\n      } \n\n      x = Math.max(4, Math.min(layoutRect.width - 178, x)); \n\n      y = Math.max(4, Math.min(layoutRect.height - 178, y)); \n\n \n\n      createStickyNote(x, y, colorName); \n\n      stickyColorCycle++; \n\n    } \n\n \n\n    document.addEventListener('mousemove', onMove); \n\n    document.addEventListener('mouseup', onUp); \n\n  } \n\n \n\n  function createStickyNote(x, y, colorName) { \n\n    stickyNotesCreated++; \n\n    const note = document.createElement('div'); \n\n    note.className = 'sticky-note sticky-' + colorName; \n\n    const rotate = (Math.random() * 8 - 4).toFixed(2); \n\n    note.dataset.baseRotate = rotate; \n\n    note.style.left = x + 'px'; \n\n    note.style.top = y + 'px'; \n\n    note.style.transform = `rotate(${rotate}deg)`; \n\n    note.innerHTML = ` \n\n      <div class=\"sticky-pin\" title=\"Drag to move\"><i class=\"fa-solid fa-thumbtack\"></i></div> \n\n      <div class=\"sticky-text\" contenteditable=\"true\" data-placeholder=\"Write something&hellip;\"></div> \n\n    `; \n\n    stickyLayer.appendChild(note); \n\n \n\n    const pin = note.querySelector('.sticky-pin'); \n\n    pin.addEventListener('mousedown', ev => startNoteDrag(ev, note)); \n\n    note.addEventListener('contextmenu', ev => showStickyMenu(ev, note)); \n\n    note.addEventListener('mousemove', ev => tiltNote(ev, note)); \n\n    note.addEventListener('mouseleave', () => resetTilt(note)); \n\n \n\n    note.querySelector('.sticky-text').focus(); \n\n  } \n\n \n\n  function startNoteDrag(e, note) { \n\n    e.preventDefault(); \n\n    e.stopPropagation(); \n\n    const layoutRect = layout.getBoundingClientRect(); \n\n    const startX = e.clientX, startY = e.clientY; \n\n    const startLeft = parseFloat(note.style.left) || 0; \n\n    const startTop = parseFloat(note.style.top) || 0; \n\n    note.classList.add('dragging'); \n\n \n\n    function onMove(ev) { \n\n      let nx = startLeft + (ev.clientX - startX); \n\n      let ny = startTop + (ev.clientY - startY); \n\n      nx = Math.max(-60, Math.min(layoutRect.width - 110, nx)); \n\n      ny = Math.max(-60, Math.min(layoutRect.height - 110, ny)); \n\n      note.style.left = nx + 'px'; \n\n      note.style.top = ny + 'px'; \n\n    } \n\n    function onUp() { \n\n      document.removeEventListener('mousemove', onMove); \n\n      document.removeEventListener('mouseup', onUp); \n\n      note.classList.remove('dragging'); \n\n    } \n\n    document.addEventListener('mousemove', onMove); \n\n    document.addEventListener('mouseup', onUp); \n\n  } \n\n \n\n  function tiltNote(e, note) { \n\n    if (note.classList.contains('dragging')) return; \n\n    const rect = note.getBoundingClientRect(); \n\n    const px = (e.clientX - rect.left) / rect.width; \n\n    const py = (e.clientY - rect.top) / rect.height; \n\n    const rotateY = (px - 0.5) * 14; \n\n    const rotateX = (0.5 - py) * 14; \n\n    const base = note.dataset.baseRotate || 0; \n\n    note.style.transform = `rotate(${base}deg) perspective(500px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`; \n\n  } \n\n \n\n  function resetTilt(note) { \n\n    if (note.classList.contains('dragging')) return; \n\n    const base = note.dataset.baseRotate || 0; \n\n    note.style.transform = `rotate(${base}deg)`; \n\n  } \n\n \n\n  function closeStickyMenu() { \n\n    if (activeStickyMenu) { activeStickyMenu.remove(); activeStickyMenu = null; } \n\n    document.removeEventListener('mousedown', handleStickyMenuOutsideClick); \n\n  } \n\n \n\n  function handleStickyMenuOutsideClick(ev) { \n\n    if (activeStickyMenu && !activeStickyMenu.contains(ev.target)) closeStickyMenu(); \n\n  } \n\n \n\n  function showStickyMenu(e, note) { \n\n    e.preventDefault(); \n\n    closeStickyMenu(); \n\n \n\n    const menu = document.createElement('div'); \n\n    menu.className = 'sticky-context-menu'; \n\n \n\n    const label = document.createElement('div'); \n\n    label.className = 'sticky-menu-label'; \n\n    label.textContent = 'Change Color'; \n\n    menu.appendChild(label); \n\n \n\n    const colorRow = document.createElement('div'); \n\n    colorRow.className = 'sticky-menu-colors'; \n\n    stickyColors.forEach(c => { \n\n      const sw = document.createElement('button'); \n\n      sw.className = 'sticky-swatch sticky-swatch-' + c; \n\n      sw.title = c; \n\n      sw.addEventListener('click', () => { \n\n        stickyColors.forEach(cc => note.classList.remove('sticky-' + cc)); \n\n        note.classList.add('sticky-' + c); \n\n        closeStickyMenu(); \n\n      }); \n\n      colorRow.appendChild(sw); \n\n    }); \n\n    menu.appendChild(colorRow); \n\n \n\n    const divLine = document.createElement('div'); \n\n    divLine.className = 'sticky-menu-divider'; \n\n    menu.appendChild(divLine); \n\n \n\n    const del = document.createElement('button'); \n\n    del.className = 'sticky-menu-delete'; \n\n    del.innerHTML = '<i class=\"fa-solid fa-trash\"></i> Delete Note'; \n\n    del.addEventListener('click', () => { note.remove(); closeStickyMenu(); }); \n\n    menu.appendChild(del); \n\n \n\n    document.body.appendChild(menu); \n\n    activeStickyMenu = menu; \n\n \n\n    const menuRect = menu.getBoundingClientRect(); \n\n    let left = e.clientX; \n\n    let top = e.clientY; \n\n    if (left + menuRect.width > window.innerWidth) left = window.innerWidth - menuRect.width - 8; \n\n    if (top + menuRect.height > window.innerHeight) top = window.innerHeight - menuRect.height - 8; \n\n    menu.style.left = left + 'px'; \n\n    menu.style.top = top + 'px'; \n\n \n\n    setTimeout(() => document.addEventListener('mousedown', handleStickyMenuOutsideClick), 0); \n\n  } \n\n<\/script> \n\n \n\n<\!-- ======================= PASSWORD GATE LOGIC ======================= --> \n\n<script> \n\n  /* The password is never stored in plain text: only its SHA-256 hash is \n\n     kept here, and the typed value is hashed before comparing. A pure-JS \n\n     SHA-256 is used so it works on file://, data: and http:// alike. */ \n\n  var gateLocked = true; \n\n \n\n  (function () { \n\n    const PASSWORD_HASH = 'ee77b3f594bba8fa1b1a8c13bc3bca032a4bb5f564fa08cd08dbb1b7f251620a'; \n\n \n\n    const gate     = document.getElementById('gate'); \n\n    const card     = document.getElementById('gate-card'); \n\n    const input    = document.getElementById('gate-input'); \n\n    const eyeBtn   = document.getElementById('gate-eye'); \n\n    const submit   = document.getElementById('gate-submit'); \n\n    const errorBox = document.getElementById('gate-error'); \n\n    const errorMsg = errorBox.querySelector('span'); \n\n \n\n    // Everything behind the gate is inert (no focus, no tabbing) until unlocked. \n\n    const lockedEls = ['topbar', 'tabstrip', 'layout', 'statusbar'].map(id => document.getElementById(id)); \n\n    lockedEls.forEach(el => el.setAttribute('inert', '')); \n\n \n\n    function sha256Hex(str) { \n\n      const bytes = new TextEncoder().encode(str); \n\n      const K = [], H = []; \n\n      let n = 2, c = 0; \n\n      while (c < 64) { \n\n        let prime = true; \n\n        for (let i = 2; i * i <= n; i++) { if (n % i === 0) { prime = false; break; } } \n\n        if (prime) { \n\n          if (c < 8) H[c] = (Math.pow(n, 1 / 2) % 1) * 4294967296 | 0; \n\n          K[c] = (Math.pow(n, 1 / 3) % 1) * 4294967296 | 0; \n\n          c++; \n\n        } \n\n        n++; \n\n      } \n\n \n\n      const len = bytes.length; \n\n      const total = ((len + 9 + 63) >> 6) << 6; \n\n      const buf = new Uint8Array(total); \n\n      buf.set(bytes); \n\n      buf[len] = 0x80; \n\n      const dv = new DataView(buf.buffer); \n\n      dv.setUint32(total - 8, Math.floor(len * 8 / 4294967296)); \n\n      dv.setUint32(total - 4, (len * 8) >>> 0); \n\n \n\n      let h = H.slice(); \n\n      const w = new Array(64); \n\n      for (let off = 0; off < total; off += 64) { \n\n        for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4); \n\n        for (let i = 16; i < 64; i++) { \n\n          const x1 = w[i - 15], x2 = w[i - 2]; \n\n          const s0 = ((x1 >>> 7) | (x1 << 25)) ^ ((x1 >>> 18) | (x1 << 14)) ^ (x1 >>> 3); \n\n          const s1 = ((x2 >>> 17) | (x2 << 15)) ^ ((x2 >>> 19) | (x2 << 13)) ^ (x2 >>> 10); \n\n          w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0; \n\n        } \n\n        let a = h[0], b = h[1], cc = h[2], d = h[3], e = h[4], f = h[5], g = h[6], hh = h[7]; \n\n        for (let i = 0; i < 64; i++) { \n\n          const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7)); \n\n          const ch = (e & f) ^ (~e & g); \n\n          const t1 = (hh + S1 + ch + K[i] + w[i]) | 0; \n\n          const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10)); \n\n          const maj = (a & b) ^ (a & cc) ^ (b & cc); \n\n          const t2 = (S0 + maj) | 0; \n\n          hh = g; g = f; f = e; e = (d + t1) | 0; \n\n          d = cc; cc = b; b = a; a = (t1 + t2) | 0; \n\n        } \n\n        h = [(h[0] + a) | 0, (h[1] + b) | 0, (h[2] + cc) | 0, (h[3] + d) | 0, \n\n             (h[4] + e) | 0, (h[5] + f) | 0, (h[6] + g) | 0, (h[7] + hh) | 0]; \n\n      } \n\n      return h.map(x => (x >>> 0).toString(16).padStart(8, '0')).join(''); \n\n    } \n\n    window.__sha256Hex = sha256Hex; // handy for re-generating a hash from the console \n\n \n\n    function unlock() { \n\n      if (!gateLocked) return; \n\n      gateLocked = false; \n\n      document.removeEventListener('keydown', onGateKey, true); \n\n      input.value = ''; \n\n      lockedEls.forEach(el => el.removeAttribute('inert')); \n\n      gate.classList.add('leaving'); \n\n      setTimeout(() => { \n\n        gate.classList.add('unlocked'); \n\n        code.focus(); \n\n      }, 280); \n\n    } \n\n \n\n    function fail() { \n\n      errorMsg.textContent = 'Incorrect password. Try again.'; \n\n      errorBox.classList.add('show'); \n\n      input.classList.add('bad'); \n\n      card.classList.remove('shake'); \n\n      void card.offsetWidth;            // restart the animation \n\n      card.classList.add('shake'); \n\n      input.value = ''; \n\n      input.focus(); \n\n    } \n\n \n\n    function attempt() { \n\n      if (!gateLocked) return; \n\n      const typed = input.value; \n\n      if (!typed) { fail(); return; } \n\n      if (sha256Hex(typed) === PASSWORD_HASH) unlock(); \n\n      else fail(); \n\n    } \n\n \n\n    // Typing clears the error state. \n\n    input.addEventListener('input', () => { \n\n      errorBox.classList.remove('show'); \n\n      input.classList.remove('bad'); \n\n    }); \n\n    card.addEventListener('animationend', () => card.classList.remove('shake')); \n\n \n\n    input.addEventListener('keydown', e => { \n\n      if (e.key === 'Enter') { e.preventDefault(); attempt(); } \n\n    }); \n\n    submit.addEventListener('click', attempt); \n\n \n\n    // Show / hide password. \n\n    eyeBtn.addEventListener('click', () => { \n\n      const show = input.type === 'password'; \n\n      input.type = show ? 'text' : 'password'; \n\n      eyeBtn.innerHTML = show ? '<i class=\"fa-regular fa-eye-slash\"></i>' : '<i class=\"fa-regular fa-eye\"></i>'; \n\n      input.focus(); \n\n    }); \n\n \n\n    // Second way in: Ctrl + Alt + L (uses the physical key so it also works with \n\n    // keyboard layouts where Ctrl+Alt+L types a special character). \n\n    function onGateKey(e) { \n\n      if (!gateLocked) return; \n\n      const isL = e.code === 'KeyL' || (e.key && e.key.toLowerCase() === 'l'); \n\n      if (e.ctrlKey && e.altKey && !e.shiftKey && !e.metaKey && isL) { \n\n        e.preventDefault(); \n\n        e.stopPropagation(); \n\n        unlock(); \n\n      } \n\n    } \n\n    document.addEventListener('keydown', onGateKey, true); \n\n \n\n    // Keep focus inside the gate while it is up. \n\n    document.addEventListener('focusin', e => { \n\n      if (gateLocked && !gate.contains(e.target)) input.focus(); \n\n    }); \n\n \n\n    window.addEventListener('load', () => { if (gateLocked) input.focus(); }); \n\n    input.focus(); \n\n  })(); \n\n<\/script> \n\n</body> \n\n</html> ";
+
 const STORE_APPS = [
   {
     id: 'store_myarcade_win', name: 'MyArcade.Win', icon: 'play',
@@ -12556,6 +13165,11 @@ const STORE_APPS = [
   {
     id: 'store_media_player', name: 'Media Player', icon: 'music', native: 'media', type: 'native',
     description: 'Play your own audio and video files: mp3, mp4, m4a, wav, ogg, webm and more. Queue, shuffle, repeat, speed, fullscreen and a live audio visualizer. Files stay on your device; works offline.'
+  },
+  {
+    id: 'store_paper_editor', name: 'Paper Editor', icon: 'edit',
+    description: 'A paper-styled HTML editor with live preview, GitHub search, a Data / Blob URL converter, sticky notes and an upload panel. Has its own password screen. Fonts and icons load from the network.',
+    type: 'html', content: PAPER_EDITOR_HTML
   },
   {
     id: 'store_2048', name: '2048', icon: 'play',
@@ -13996,7 +14610,7 @@ async function downloadFetchApp(app){
    Accessories 'Desktop' tick, hiddenBuiltins). The app stays reachable through
    Accessories, Ctrl+K and the store's Open button. */
 const STORE_BUILTIN_CATS = { calc: 'Utilities', clock: 'Time', unitconv: 'Utilities', colorpick: 'Design', texttools: 'Text', jsontools: 'Dev', encoder: 'Dev',
-  worldclock: 'Time', todo: 'Utilities', datecalc: 'Time', paint: 'Design', scratch: 'Text', finance: 'Utilities', devcalc: 'Dev' };
+  worldclock: 'Time', todo: 'Utilities', datecalc: 'Time', paint: 'Design', scratch: 'Text', finance: 'Utilities', devcalc: 'Dev', capsule: 'Dev' };
 const STORE_EXTRA_BUILTINS = [
   { view: 'zalgo', icon: 'zalgo', name: 'Zalgo Text', cat: 'Fun', desc: 'Glitchy cursed text with combining marks above and below' },
   { view: 'unilab', icon: 'unicode', name: 'Unicode Lab', cat: 'Text', desc: 'Random Unicode by character set; inspect and copy' },
@@ -14009,7 +14623,7 @@ const STORE_EXTRA_BUILTINS = [
   const MAP = { store_myarcade_win: 'Games', store_media_player: 'Media', store_2048: 'Games', store_snake: 'Games', store_memorymatch: 'Games', store_maze: 'Games',
     store_dodger: 'Games', store_tictactoe: 'Games', store_breakout: 'Games', store_typing: 'Fun', store_pomodoro: 'Time', store_stopwatch: 'Time', store_countdown: 'Time',
     store_metronome: 'Time', store_palette: 'Design', store_contrast: 'Design', store_whiteboard: 'Design', store_unitconv: 'Utilities', store_password: 'Utilities',
-    store_todo: 'Utilities', store_json: 'Dev', store_base64: 'Dev', store_wordcount: 'Text', store_caseconv: 'Text' };
+    store_todo: 'Utilities', store_json: 'Dev', store_paper_editor: 'Dev', store_base64: 'Dev', store_wordcount: 'Text', store_caseconv: 'Text' };
   STORE_APPS.forEach(i => { i.cat = i.cat || MAP[i.id] || 'Utilities'; });
   const at = STORE_APPS.findIndex(i => i.id === 'store_media_player');
   STORE_APPS.splice(at + 1, 0, ...items);
@@ -22088,6 +22702,14 @@ function sCopy(text, okMsg){
     ACC_APPS.forEach(a => { if (!a.desk && hiddenBuiltins.indexOf(a.view) === -1) hiddenBuiltins.push(a.view); });
     saveHiddenBuiltins(); cfg.seeded = true; saveCfg();
   }
+  // Apps added to the store later start uninstalled once, even in sessions restored from an older backup.
+  cfg.added = (cfg.added && typeof cfg.added === 'object') ? cfg.added : {};
+  ['capsule'].forEach(view => {
+    if (cfg.added[view]) return;
+    cfg.added[view] = 1;
+    if (hiddenBuiltins.indexOf(view) === -1) hiddenBuiltins.push(view);
+    saveHiddenBuiltins(); saveCfg();
+  });
   // ---- shared helpers ----
   function mount(view, html){
     const v = $v(view); v.classList.add('acc-view');
@@ -23404,6 +24026,372 @@ function sCopy(text, okMsg){
   })();
 })();
 /*ACC-END*/
+
+/* =========================================================================
+   CIPHER CAPSULE (App Store: "Cipher Capsule") — SHA-256 fingerprints and
+   AES-256-GCM sealing for text and files, in a space-themed window.
+   Seal = encrypt, Unseal = decrypt, Fingerprint = SHA-256. Format (same as the
+   original SHA-256 Hasher / AES-256 tool, so capsules work both ways):
+   Base64( salt[16] | iv[12] | AES-GCM ciphertext ), key = PBKDF2-SHA-256,
+   200,000 rounds. A sealed file's plaintext is "SPFILE1\n" + JSON {name,type,
+   size} + "\n" + the file bytes. Nothing is ever stored: no passwords, no text,
+   no results (not even in memStore); fields are wiped when the window closes
+   or SpacePad locks.
+   ========================================================================= */
+(function capsuleApp(){
+  'use strict';
+  const view = document.getElementById('view-capsule');
+  if (!view) return;
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const SALT_LEN = 16, IV_LEN = 12, ITER = 200000, FILE_MAGIC = 'SPFILE1\n';
+  const MAX_SEAL = 32 * 1048576, MAX_HASH = 256 * 1048576, MAX_TEXT_FILE = 120 * 1048576;
+  const fmtSize = n => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+  const toHex = buf => Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+  function toB64(bytes){ let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
+  const fromB64 = b64 => Uint8Array.from(atob(b64.replace(/\s+/g, '')), c => c.charCodeAt(0));
+  function concat(){ const parts = Array.prototype.slice.call(arguments); const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; parts.forEach(p => { out.set(p, o); o += p.length; }); return out; }
+  const sha256 = async bytes => toHex(await crypto.subtle.digest('SHA-256', bytes));
+  async function deriveKey(password, salt){
+    const base = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: ITER, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  async function encryptBytes(plain, password){
+    const salt = crypto.getRandomValues(new Uint8Array(SALT_LEN)), iv = crypto.getRandomValues(new Uint8Array(IV_LEN));
+    const key = await deriveKey(password, salt);
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plain));
+    return toB64(concat(salt, iv, ct));
+  }
+  class CapsuleFormatError extends Error {}
+  async function decryptBytes(b64, password){
+    let data;
+    try { data = fromB64(b64); } catch(e){ throw new CapsuleFormatError('not Base64'); }
+    if (data.length < SALT_LEN + IV_LEN + 16) throw new CapsuleFormatError('too short');
+    const salt = data.slice(0, SALT_LEN), iv = data.slice(SALT_LEN, SALT_LEN + IV_LEN), ct = data.slice(SALT_LEN + IV_LEN);
+    const key = await deriveKey(password, salt);
+    return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct));
+  }
+  function unpack(bytes){
+    const magic = enc.encode(FILE_MAGIC);
+    if (bytes.length > magic.length && magic.every((b, i) => bytes[i] === b)){
+      const nl = bytes.indexOf(10, magic.length);
+      if (nl !== -1){
+        try {
+          const meta = JSON.parse(dec.decode(bytes.subarray(magic.length, nl)));
+          if (meta && typeof meta === 'object') return { kind: 'file', name: String(meta.name || 'decrypted-file'), type: String(meta.type || ''), bytes: bytes.subarray(nl + 1) };
+        } catch(e){}
+      }
+    }
+    return { kind: 'text', text: dec.decode(bytes) };
+  }
+  const safeName = n => (String(n).split(/[\\/]/).pop().replace(/[\u0000-\u001f<>:"|?*]/g, '_').replace(/^\.+/, '').slice(0, 120)) || 'decrypted-file';
+  const safeMime = t => /^[\w.+-]+\/[\w.+-]+$/.test(t || '') ? t : 'application/octet-stream';
+  function saveBlob(name, data, type){
+    const url = URL.createObjectURL(new Blob([data], { type: type || 'application/octet-stream' }));
+    const a = document.createElement('a'); a.href = url; a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  /* ---- password strength: an estimate of how hard it is to guess, never a gate ---- */
+  const COMMON = ['password', 'passw0rd', '123456', '12345678', 'qwerty', 'letmein', 'welcome', 'admin', 'iloveyou', 'abc123', 'monkey', 'dragon', 'spacepad'];
+  function strength(pw){
+    if (!pw) return { score: 0, label: 'Empty', hint: 'Type a password to see how strong it is.' };
+    let pool = 0;
+    if (/[a-z]/.test(pw)) pool += 26; if (/[A-Z]/.test(pw)) pool += 26; if (/\d/.test(pw)) pool += 10; if (/[^A-Za-z0-9]/.test(pw)) pool += 33;
+    let bits = pw.length * Math.log2(Math.max(pool, 2));
+    const uniq = new Set(pw).size; if (uniq < pw.length / 2) bits *= 0.6;
+    if (/^(.)\1+$/.test(pw) || /(0123|1234|2345|abcd|qwer|asdf)/i.test(pw)) bits *= 0.6;
+    if (COMMON.some(c => pw.toLowerCase().indexOf(c) !== -1)) bits = Math.min(bits, 28);
+    if (pw.length < 8) bits = Math.min(bits, 30);
+    let score = bits < 30 ? 1 : bits < 45 ? 2 : bits < 60 ? 3 : 4;
+    const label = ['Empty', 'Weak', 'Fair', 'Good', 'Strong'][score];
+    const hint = score <= 1 ? 'Easy to guess. Use a longer passphrase of several words.' : score === 2 ? 'Could be stronger. Add length rather than symbols.' : score === 3 ? 'Decent. A few more characters would help.' : 'Keep it somewhere safe: a lost password cannot be recovered.';
+    return { score: score, label: label, hint: hint };
+  }
+
+  /* ---- markup ---- */
+  const ring = '<svg class="cc-ring" viewBox="0 0 44 44" width="40" height="40" aria-hidden="true" focusable="false"><circle cx="22" cy="22" r="17" fill="none" stroke="#2a2f6e" stroke-width="2.5"/>' +
+    '<g class="cc-orb"><path d="M22 5a17 17 0 0 1 17 17" fill="none" stroke="#8ee9ff" stroke-width="2.5" stroke-linecap="round"/><circle cx="22" cy="5" r="3.2" fill="#fff"/></g><circle cx="22" cy="22" r="6" fill="var(--accent)"/></svg>';
+  const pwField = (id, ph) => '<div class="cc-pw"><input type="password" class="cc-in" data-f="' + id + '" placeholder="' + ph + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Password">' +
+    '<button type="button" class="cc-eye" data-a="eye" aria-pressed="false" aria-label="Show password" title="Show password">' + icon('eye') + '</button></div>';
+  const dropBox = (id, text, accept) => '<div class="cc-drop" data-drop="' + id + '" tabindex="0" role="button">' + text + '</div><input type="file" class="cc-hide" data-file="' + id + '"' + (accept ? ' accept="' + accept + '"' : '') + ' tabindex="-1">';
+  view.innerHTML = '<div class="cc-wrap">' +
+    '<div class="cc-hero"><svg class="cc-planet" viewBox="0 0 48 48" width="46" height="46" aria-hidden="true" focusable="false"><ellipse cx="24" cy="24" rx="21" ry="7" transform="rotate(-24 24 24)" fill="none" stroke="#8ee9ff" stroke-width="1.6" opacity=".75"/><circle cx="24" cy="24" r="10" fill="var(--accent)"/><path d="M17 21c4 2 10 2 14 0" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="24" cy="24" rx="21" ry="7" transform="rotate(-24 24 24)" fill="none" stroke="#8ee9ff" stroke-width="1.6" stroke-dasharray="26 40" stroke-dashoffset="-6"/></svg>' +
+    '<div><h2>Cipher Capsule</h2><p>Seal secrets in an AES-256 capsule, unseal them again, or take a SHA-256 fingerprint. Everything happens on this device; nothing is uploaded or stored.</p></div></div>' +
+    '<div class="cc-tabs" role="tablist" aria-label="Capsule tools">' +
+      '<button type="button" class="cc-tab" role="tab" id="cc-t-seal" data-tab="seal" aria-selected="true" aria-controls="cc-p-seal"><b>Seal</b><small>Encrypt</small></button>' +
+      '<button type="button" class="cc-tab" role="tab" id="cc-t-unseal" data-tab="unseal" aria-selected="false" aria-controls="cc-p-unseal" tabindex="-1"><b>Unseal</b><small>Decrypt</small></button>' +
+      '<button type="button" class="cc-tab" role="tab" id="cc-t-print" data-tab="print" aria-selected="false" aria-controls="cc-p-print" tabindex="-1"><b>Fingerprint</b><small>SHA-256 hash</small></button></div>' +
+
+    '<section class="cc-card" id="cc-p-seal" role="tabpanel" aria-labelledby="cc-t-seal" data-panel="seal">' +
+      '<label class="cc-lbl" for="cc-seal-text">Message to seal</label>' +
+      '<textarea class="cc-ta" id="cc-seal-text" data-f="sealText" rows="4" placeholder="Secret message..." spellcheck="false"></textarea>' +
+      dropBox('seal', 'or <b>drop a file</b> here to seal it, or click to choose one') +
+      '<div class="cc-chip" data-chip="seal" hidden><span data-chipname></span><button type="button" class="cc-link" data-a="clear-seal">Remove file</button></div>' +
+      '<label class="cc-lbl">Password</label>' + pwField('sealPw', 'Password') +
+      '<div class="cc-str" data-str="seal" aria-live="polite"><span class="cc-bars" data-s="0"><i></i><i></i><i></i><i></i></span><span class="cc-strtxt" data-strtxt>Type a password to see how strong it is.</span></div>' +
+      '<div class="cc-row"><button type="button" class="cc-btn cc-go" data-a="seal">Seal capsule</button></div>' +
+      '<div class="cc-work" data-work="seal" hidden role="status">' + ring + '<span data-worktxt>Sealing...</span></div>' +
+      '<div class="cc-row" data-actions="seal" hidden>' +
+        '<button type="button" class="cc-btn" data-a="dl-seal">' + icon('download') + ' Download</button>' +
+        '<button type="button" class="cc-btn" data-a="show-seal" aria-expanded="false">Show result</button>' +
+        '<button type="button" class="cc-btn" data-a="copy-seal">' + icon('copy') + ' Copy result</button>' +
+        '<button type="button" class="cc-btn" data-a="send">Send to Unseal</button></div>' +
+      '<div data-out="seal" hidden><label class="cc-lbl" for="cc-seal-out">Sealed capsule (Base64)</label><textarea class="cc-ta cc-out" id="cc-seal-out" data-f="sealOut" rows="5" readonly></textarea></div>' +
+      '<div class="cc-msg" data-msg="seal" role="status" aria-live="polite"></div>' +
+    '</section>' +
+
+    '<section class="cc-card" id="cc-p-unseal" role="tabpanel" aria-labelledby="cc-t-unseal" data-panel="unseal" hidden>' +
+      '<label class="cc-lbl" for="cc-unseal-text">Sealed capsule (Base64)</label>' +
+      '<textarea class="cc-ta" id="cc-unseal-text" data-f="unsealText" rows="4" placeholder="Paste sealed text..." spellcheck="false"></textarea>' +
+      dropBox('unseal', 'or <b>drop a sealed .txt file</b> here, or click to choose one', '.txt,.enc,text/plain') +
+      '<label class="cc-lbl">Password</label>' + pwField('unsealPw', 'Same password used to seal') +
+      '<div class="cc-row"><button type="button" class="cc-btn cc-go" data-a="unseal">Unseal capsule</button></div>' +
+      '<div class="cc-work" data-work="unseal" hidden role="status">' + ring + '<span data-worktxt>Unsealing...</span></div>' +
+      '<div class="cc-row" data-actions="unseal" hidden>' +
+        '<button type="button" class="cc-btn" data-a="dl-unseal">' + icon('download') + ' <span data-dlname>Download</span></button>' +
+        '<button type="button" class="cc-btn" data-a="show-unseal" aria-expanded="false">Show result</button>' +
+        '<button type="button" class="cc-btn" data-a="copy-unseal">' + icon('copy') + ' Copy result</button></div>' +
+      '<div data-out="unseal" hidden><label class="cc-lbl" for="cc-unseal-out" data-outlbl>Unsealed text</label><textarea class="cc-ta cc-out" id="cc-unseal-out" data-f="unsealOut" rows="5" readonly></textarea></div>' +
+      '<div class="cc-msg" data-msg="unseal" role="status" aria-live="polite"></div>' +
+    '</section>' +
+
+    '<section class="cc-card" id="cc-p-print" role="tabpanel" aria-labelledby="cc-t-print" data-panel="print" hidden>' +
+      '<label class="cc-lbl" for="cc-print-text">Text to fingerprint</label>' +
+      '<textarea class="cc-ta" id="cc-print-text" data-f="printText" rows="4" placeholder="Type anything..." spellcheck="false"></textarea>' +
+      dropBox('print', 'or <b>drop a file</b> here to fingerprint it, or click to choose one') +
+      '<div class="cc-chip" data-chip="print" hidden><span data-chipname></span><button type="button" class="cc-link" data-a="clear-print">Remove file</button></div>' +
+      '<label class="cc-lbl" for="cc-print-out">SHA-256 (hex)</label>' +
+      '<input type="text" class="cc-in cc-hash" id="cc-print-out" data-f="printOut" readonly aria-live="polite">' +
+      '<div class="cc-work" data-work="print" hidden role="status">' + ring + '<span data-worktxt>Fingerprinting...</span></div>' +
+      '<div class="cc-row"><button type="button" class="cc-btn" data-a="copy-print">' + icon('copy') + ' Copy hash</button></div>' +
+      '<div class="cc-msg" data-msg="print" role="status" aria-live="polite"></div>' +
+    '</section>' +
+    '<p class="cc-foot">AES-256-GCM, key from your password with PBKDF2-SHA-256 (200,000 rounds), random salt and IV. A lost password cannot be recovered.</p>' +
+  '</div>';
+
+  const q = s => view.querySelector(s), qa = s => Array.from(view.querySelectorAll(s));
+  const F = n => q('[data-f="' + n + '"]');
+  const msg = (panel, text, ok) => { const el = q('[data-msg="' + panel + '"]'); el.textContent = text || ''; el.className = 'cc-msg' + (text ? (ok ? ' ok' : ' err') : ''); };
+  let tab = 'seal', busy = false, sealFile = null, printFile = null, sealOut = '', sealOutName = 'encrypted.txt', unsealRes = null, printSeq = 0;
+
+  function showTab(t, focus){
+    tab = t;
+    qa('.cc-tab').forEach(b => { const on = b.dataset.tab === t; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+    qa('.cc-card').forEach(p => { p.hidden = p.dataset.panel !== t; });
+  }
+  qa('.cc-tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  q('.cc-tabs').addEventListener('keydown', (e) => {
+    const order = ['seal', 'unseal', 'print'], i = order.indexOf(tab);
+    if (e.key === 'ArrowRight') { e.preventDefault(); showTab(order[(i + 1) % 3], true); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); showTab(order[(i + 2) % 3], true); }
+    else if (e.key === 'Home') { e.preventDefault(); showTab('seal', true); }
+    else if (e.key === 'End') { e.preventDefault(); showTab('print', true); }
+  });
+
+  /* orbit/ring progress while PBKDF2 runs (kept on screen long enough to be seen; static under Performance mode / Reduce motion via CSS) */
+  async function withRing(panel, label, fn){
+    const w = q('[data-work="' + panel + '"]');
+    w.querySelector('[data-worktxt]').textContent = label; w.hidden = false;
+    busy = true; qa('.cc-go').forEach(b => { b.disabled = true; });
+    const t0 = Date.now();
+    try { return await fn(); }
+    finally {
+      const wait = 350 - (Date.now() - t0); if (wait > 0) await new Promise(r => setTimeout(r, wait));
+      w.hidden = true; busy = false; qa('.cc-go').forEach(b => { b.disabled = false; });
+    }
+  }
+  const cryptoOk = () => !!(window.crypto && crypto.subtle);
+  const NOCRYPTO = 'The Web Crypto API is not available here. It needs a secure context (https or a local file).';
+
+  /* ---- drop zones ---- */
+  function wireDrop(id, onFile){
+    const dz = q('[data-drop="' + id + '"]'), inp = q('[data-file="' + id + '"]');
+    dz.addEventListener('click', () => inp.click());
+    dz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inp.click(); } });
+    inp.addEventListener('change', () => { const f = inp.files[0]; inp.value = ''; if (f) onFile(f); });
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+    dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('over'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) onFile(f); });
+  }
+  function setChip(id, file){
+    const chip = q('[data-chip="' + id + '"]');
+    chip.hidden = !file;
+    if (file) chip.querySelector('[data-chipname]').textContent = file.name + ' (' + fmtSize(file.size) + ')' + (id === 'seal' ? ' - will be sealed instead of the text' : ' - will be fingerprinted instead of the text');
+    F(id === 'seal' ? 'sealText' : 'printText').disabled = !!file;
+  }
+
+  /* ---- Seal ---- */
+  function resetSealOut(){
+    sealOut = ''; F('sealOut').value = '';
+    q('[data-actions="seal"]').hidden = true; q('[data-out="seal"]').hidden = true;
+    const sb = q('[data-a="show-seal"]'); sb.textContent = 'Show result'; sb.setAttribute('aria-expanded', 'false');
+  }
+  wireDrop('seal', f => {
+    if (f.size > MAX_SEAL) { msg('seal', '"' + f.name + '" is ' + fmtSize(f.size) + '. The limit for sealing is ' + fmtSize(MAX_SEAL) + '.', false); return; }
+    sealFile = f; setChip('seal', f); resetSealOut(); msg('seal', 'Ready to seal ' + f.name + '. Enter a password and press Seal capsule.', true);
+  });
+  async function doSeal(){
+    if (busy) return;
+    const pw = F('sealPw').value;
+    if (!pw) return msg('seal', 'Enter a password.', false);
+    if (!cryptoOk()) return msg('seal', NOCRYPTO, false);
+    resetSealOut(); msg('seal', '');
+    let done = '';
+    try {
+      await withRing('seal', 'Sealing: deriving the key (PBKDF2, 200,000 rounds)...', async () => {
+        if (sealFile){
+          const bytes = new Uint8Array(await sealFile.arrayBuffer());
+          const header = enc.encode(FILE_MAGIC + JSON.stringify({ name: sealFile.name, type: sealFile.type, size: sealFile.size }) + '\n');
+          sealOut = await encryptBytes(concat(header, bytes), pw); sealOutName = sealFile.name + '.enc.txt';
+          done = 'Sealed ' + sealFile.name + '. Download it to keep it.';
+        } else {
+          sealOut = await encryptBytes(enc.encode(F('sealText').value), pw); sealOutName = 'encrypted.txt';
+          done = 'Sealed. Download or copy the capsule to keep it.';
+        }
+      });
+      F('sealOut').value = sealOut; q('[data-actions="seal"]').hidden = false; msg('seal', done, true);
+    } catch(e){ resetSealOut(); msg('seal', 'Sealing failed: ' + ((e && e.message) || 'unknown error') + '.', false); }
+  }
+  function updateStrength(){
+    const s = strength(F('sealPw').value), box = q('[data-str="seal"]');
+    box.querySelector('.cc-bars').dataset.s = String(s.score);
+    box.querySelector('[data-strtxt]').textContent = (s.score ? s.label + '. ' : '') + s.hint;
+  }
+
+  /* ---- Unseal ---- */
+  function refreshUnsealActions(){
+    q('[data-actions="unseal"]').hidden = !unsealRes;
+    q('[data-out="unseal"]').hidden = true;
+    const sb = q('[data-a="show-unseal"]'); sb.textContent = 'Show result'; sb.setAttribute('aria-expanded', 'false');
+    if (unsealRes) q('[data-dlname]').textContent = 'Download ' + (unsealRes.kind === 'file' ? safeName(unsealRes.name) : 'decrypted.txt');
+  }
+  function resetUnsealOut(){ unsealRes = null; F('unsealOut').value = ''; q('[data-outlbl]').textContent = 'Unsealed text'; refreshUnsealActions(); }
+  wireDrop('unseal', async f => {
+    if (f.size > MAX_TEXT_FILE) { msg('unseal', '"' + f.name + '" is ' + fmtSize(f.size) + ', too large to be a sealed text file here.', false); return; }
+    let t; try { t = await f.text(); } catch(e){ msg('unseal', 'The browser could not read that file.', false); return; }
+    F('unsealText').value = t.trim(); resetUnsealOut(); msg('unseal', 'Loaded ' + f.name + '. Enter the password and press Unseal capsule.', true);
+  });
+  async function doUnseal(){
+    if (busy) return;
+    const pw = F('unsealPw').value, txt = F('unsealText').value;
+    if (!pw) return msg('unseal', 'Enter the password.', false);
+    if (!txt.trim()) return msg('unseal', 'Paste or load sealed text first.', false);
+    if (!cryptoOk()) return msg('unseal', NOCRYPTO, false);
+    resetUnsealOut(); msg('unseal', '');
+    try {
+      await withRing('unseal', 'Unsealing: deriving the key (PBKDF2, 200,000 rounds)...', async () => {
+        unsealRes = unpack(await decryptBytes(txt, pw));
+      });
+      if (unsealRes.kind === 'file'){
+        q('[data-outlbl]').textContent = 'Unsealed file: ' + safeName(unsealRes.name) + ' (' + fmtSize(unsealRes.bytes.length) + ')';
+        const looksText = /^text\/|json|xml|javascript/.test(unsealRes.type || '') || /\.(txt|md|csv|json|html?|js|css|xml|py)$/i.test(unsealRes.name);
+        F('unsealOut').value = looksText ? dec.decode(unsealRes.bytes) : '[binary file - use Download]';
+        msg('unseal', 'Unsealed ' + safeName(unsealRes.name) + '. Download it or show the result.', true);
+      } else { F('unsealOut').value = unsealRes.text; msg('unseal', 'Unsealed. Download it or show the result.', true); }
+      refreshUnsealActions(); q('[data-actions="unseal"]').hidden = false;
+    } catch(e){
+      resetUnsealOut();
+      if (e instanceof CapsuleFormatError || e instanceof DOMException && e.name === 'InvalidCharacterError') msg('unseal', 'That does not look like a sealed capsule: it is not valid Base64, or it is too short.', false);
+      else msg('unseal', 'Could not unseal: wrong password, or the capsule was changed or damaged (it fails its integrity check).', false);
+    }
+  }
+
+  /* ---- Fingerprint ---- */
+  wireDrop('print', async f => {
+    if (f.size > MAX_HASH) { msg('print', '"' + f.name + '" is ' + fmtSize(f.size) + '. The limit for fingerprinting is ' + fmtSize(MAX_HASH) + '.', false); return; }
+    printFile = f; setChip('print', f); await updatePrint(true);
+  });
+  async function updatePrint(withFileMsg){
+    const seq = ++printSeq, out = F('printOut');
+    if (!cryptoOk()) { out.value = ''; msg('print', NOCRYPTO, false); return; }
+    try {
+      let bytes;
+      if (printFile){ out.value = 'Fingerprinting...'; q('[data-work="print"]').hidden = false; bytes = await printFile.arrayBuffer(); }
+      else bytes = enc.encode(F('printText').value);
+      const h = await sha256(bytes);
+      if (seq !== printSeq) return;
+      out.value = h; q('[data-work="print"]').hidden = true;
+      msg('print', printFile ? 'SHA-256 of ' + printFile.name : '', true);
+    } catch(e){ if (seq !== printSeq) return; out.value = ''; q('[data-work="print"]').hidden = true; msg('print', 'Could not fingerprint that: ' + ((e && e.message) || 'unknown error') + '.', false); }
+  }
+
+  /* ---- copy with graceful fallbacks ---- */
+  async function copyText(text, panel, fieldEl){
+    if (!text) return msg(panel, 'Nothing to copy yet.', false);
+    try { if (navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); return msg(panel, 'Copied.', true); } } catch(e){}
+    try {
+      const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      view.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove();
+      if (ok) return msg(panel, 'Copied.', true);
+    } catch(e){}
+    if (fieldEl){
+      const wrap = fieldEl.closest('[data-out]'); if (wrap) wrap.hidden = false;
+      fieldEl.focus(); fieldEl.select();
+    }
+    msg(panel, 'Automatic copy is blocked here. The text is selected: press Ctrl/Cmd+C to copy it.', false);
+  }
+
+  /* ---- events ---- */
+  view.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-a]'); if (!b || !view.contains(b)) return;
+    const a = b.dataset.a;
+    if (a === 'eye'){
+      const inp = b.parentNode.querySelector('input'), show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password'; b.setAttribute('aria-pressed', String(show));
+      b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); b.title = show ? 'Hide password' : 'Show password';
+      b.innerHTML = icon(show ? 'eye-off' : 'eye'); inp.focus();
+    }
+    else if (a === 'seal') doSeal();
+    else if (a === 'unseal') doUnseal();
+    else if (a === 'clear-seal'){ sealFile = null; setChip('seal', null); resetSealOut(); msg('seal', ''); }
+    else if (a === 'clear-print'){ printFile = null; setChip('print', null); msg('print', ''); updatePrint(); }
+    else if (a === 'dl-seal'){ if (!sealOut) return msg('seal', 'Seal something first.', false); saveBlob(sealOutName, sealOut, 'text/plain'); msg('seal', 'Saved ' + sealOutName + '.', true); }
+    else if (a === 'dl-unseal'){
+      if (!unsealRes) return;
+      if (unsealRes.kind === 'file'){ const n = safeName(unsealRes.name); saveBlob(n, unsealRes.bytes.slice(), safeMime(unsealRes.type)); msg('unseal', 'Saved ' + n + '.', true); }
+      else { saveBlob('decrypted.txt', unsealRes.text, 'text/plain'); msg('unseal', 'Saved decrypted.txt.', true); }
+    }
+    else if (a === 'show-seal' || a === 'show-unseal'){
+      const p = a === 'show-seal' ? 'seal' : 'unseal', wrap = q('[data-out="' + p + '"]');
+      wrap.hidden = !wrap.hidden; b.textContent = wrap.hidden ? 'Show result' : 'Hide result'; b.setAttribute('aria-expanded', String(!wrap.hidden));
+    }
+    else if (a === 'copy-seal') copyText(sealOut, 'seal', F('sealOut'));
+    else if (a === 'copy-unseal') copyText(F('unsealOut').value, 'unseal', F('unsealOut'));
+    else if (a === 'copy-print') copyText(F('printOut').value, 'print', F('printOut'));
+    else if (a === 'send'){
+      if (!sealOut) return msg('seal', 'Seal something first.', false);
+      F('unsealText').value = sealOut; F('unsealPw').value = F('sealPw').value; resetUnsealOut(); msg('unseal', 'Capsule received from the Seal tab. Press Unseal capsule to test it.', true);
+      showTab('unseal', true);
+    }
+  });
+  view.addEventListener('input', (e) => {
+    const n = e.target.dataset && e.target.dataset.f;
+    if (n === 'sealPw') updateStrength();
+    else if (n === 'printText') updatePrint();
+    else if (n === 'sealText' || n === 'sealPw') resetSealOut();
+    else if (n === 'unsealText') resetUnsealOut();
+  });
+  view.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.shiftKey || !e.target.matches || !e.target.matches('input.cc-in')) return;
+    const f = e.target.dataset.f;
+    if (f === 'sealPw'){ e.preventDefault(); doSeal(); } else if (f === 'unsealPw'){ e.preventDefault(); doUnseal(); }
+  });
+
+  /* wipe every secret when the window closes or SpacePad locks */
+  function wipe(){
+    ['sealText', 'sealPw', 'unsealText', 'unsealPw', 'printText'].forEach(n => { const el = F(n); if (el) { el.value = ''; if (el.type === 'text' && n.indexOf('Pw') !== -1) el.type = 'password'; } });
+    qa('[data-a="eye"]').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'Show password'); b.title = 'Show password'; b.innerHTML = icon('eye'); });
+    sealFile = null; printFile = null; setChip('seal', null); setChip('print', null);
+    resetSealOut(); resetUnsealOut(); updatePrint();
+    ['seal', 'unseal', 'print'].forEach(p => msg(p, '')); updateStrength(); printSeq++;
+    qa('[data-work]').forEach(w => { w.hidden = true; });
+  }
+  document.addEventListener('spacepad:lock', wipe);
+  studioApps.capsule = { onClose: wipe, refresh(){}, _tab: () => tab };
+  updateStrength();
+  updatePrint();
+})();
+
 
 // Apply the saved startup screen now that every view and its setup
 // exists. Defaults to the Desktop screen for anyone who hasn't picked a
