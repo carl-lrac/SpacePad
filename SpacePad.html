@@ -1648,6 +1648,30 @@
   }
   .toggle-switch input:checked + .toggle-track { background: rgba(139,124,246,0.35); border-color: var(--accent-dim); }
   .toggle-switch input:checked + .toggle-track::before { transform: translateX(17px); background: var(--accent); }
+  /* ---- Click sounds (Settings) ---- */
+  .snd-seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+  .snd-seg [role="radio"] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; padding: 8px 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); color: var(--text-dim); font-size: 12px; cursor: pointer; }
+  .snd-seg [role="radio"] span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .snd-seg [role="radio"]:hover { border-color: var(--accent-dim); color: var(--text); }
+  .snd-pack:hover { border-color: var(--accent-dim); }
+  .snd-seg [role="radio"][aria-checked="true"] { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); font-weight: 600; }
+  .snd-packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 8px; margin-top: 8px; }
+  .snd-pack { display: flex; align-items: stretch; min-width: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); overflow: hidden; }
+  .snd-pack.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel-2)); }
+  .snd-pick { flex: 1; min-width: 0; text-align: left; border: 0; background: transparent; color: var(--text); padding: 9px 10px; font: inherit; cursor: pointer; }
+  .snd-pick b { display: block; font-size: 12.5px; }
+  .snd-pick span { display: block; margin-top: 2px; font-size: 11px; color: var(--text-dim); }
+  .snd-prev { display: flex; align-items: center; gap: 5px; border: 0; border-left: 1px solid var(--border); background: transparent; color: var(--text-dim); padding: 0 11px; font-size: 11.5px; cursor: pointer; }
+  .snd-prev:hover { color: var(--text); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .snd-prev .icon { width: 12px; height: 12px; }
+  .snd-seg [role="radio"]:focus-visible, .snd-pick:focus-visible, .snd-prev:focus-visible, .snd-range:focus-visible, .snd-test:focus-visible, #settings-sound .toggle-switch input:focus-visible + .toggle-track, #snd-reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .snd-row { flex-wrap: wrap; }
+  .snd-row > div:first-child { flex: 1 1 180px; min-width: 0; }
+  .snd-range { flex: 1 1 140px; min-width: 0; max-width: 220px; accent-color: var(--accent); padding: 0; }
+  .snd-val { font-size: 11px; color: var(--text-dim); margin-left: 6px; }
+  .snd-test { width: 100%; margin-top: 8px; }
+  .snd-note { margin-top: 8px; color: var(--error); }
+  #settings-sound .settings-row-label label { cursor: pointer; }
   .key-row { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--panel-2); }
   .key-row input { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text); padding: 7px 8px; font-size: 12.5px; }
   .key-row input:focus { outline: none; background: var(--panel-3); }
@@ -7511,6 +7535,7 @@ lockEye.addEventListener('click', () => {
 // (Typing still works because the default action of the keys is left alone; Tab is trapped by hand.)
 ['keydown', 'keyup', 'keypress'].forEach(type => window.addEventListener(type, (e) => {
   if (!spLocked) return;
+  try { if (spHooks.lockEv) spHooks.lockEv(e); } catch(x){} // click sounds only: classifies the key kind, never reads or stores what was typed
   e.stopImmediatePropagation(); e.stopPropagation();
   if (type === 'keydown' && e.key === 'Tab'){
     e.preventDefault();
@@ -8642,6 +8667,7 @@ const BASE_COMMANDS = [
   { id: 'title-icon', label: 'Customize title & icon', iconName: 'palette', iconFill: true, run: () => document.getElementById('customize-btn').click() },
   { id: 'toggle-online', label: 'Toggle online/offline', iconName: 'globe', run: () => document.getElementById('net-toggle-btn').click() },
   { id: 'show-shortcuts', label: 'Show keyboard shortcuts', iconName: 'keyboard', run: () => openShortcuts() },
+  { id: 'cycle-click-sounds', label: 'Cycle click sounds: Never/Typing/Clicking/Both', iconName: 'volume', def: '', run: () => studioCall('sound', 'cycle') },
   { id: 'cycle-icon-colors', label: 'Cycle icon colors (Default / Rainbow)', iconName: 'palette', iconFill: true, def: '', run: () => studioCall('iconcolors', 'cycle') },
   { id: 'toggle-rainbow-border', label: 'Toggle rainbow border', iconName: 'sparkles', def: '', run: () => studioCall('borders', 'toggleBorder') },
   { id: 'toggle-rainbow-all', label: 'Toggle rainbow border on all windows', iconName: 'sparkles', def: '', run: () => studioCall('borders', 'toggleAll') },
@@ -24392,6 +24418,336 @@ function sCopy(text, okMsg){
   updatePrint();
 })();
 
+
+/* =========================================================================
+   CLICK SOUNDS — synthesized UI sounds (WebAudio only: filtered noise bursts
+   and short sine/triangle thumps; no audio files, nothing is downloaded).
+   Settings -> Click sounds. One JSON object in memStore (spacepad_sound_v1), so
+   Export / Import everything and new tabs carry it; nothing is written until the
+   person changes something, and the default mode is Never.
+   Mode Never: no listeners, no timers, no AudioContext. Otherwise ONE capture
+   listener per event type is attached to window (keydown/keyup for Typing,
+   pointerdown/pointerup for Clicking) and removed again when the mode changes.
+   The AudioContext is created lazily by the first sound (or Preview) and resumed on
+   the user gesture; if it is unavailable Settings shows a note and nothing else
+   happens. Output chain: per-voice bus -> master gain -> compressor -> soft clipper.
+   ========================================================================= */
+(function soundApp(){
+  const KEY = 'spacepad_sound_v1';
+  const MODES = { typing: ['Typing', 'keyboard'], clicking: ['Clicking', 'pointer'], both: ['Both', 'volume'], never: ['Never', 'volume-x'] };
+  const UI_ORDER = ['typing', 'clicking', 'both', 'never'], CYCLE = ['never', 'typing', 'clicking', 'both'];
+  const DEF = { mode: 'never', pack: 'chocolate', vol: 40, pitch: 50, rel: true, mute: true, lock: null };
+  const nop = () => {};
+  const RD = Math.random;
+
+  /* ---- voice builder: n() = filtered noise burst, o() = pitched thump/ping ---- */
+  function env(g, st, d, a){ g.setValueAtTime(0.0001, st); g.linearRampToValueAtTime(a, st + Math.min(0.002, d / 4)); g.exponentialRampToValueAtTime(0.0001, st + d); }
+  function mk(E, t, v, p){
+    const c = E.c, bus = c.createGain();
+    bus.gain.value = v; bus.connect(E.out);
+    const done = (st, d) => { E.end = Math.max(E.end, st + d + 0.03); };
+    return {
+      r: RD(),
+      n(off, d, ty, f, q, a, f2){
+        const st = t + off, nyq = c.sampleRate / 2, fr = ty === 'bandpass' ? 1.57 * f / (q * nyq) : ty === 'lowpass' ? 1.1 * f / nyq : 1 - f / nyq;
+        const s = c.createBufferSource(), b = c.createBiquadFilter(), g = c.createGain();
+        s.buffer = E.nb; b.type = ty; b.Q.value = q;
+        b.frequency.setValueAtTime(f * p * (1 + (RD() - 0.5) * 0.06), st);
+        if (f2) b.frequency.exponentialRampToValueAtTime(f2 * p, st + d);
+        env(g.gain, st, d, Math.min(14, 0.52 / Math.sqrt(Math.max(0.004, Math.min(1, fr)))) * a);
+        s.connect(b); b.connect(g); g.connect(bus);
+        s.start(st, RD() * 0.8); s.stop(st + d + 0.03); done(st, d);
+      },
+      o(off, d, f, f2, a, ty){
+        const st = t + off, s = c.createOscillator(), g = c.createGain();
+        s.type = ty || 'sine'; s.frequency.setValueAtTime(f * p, st);
+        if (f2 !== f) s.frequency.exponentialRampToValueAtTime(f2 * p, st + d);
+        env(g.gain, st, d, a); s.connect(g); g.connect(bus);
+        s.start(st); s.stop(st + d + 0.03); done(st, d);
+      }
+    };
+  }
+
+  /* ---- the ten packs. Kinds: d = key/click down, u = release, s = Space/Tab, e = Enter, b = Backspace/Delete ---- */
+  const BP = 'bandpass', LP = 'lowpass', HP = 'highpass', TR = 'triangle';
+  const PACKS = [
+    { id: 'chocolate', name: 'Chocolate', desc: 'Soft, deep, marble-like thock.', f(x, k){
+      if (k === 'u'){ x.o(0, 0.05, 150, 115, 0.2); x.n(0, 0.02, LP, 900, 0.7, 0.1); }
+      else if (k === 's'){ x.o(0, 0.16, 125, 62, 0.75); x.n(0, 0.06, LP, 900, 0.7, 0.3); x.n(0, 0.09, BP, 380, 0.8, 0.25); x.o(0, 0.03, 950, 700, 0.05); }
+      else if (k === 'e'){ x.o(0, 0.15, 140, 65, 0.7); x.n(0, 0.07, BP, 480, 0.8, 0.3); x.n(0.03, 0.05, LP, 700, 0.6, 0.15); }
+      else if (k === 'b'){ x.o(0, 0.09, 215, 120, 0.55); x.n(0, 0.04, LP, 1300, 0.7, 0.25); x.n(0, 0.05, BP, 620, 0.8, 0.2); }
+      else { x.o(0, 0.13, 160, 78, 0.7); x.o(0, 0.025, 1250, 900, 0.08); x.n(0, 0.04, LP, 1100, 0.7, 0.28); x.n(0, 0.08, BP, 420, 0.8, 0.25); }
+    } },
+    { id: 'blue', name: 'Mechanical Blue', desc: 'Sharp double click, loud and clicky.', f(x, k){
+      if (k === 'u'){ x.n(0, 0.01, BP, 3200, 3, 0.35); x.n(0.004, 0.02, BP, 1500, 1, 0.12); }
+      else if (k === 's'){ x.n(0, 0.012, BP, 3200, 2.5, 0.45); x.o(0.012, 0.11, 120, 70, 0.55); x.n(0.012, 0.06, BP, 1100, 0.8, 0.3); x.n(0.03, 0.012, BP, 5200, 4, 0.12); x.n(0.052, 0.01, BP, 4600, 4, 0.1); }
+      else if (k === 'e'){ x.n(0, 0.012, BP, 3400, 2.5, 0.5); x.o(0.012, 0.1, 140, 80, 0.5); x.n(0.012, 0.05, BP, 1500, 0.9, 0.3); x.n(0.028, 0.01, BP, 5000, 4, 0.1); }
+      else if (k === 'b'){ x.n(0, 0.012, BP, 4000, 2.5, 0.5); x.o(0.012, 0.05, 300, 170, 0.35); x.n(0.012, 0.03, BP, 2000, 1, 0.28); }
+      else { x.n(0, 0.012, BP, 4200, 2.5, 0.6); x.n(0, 0.008, HP, 6500, 0.7, 0.2); x.n(0.011, 0.014, BP, 5200, 3, 0.3); x.o(0.016, 0.06, 270, 150, 0.38); x.n(0.016, 0.035, BP, 1900, 1, 0.3); x.n(0.016, 0.07, LP, 900, 0.7, 0.15); }
+    } },
+    { id: 'brown', name: 'Mechanical Brown', desc: 'Tactile bump, then a mellow bottom-out.', f(x, k){
+      if (k === 'u'){ x.n(0, 0.013, BP, 1700, 1.5, 0.16); x.o(0, 0.04, 190, 150, 0.14); }
+      else if (k === 's'){ x.n(0, 0.025, BP, 1800, 1, 0.3); x.o(0.014, 0.12, 135, 75, 0.62); x.n(0.014, 0.07, BP, 800, 0.8, 0.28); x.n(0.04, 0.012, BP, 4200, 4, 0.08); }
+      else if (k === 'e'){ x.n(0, 0.025, BP, 1900, 1, 0.3); x.o(0.014, 0.11, 150, 85, 0.58); x.n(0.014, 0.06, BP, 900, 0.8, 0.28); }
+      else if (k === 'b'){ x.n(0, 0.02, BP, 2300, 1.2, 0.3); x.o(0.012, 0.07, 255, 140, 0.45); x.n(0.012, 0.04, BP, 1200, 0.9, 0.25); }
+      else { x.n(0, 0.022, BP, 2400, 1.2, 0.45); x.o(0.012, 0.07, 230, 120, 0.45); x.n(0.012, 0.045, BP, 1000, 0.9, 0.22); x.n(0.012, 0.03, LP, 2200, 0.7, 0.1); }
+    } },
+    { id: 'red', name: 'Mechanical Red', desc: 'Smooth linear thock, no click.', f(x, k){
+      if (k === 'u'){ x.o(0, 0.035, 210, 170, 0.12); x.n(0, 0.012, HP, 2800, 0.7, 0.05); }
+      else if (k === 's'){ x.o(0, 0.13, 150, 80, 0.58); x.n(0, 0.08, LP, 1200, 0.7, 0.28, 600); x.n(0, 0.08, BP, 420, 0.7, 0.2); }
+      else if (k === 'e'){ x.o(0, 0.12, 165, 90, 0.55); x.n(0, 0.07, LP, 1500, 0.7, 0.28, 700); }
+      else if (k === 'b'){ x.o(0, 0.075, 280, 135, 0.45); x.n(0, 0.05, LP, 2000, 0.7, 0.26, 950); }
+      else { x.o(0, 0.085, 250, 118, 0.42); x.n(0, 0.055, LP, 1900, 0.7, 0.24, 900); x.n(0, 0.065, BP, 480, 0.7, 0.16); }
+    } },
+    { id: 'typewriter', name: 'Typewriter', desc: 'Heavy clack; Enter slides and rings the bell.', f(x, k){
+      const clack = () => { x.n(0, 0.03, BP, 1700, 0.9, 0.6); x.n(0, 0.06, LP, 800, 0.7, 0.8); x.o(0, 0.1, 330, 90, 0.7, TR); x.o(0.002, 0.045, 2100, 1900, 0.09, TR); x.n(0.004, 0.009, BP, 5200, 3, 0.1); x.n(0.045, 0.02, BP, 2600, 2, 0.1); };
+      if (k === 'u'){ x.n(0, 0.016, BP, 1500, 1.5, 0.16); x.n(0.01, 0.01, BP, 4200, 3, 0.07); }
+      else if (k === 's'){ x.n(0, 0.04, BP, 1700, 0.8, 0.5); x.n(0, 0.08, LP, 600, 0.7, 0.45); x.o(0, 0.13, 200, 70, 0.6, TR); x.n(0.05, 0.02, BP, 3000, 2, 0.1); }
+      else if (k === 'e'){ clack(); x.n(0.03, 0.2, BP, 900, 1.2, 0.12, 2400); x.o(0.24, 0.7, 2350, 2330, 0.3); x.o(0.24, 0.45, 5500, 5400, 0.1); x.o(0.24, 0.3, 3650, 3600, 0.07); x.n(0.24, 0.006, HP, 6000, 0.7, 0.15); }
+      else if (k === 'b'){ x.n(0, 0.025, BP, 2700, 0.9, 0.5); x.n(0, 0.04, LP, 950, 0.7, 0.3); x.o(0, 0.07, 380, 150, 0.4, TR); }
+      else clack();
+    } },
+    { id: 'bubble', name: 'Bubble Pop', desc: 'Round, rising water-drop pops.', f(x, k){
+      const r = x.r;
+      if (k === 'u') x.o(0, 0.04, 900, 520, 0.14);
+      else if (k === 's'){ x.o(0, 0.12, 230, 620, 0.55); x.n(0, 0.008, BP, 2200, 1.5, 0.1); }
+      else if (k === 'e'){ x.o(0, 0.07, 420, 1000, 0.45); x.o(0.075, 0.09, 520, 1350, 0.45); }
+      else if (k === 'b') x.o(0, 0.07, 820, 330, 0.42);
+      else { x.o(0, 0.07, 380 + r * 160, 980 + r * 400, 0.5); x.n(0, 0.008, BP, 3200, 1.5, 0.12); }
+    } },
+    { id: 'wood', name: 'Wooden Tap', desc: 'Dry knock on a wood block.', f(x, k){
+      if (k === 'u'){ x.o(0, 0.02, 620, 600, 0.08); x.n(0, 0.01, BP, 2200, 3, 0.1); }
+      else if (k === 's'){ x.o(0, 0.09, 430, 400, 0.55); x.o(0, 0.04, 980, 940, 0.15); x.n(0, 0.02, BP, 800, 3, 0.3); x.n(0, 0.05, LP, 320, 0.8, 0.28); }
+      else if (k === 'e'){ x.o(0, 0.08, 520, 480, 0.5); x.o(0.07, 0.08, 680, 640, 0.5); x.n(0, 0.016, BP, 900, 3, 0.3); x.n(0.07, 0.016, BP, 1100, 3, 0.3); }
+      else if (k === 'b'){ x.o(0, 0.05, 950, 900, 0.42); x.n(0, 0.012, BP, 1600, 3, 0.3); }
+      else { x.o(0, 0.06, 900, 860, 0.65); x.o(0, 0.035, 1900, 1850, 0.25); x.n(0, 0.016, BP, 1500, 3, 0.5); x.n(0, 0.035, LP, 420, 0.8, 0.25); }
+    } },
+    { id: 'membrane', name: 'Soft Membrane', desc: 'Quiet laptop-keyboard squish.', f(x, k){
+      if (k === 'u') x.n(0, 0.014, BP, 1500, 0.8, 0.07);
+      else if (k === 's'){ x.n(0, 0.04, BP, 750, 0.7, 0.34); x.o(0, 0.06, 125, 95, 0.3); x.n(0, 0.025, LP, 1800, 0.7, 0.18); }
+      else if (k === 'e'){ x.n(0, 0.04, BP, 850, 0.7, 0.34); x.o(0, 0.06, 135, 100, 0.28); x.n(0, 0.025, LP, 2000, 0.7, 0.18); }
+      else if (k === 'b'){ x.n(0, 0.028, BP, 1300, 0.7, 0.3); x.o(0, 0.03, 185, 140, 0.2); }
+      else { x.n(0, 0.03, BP, 1100, 0.7, 0.32); x.n(0, 0.022, LP, 2300, 0.7, 0.24); x.o(0, 0.035, 165, 130, 0.22); }
+    } },
+    { id: 'crystal', name: 'Crystal Tick', desc: 'Glassy ping with a little space blip.', f(x, k){
+      if (k === 'u'){ x.o(0, 0.05, 1760, 1740, 0.08); x.n(0, 0.005, HP, 7000, 0.7, 0.05); }
+      else if (k === 's'){ x.o(0, 0.09, 880, 1760, 0.25); x.o(0, 0.16, 1480, 1470, 0.18); x.o(0, 0.06, 4090, 4000, 0.06); }
+      else if (k === 'e'){ x.o(0, 0.12, 2350, 2340, 0.2); x.o(0.07, 0.18, 3150, 3140, 0.2); x.o(0.07, 0.08, 8700, 8600, 0.05); }
+      else if (k === 'b'){ x.o(0, 0.09, 2000, 1050, 0.2); x.o(0, 0.04, 4800, 3000, 0.05); }
+      else { x.o(0, 0.14, 2350, 2330, 0.22); x.o(0, 0.07, 6480, 6400, 0.07); x.o(0, 0.035, 3900, 3850, 0.06); x.n(0, 0.006, HP, 6500, 0.7, 0.14); }
+    } },
+    { id: 'asmr', name: 'ASMR Click', desc: 'Tiny crisp close-mic tick, soft tail.', f(x, k){
+      if (k === 'u'){ x.n(0, 0.005, HP, 5200, 0.7, 0.28); x.n(0, 0.012, BP, 7000, 1.6, 0.18); x.n(0.004, 0.08, BP, 2200, 0.5, 0.025); }
+      else if (k === 's'){ x.n(0, 0.01, HP, 3500, 0.7, 0.45); x.n(0, 0.016, BP, 4200, 1.3, 0.35); x.n(0.004, 0.045, BP, 1500, 1, 0.2); x.n(0.012, 0.2, BP, 1600, 0.5, 0.05); x.o(0, 0.03, 300, 210, 0.1); }
+      else if (k === 'e'){ x.n(0, 0.008, HP, 4200, 0.7, 0.5); x.n(0, 0.012, BP, 6400, 1.6, 0.35); x.n(0.055, 0.01, HP, 3200, 0.7, 0.5); x.n(0.055, 0.016, BP, 4600, 1.3, 0.35); x.n(0.06, 0.2, BP, 1800, 0.5, 0.05); }
+      else if (k === 'b'){ x.n(0, 0.007, HP, 4600, 0.7, 0.45); x.n(0, 0.01, BP, 7000, 1.6, 0.3); x.n(0.003, 0.025, BP, 2800, 1, 0.12); x.n(0.008, 0.1, BP, 2200, 0.5, 0.035); }
+      else { x.n(0, 0.008, HP, 4200, 0.7, 0.55); x.n(0, 0.012, BP, 6400, 1.6, 0.4); x.n(0.004, 0.03, BP, 2600, 1, 0.16); x.n(0.01, 0.16, BP, 2000, 0.5, 0.045); x.o(0, 0.02, 540, 430, 0.06); }
+    } }
+  ];
+
+  /* ---- state ---- */
+  function load(){
+    const o = sJson(KEY, {}), c = Object.assign({}, DEF);
+    if (o && typeof o === 'object'){
+      if (MODES[o.mode]) c.mode = o.mode;
+      if (PACKS.some(p => p.id === o.pack)) c.pack = o.pack;
+      c.vol = sClamp(o.vol, 0, 100, DEF.vol); c.pitch = sClamp(o.pitch, 0, 100, DEF.pitch);
+      c.rel = o.rel !== false; c.mute = o.mute !== false; c.lock = typeof o.lock === 'boolean' ? o.lock : null;
+    }
+    return c;
+  }
+  let cfg = load(), E = null, dead = false, blurred = false;
+  const hasAC = () => !!(window.AudioContext || window.webkitAudioContext);
+  const typingOn = () => cfg.mode === 'typing' || cfg.mode === 'both';
+  const clickOn = () => cfg.mode === 'clicking' || cfg.mode === 'both';
+  const lockOn = () => cfg.lock === null ? typingOn() : cfg.lock;
+  const volGain = () => Math.pow(cfg.vol / 100, 1.7) * 1.4;
+  const maxVoices = () => document.documentElement.classList.contains('perf-mode') ? 3 : 6;
+  const packOf = id => PACKS.find(p => p.id === id) || PACKS[0];
+
+  function boot(){
+    if (E) return E;
+    if (dead) return null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC){ dead = true; syncUi(); return null; }
+    try {
+      const c = new AC(), out = c.createGain(), comp = c.createDynamicsCompressor(), ws = c.createWaveShaper(), nb = c.createBuffer(1, c.sampleRate, c.sampleRate);
+      const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = RD() * 2 - 1;
+      const cv = new Float32Array(1025); for (let i = 0; i < cv.length; i++) cv[i] = Math.tanh(1.3 * (i / 512 - 1)) * 0.98;
+      comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 12; comp.attack.value = 0.001; comp.release.value = 0.12;
+      ws.curve = cv; out.gain.value = volGain();
+      out.connect(comp); comp.connect(ws); ws.connect(c.destination);
+      E = { c, out, nb, vs: [], end: 0 };
+    } catch(e){ dead = true; E = null; syncUi(); }
+    return E;
+  }
+  // kind: d/u/s/e/b. o = { force (skip voice cap), at (seconds from now), vel, pack }
+  function play(kind, o){
+    o = o || {};
+    try {
+      if (cfg.vol <= 0) return;
+      const e = boot(); if (!e) return;
+      const c = e.c, t0 = Date.now();
+      const go = () => {
+        const now = c.currentTime; e.vs = e.vs.filter(x => x > now);
+        if (!o.force && e.vs.length >= maxVoices()) return;
+        const t = now + (o.at || 0) + 0.004, v = (0.8 + RD() * 0.2) * (o.vel || 1), p = 1 + (RD() * 2 - 1) * (cfg.pitch / 100) * 0.12;
+        e.end = t; packOf(o.pack || cfg.pack).f(mk(e, t, v, p), kind); e.vs.push(e.end);
+      };
+      if (c.state === 'running') go();
+      else { const r = c.resume(); if (r && r.then) r.then(() => { if (c.state === 'running' && Date.now() - t0 < 250) go(); }, nop); }
+    } catch(x){}
+  }
+  function applyVol(){ try { if (E) E.out.gain.value = volGain(); } catch(e){} }
+  function drop(){ const e = E; E = null; try { if (e && e.c.close) e.c.close().catch(nop); } catch(x){} }
+
+  /* ---- delegated listeners (attached only while the mode needs them) ---- */
+  const TEXT_IN = /^(text|password|search|email|url|tel|number|)$/;
+  const SPECIAL = { ' ': 's', Tab: 's', Enter: 'e', Backspace: 'b', Delete: 'b' };
+  const CLICKABLE = 'button,a[href],summary,select,[role=button],[role=menuitem],[role=menuitemcheckbox],[role=menuitemradio],[role=tab],[role=checkbox],[role=switch],[role=radio],[role=option],[role=link],input[type=checkbox],input[type=radio],input[type=button],input[type=submit],label.toggle-switch,.dropdown-item,.desktop-icon,.cmdk-item,.tb-btn';
+  const held = new Set();
+  let lastKey = 0, lastUp = 0, lastPtr = 0, nRep = 0, ptrDown = false;
+  function allowed(e){
+    if (!e.isTrusted || document.hidden || (blurred && cfg.mute)) return false;
+    const t = e.target;
+    return !(t && t.closest && t.closest('#spacepad-lock') && !lockOn());
+  }
+  function isTextTarget(t){
+    if (!t || !t.tagName) return false;
+    if (t.tagName === 'TEXTAREA') return !t.readOnly && !t.disabled;
+    if (t.tagName === 'INPUT') return TEXT_IN.test(t.type || '') && !t.readOnly && !t.disabled;
+    return !!t.isContentEditable || t.getAttribute('role') === 'textbox';
+  }
+  function onKey(e){
+    if (typeof e.key !== 'string' || e.isComposing) return;
+    if ((e.ctrlKey || e.metaKey || e.altKey) && !(e.getModifierState && e.getModifierState('AltGraph'))) return;
+    const k = SPECIAL[e.key] || (e.key.length === 1 ? 'd' : '');
+    if (!k || !isTextTarget(e.target) || !allowed(e)) return;
+    const now = performance.now();
+    if (e.repeat){ if (nRep >= 4 || now - lastKey < 70) return; nRep++; } else nRep = 0;
+    if (now - lastKey < 25) return;
+    lastKey = now; held.add(e.code || e.key); play(k);
+  }
+  function onKeyUp(e){
+    if (!cfg.rel || !held.delete(e.code || e.key) || !allowed(e)) return;
+    const now = performance.now(); if (now - lastUp < 20) return; lastUp = now; play('u');
+  }
+  function clickTarget(e){
+    const el = e.target && e.target.closest && e.target.closest(CLICKABLE);
+    if (!el || el.closest('[data-nosnd]') || el.disabled || el.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true') return null;
+    return el;
+  }
+  function onDown(e){
+    ptrDown = false;
+    if (e.button !== 0 || e.isPrimary === false || !clickTarget(e) || !allowed(e)) return;
+    const now = performance.now(); if (now - lastPtr < 25) return; lastPtr = now;
+    ptrDown = true; play('d');
+  }
+  function onUp(e){ if (ptrDown){ ptrDown = false; if (cfg.rel && allowed(e)) play('u'); } }
+  function onFocus(e){ if (e.target === window) blurred = e.type === 'blur'; }
+  function onVis(){ if (document.hidden && E && E.c.suspend){ try { E.c.suspend().catch(nop); } catch(e){} } }
+
+  const L = {};
+  function tog(on, type, fn, tgt){
+    if (on && !L[type]){ tgt.addEventListener(type, fn, true); L[type] = [tgt, fn]; }
+    else if (!on && L[type]){ L[type][0].removeEventListener(type, L[type][1], true); delete L[type]; }
+  }
+  function wire(){
+    const ty = typingOn(), cl = clickOn();
+    tog(ty, 'keydown', onKey, window); tog(ty, 'keyup', onKeyUp, window);
+    tog(cl, 'pointerdown', onDown, window); tog(cl, 'pointerup', onUp, window);
+    tog(ty || cl, 'blur', onFocus, window); tog(ty || cl, 'focus', onFocus, window);
+    tog(ty || cl, 'visibilitychange', onVis, document);
+    if (!(ty || cl)){ held.clear(); ptrDown = false; }
+  }
+
+  /* ---- settings card ---- */
+  const SEQ = [['d', 0], ['d', 0.14], ['d', 0.26], ['s', 0.42], ['d', 0.62], ['d', 0.74], ['b', 0.9], ['e', 1.08]];
+  function preview(id){
+    SEQ.forEach(s => { play(s[0], { force: true, at: s[1], pack: id }); if (cfg.rel && s[0] === 'd') play('u', { force: true, at: s[1] + 0.085, pack: id }); });
+  }
+  const $ = id => document.getElementById(id);
+  const card = document.createElement('div');
+  card.className = 'settings-card'; card.id = 'settings-sound';
+  const sw = (id, label, desc) => '<div class="settings-row"><div><div class="settings-row-label">' + label + '</div><div class="settings-row-desc">' + desc + '</div></div>' +
+    '<label class="toggle-switch"><input type="checkbox" id="' + id + '" aria-label="' + label + '"><span class="toggle-track"></span></label></div>';
+  const sl = (id, label, desc) => '<div class="settings-row snd-row"><div><div class="settings-row-label"><label for="' + id + '">' + label + '</label> <output id="' + id + '-v" class="snd-val"></output></div><div class="settings-row-desc">' + desc + '</div></div>' +
+    '<input type="range" id="' + id + '" min="0" max="100" step="1" class="snd-range"></div>';
+  card.innerHTML = '<h3>' + icon('volume') + ' Click sounds</h3>' +
+    '<div class="settings-row" style="display:block;"><div class="settings-row-label" id="snd-when-l">Play sounds when</div><div class="settings-row-desc">Typing in text fields, clicking buttons and icons, both, or never. Never is the default.</div>' +
+    '<div class="snd-seg" id="snd-when" role="radiogroup" aria-labelledby="snd-when-l">' + UI_ORDER.map(m => '<button type="button" role="radio" id="snd-m-' + m + '" data-m="' + m + '">' + icon(MODES[m][1]) + '<span>' + MODES[m][0] + '</span></button>').join('') + '</div></div>' +
+    '<div class="settings-row" style="display:block;"><div class="settings-row-label" id="snd-pack-l">Sound pack</div><div class="settings-row-desc">Ten synthesized sets, made in your browser. Choose one to hear it, or press Preview for a short typing run.</div>' +
+    '<div class="snd-packs" id="snd-packs" role="radiogroup" aria-labelledby="snd-pack-l">' + PACKS.map(p => '<div class="snd-pack" data-nosnd="1" data-id="' + p.id + '"><button type="button" role="radio" class="snd-pick" data-p="' + p.id + '"><b>' + p.name + '</b><span>' + p.desc + '</span></button>' +
+      '<button type="button" class="snd-prev" data-pv="' + p.id + '" aria-label="Preview ' + p.name + '">' + icon('play', 'icon-fill') + ' Preview</button></div>').join('') + '</div></div>' +
+    sl('snd-vol', 'Volume', 'A soft limiter keeps it from ever clipping. Performance mode plays at most 3 sounds at once.') +
+    sl('snd-pitch', 'Pitch variation', 'Small random changes so repeated clicks never sound identical.') +
+    sw('snd-rel', 'Release sounds', 'A quieter second sound when the key or button comes back up.') +
+    sw('snd-mute', 'Mute when window not focused', 'Stays silent while another window has focus. Sounds are always off while this tab is hidden.') +
+    sw('snd-lock', 'Sound on lock screen', 'Plays while you type the password or press its buttons. On by default only for Typing or Both.') +
+    '<div class="settings-row" style="display:block;"><div class="settings-row-label"><label for="snd-test">Try it</label></div><div class="settings-row-desc" id="snd-test-d"></div>' +
+    '<input type="text" id="snd-test" class="snd-test" placeholder="Type here: letters, Space, Enter, Backspace" autocomplete="off" spellcheck="false"></div>' +
+    '<div class="settings-row-desc snd-note" id="snd-note" role="status" aria-live="polite" hidden>Sound is not available in this browser, so Spacepad will stay silent.</div>' +
+    '<div class="settings-row"><div><div class="settings-row-label">Reset click sounds</div><div class="settings-row-desc">Back to Never, Chocolate and the default sliders.</div></div><button type="button" class="ghost-btn" id="snd-reset">Reset</button></div>';
+  const anchor = $('settings-editor');
+  if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(card, anchor);
+
+  function syncUi(){
+    if (!card.isConnected) return;
+    card.querySelectorAll('[data-m]').forEach(b => { const on = b.dataset.m === cfg.mode; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; });
+    card.querySelectorAll('[data-p]').forEach(b => { const on = b.dataset.p === cfg.pack; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; b.parentNode.classList.toggle('on', on); });
+    $('snd-vol').value = cfg.vol; $('snd-vol-v').textContent = cfg.vol + '%';
+    $('snd-pitch').value = cfg.pitch; $('snd-pitch-v').textContent = cfg.pitch + '%';
+    $('snd-rel').checked = cfg.rel; $('snd-mute').checked = cfg.mute; $('snd-lock').checked = lockOn();
+    $('snd-test-d').textContent = typingOn() ? 'Typing sounds are on. Try the special keys too.' : 'Choose Typing or Both above to hear this field.';
+    $('snd-note').hidden = hasAC() && !dead;
+  }
+  function set(p, quiet){
+    cfg = Object.assign({}, cfg, p);
+    sSave(KEY, cfg); wire(); applyVol(); if (cfg.mode === 'never') drop(); syncUi();
+    if (!quiet) studioEmit();
+  }
+  card.addEventListener('click', (e) => {
+    const m = e.target.closest('[data-m]'), p = e.target.closest('[data-p]'), pv = e.target.closest('[data-pv]');
+    if (m) set({ mode: m.dataset.m });
+    else if (p){ set({ pack: p.dataset.p }); play('d', { force: true }); if (cfg.rel) play('u', { force: true, at: 0.09 }); }
+    else if (pv) preview(pv.dataset.pv);
+    else if (e.target.closest('#snd-reset')){ set(Object.assign({}, DEF)); showToast('Click sounds reset to Never.'); }
+  });
+  card.addEventListener('keydown', (e) => {
+    const r = e.target.closest && e.target.closest('[role=radio]');
+    if (!r || ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].indexOf(e.key) < 0) return;
+    const grp = Array.from(r.closest('[role=radiogroup]').querySelectorAll('[role=radio]')); let i = grp.indexOf(r);
+    i = e.key === 'Home' ? 0 : e.key === 'End' ? grp.length - 1 : (i + (/Right|Down/.test(e.key) ? 1 : -1) + grp.length) % grp.length;
+    e.preventDefault(); grp[i].focus(); grp[i].click();
+  });
+  card.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'snd-vol'){ cfg.vol = sClamp(t.value, 0, 100, 40); applyVol(); $('snd-vol-v').textContent = cfg.vol + '%'; }
+    else if (t.id === 'snd-pitch'){ cfg.pitch = sClamp(t.value, 0, 100, 50); $('snd-pitch-v').textContent = cfg.pitch + '%'; }
+  });
+  card.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'snd-vol'){ set({ vol: sClamp(t.value, 0, 100, 40) }); play('d', { force: true }); }
+    else if (t.id === 'snd-pitch') set({ pitch: sClamp(t.value, 0, 100, 50) });
+    else if (t.id === 'snd-rel') set({ rel: t.checked });
+    else if (t.id === 'snd-mute') set({ mute: t.checked });
+    else if (t.id === 'snd-lock') set({ lock: t.checked });
+  });
+  document.addEventListener('spacepad:settings', syncUi);
+  // The lock screen swallows key events before any other listener (see SPACEPAD LOCK), so it hands them to us here.
+  spHooks.lockEv = (e) => { try { if (typingOn()){ if (e.type === 'keydown') onKey(e); else if (e.type === 'keyup') onKeyUp(e); } } catch(x){} };
+
+  studioApps.sound = {
+    refresh: syncUi,
+    cycle(){
+      const m = CYCLE[(CYCLE.indexOf(cfg.mode) + 1) % CYCLE.length];
+      set({ mode: m });
+      showToast('Click sounds: ' + MODES[m][0] + '.', null, null, m === 'never' ? 'volume-x' : 'volume');
+    },
+    get: () => Object.assign({}, cfg), set, packs: () => PACKS.map(p => p.name)
+  };
+  wire(); syncUi();
+})();
 
 // Apply the saved startup screen now that every view and its setup
 // exists. Defaults to the Desktop screen for anyone who hasn't picked a
