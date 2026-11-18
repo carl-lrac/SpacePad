@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -47,6 +47,23 @@
   #auto .c { color:var(--muted); margin-bottom:16px; }
   .sub, .opts, .note, h2, .empty { text-shadow:0 1px 3px #000, 0 0 12px rgba(0,0,0,.8); }
   .note { color:var(--muted); font-size:.8rem; margin-top:28px; line-height:1.5; }
+  #e500 { position:fixed; inset:0; z-index:20; display:none; overflow:auto; background:#0a0b14; color:#d9dbe6; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  #e500.show { display:block; }
+  #e500 .wrap { max-width:760px; margin:0 auto; padding:56px 16px 40px; }
+  #e500 .code { font-size:5.5rem; font-weight:800; line-height:1; color:#f1f2f8; letter-spacing:2px; }
+  #e500 h1 { font-size:1.6rem; margin:10px 0 12px; font-weight:600; color:#f1f2f8; }
+  #e500 p { color:#a8abbd; line-height:1.55; margin:0 0 10px; }
+  #e500 .details { margin:18px 0; padding:12px 14px; border:1px solid #262a3d; border-radius:8px; background:#10121d; font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#9ea2b8; overflow-x:auto; }
+  #e500 .details b { color:#d9dbe6; font-weight:600; }
+  #e500 .acts { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 26px; }
+  #e500 .acts button { background:#1b1e2e; border:1px solid #33384f; color:#e6e8f2; border-radius:8px; padding:9px 16px; font-size:.92rem; }
+  #e500 .acts button.primary { background:#3b4bd8; border-color:#3b4bd8; }
+  #e500 .gamebox { border-top:1px solid #1e2132; padding-top:18px; }
+  #e500 .gamehint { font-size:.85rem; color:#7f839a; margin-bottom:8px; }
+  #pc { display:block; width:100%; height:280px; border-radius:10px; background:#04050c; border:1px solid #1e2132; touch-action:none; cursor:crosshair; outline:none; }
+  #pc:focus-visible { border-color:#5b6cff; }
+  #e500 .foot { margin-top:26px; font-size:.78rem; color:#5d6177; border-top:1px solid #1a1d2b; padding-top:10px; }
+  @media (max-width:480px){ #e500 .code { font-size:4rem; } #pc { height:240px; } }
   @media (prefers-reduced-motion: reduce) { .drop { transition:none; } }
 </style>
 </head>
@@ -59,7 +76,7 @@
   <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose or drop an HTML file">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
     <div class="big">Drop SpacePad.html here</div>
-    <div class="small">or click to choose a file. Only verified SpacePad files are accepted.</div>
+    <div class="small">or click to choose a file</div>
   </div>
   <input type="file" id="file" accept=".html,.htm,text/html">
   <div class="msg" id="msg" role="status" aria-live="polite"></div>
@@ -74,6 +91,30 @@
 
   <p class="note">Files are saved only in this browser (IndexedDB), on this device. Clearing site data removes them. Use your browser's back button to return here from SpacePad.</p>
 </main>
+
+<div id="e500" role="alert" aria-labelledby="e500t">
+  <div class="wrap">
+    <div class="code">500</div>
+    <h1 id="e500t">Internal Server Error</h1>
+    <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
+    <p>Please try again later. If the problem persists, contact the site administrator and include the reference below.</p>
+    <div class="details">
+      <div><b>Status:</b> 500 Internal Server Error</div>
+      <div><b>Reference:</b> <span id="e500ref"></span></div>
+      <div><b>Time:</b> <span id="e500time"></span></div>
+      <div><b>Node:</b> <span id="e500node"></span></div>
+    </div>
+    <div class="acts">
+      <button type="button" class="primary" id="e500retry">Try again</button>
+      <button type="button" id="e500back">Go back</button>
+    </div>
+    <div class="gamebox">
+      <div class="gamehint" id="pchint">While you wait: press Space or tap the panel below to play.</div>
+      <canvas id="pc" tabindex="0" aria-label="Planet Cracker mini game. Aim with the mouse or arrow keys, hold to charge, release to fire."></canvas>
+    </div>
+    <div class="foot">orbital-gateway/2.4 &middot; edge <span id="e500edge"></span></div>
+  </div>
+</div>
 
 <div id="auto" role="dialog" aria-modal="true" aria-labelledby="autoT">
   <div class="box">
@@ -251,8 +292,8 @@
     if (still) frame(performance.now()); else requestAnimationFrame(frame);
   })();
 
-  var KEY_SHA256 = "7f04baab8224ff67abb648e19f578e569a7cb75a50d18b9913240d5090ab5173";
-  var KEY_RE = /^\uFEFF?\s*<!--\s*SPACEPAD-KEY:\s*([A-Za-z0-9_\-]{32,256})\s*-->/;
+  var KEY_SHA256 = ["e94f09bb1e0b7e1054df978cee89767aa46ff00e5c32d28dcca8b2df31559588", "3967b728fd29b7036a3bb0cf460d7f6d24a2af1ce9cc38cbf7c2f2dde345e0e5", "707b9a8c8624d8e1f1e28a044fbe532cc0b46507b8641dee563f80b3d9b59f09", "bf155bbc0b0d212143e8939132acdb0943c5b78525b380d4951452294c096468", "fe2d96d07d241f62934f24dfcaa5c303b7c3673058c868b9d3f961b9bfc80824", "21b0db1d0c85f77b39600e83d8ab5bdd786f64d95c0a7f4a047967fa4230d7f3", "69195178bf96382511cea8954982fb5e05293fe9bc525f6fa895a75e5f5b7783", "5e42c2ca6ff14e613cce2364082513f917c72521e5df868eb6c68218ac1adbc9", "e96ba18035e040e325dc1f4190d085a83c8154f8bd67869efef418d4f2bf5e52", "9aef1b86df8979ba2b440ad7eb7d2985ba2b39f83c28d6f58dbd667eae5dcf33"];
+  var KEY_LINE = /^<!--\s*SPACEPAD-KEY-(\d{2}):\s*([A-Za-z0-9_\-]{32,256})\s*-->$/;
   function sha256js(bytes){
     var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
     var Hh=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
@@ -279,15 +320,189 @@
     return Promise.resolve(sha256js(bytes));
   }
   function verify(buf){
-    var head = new TextDecoder().decode(buf.slice(0, 1024)), mm = head.match(KEY_RE);
-    if (!mm) return Promise.resolve(false);
-    return sha256hex(mm[1]).then(function(h){
-      if (h.length !== KEY_SHA256.length) return false;
-      var diff = 0; for (var i = 0; i < h.length; i++) diff |= h.charCodeAt(i) ^ KEY_SHA256.charCodeAt(i);
+    var head = new TextDecoder().decode(buf.slice(0, 8192)).replace(/^\uFEFF/, "");
+    var lines = head.split(/\r?\n/).slice(0, KEY_SHA256.length), keys = [];
+    if (lines.length < KEY_SHA256.length) return Promise.resolve(false);
+    for (var i = 0; i < lines.length; i++){
+      var mm = lines[i].trim().match(KEY_LINE);
+      if (!mm || parseInt(mm[1], 10) !== i + 1) return Promise.resolve(false);
+      keys.push(mm[2]);
+    }
+    return Promise.all(keys.map(sha256hex)).then(function(hs){
+      var diff = 0;
+      for (var k = 0; k < hs.length; k++){
+        var h = hs[k], want = KEY_SHA256[k];
+        if (h.length !== want.length) return false;
+        for (var j = 0; j < h.length; j++) diff |= h.charCodeAt(j) ^ want.charCodeAt(j);
+      }
       return diff === 0;
     });
   }
-  var NOT_SPACEPAD = "That isn't a verified SpacePad file: the SpacePad key at the top of the file is missing or wrong.";
+
+
+  var e500Prev = null, game = null;
+  function hex(n){ var a = new Uint8Array(n); crypto.getRandomValues(a); return Array.prototype.map.call(a, function(x){ return ("0" + x.toString(16)).slice(-2); }).join(""); }
+  function show500(){
+    var box = $("e500");
+    $("e500ref").textContent = hex(4) + "-" + hex(2) + "-" + hex(2) + "-" + hex(6);
+    $("e500time").textContent = new Date().toUTCString();
+    $("e500node").textContent = "orbit-" + ["lyra","vega","rigel","deneb","altair","sirius"][Math.floor(Math.random() * 6)] + "-" + (10 + Math.floor(Math.random() * 89));
+    $("e500edge").textContent = ["sjc","iad","fra","nrt","syd","gru"][Math.floor(Math.random() * 6)] + (1 + Math.floor(Math.random() * 9));
+    if (!box.classList.contains("show")) e500Prev = document.title;
+    document.title = "500 Internal Server Error";
+    box.classList.add("show"); box.scrollTop = 0;
+    if (!game) game = planetCracker($("pc"));
+    game.resize(); game.idle();
+    setTimeout(function(){ try { $("e500retry").focus({ preventScroll: true }); } catch(e){} }, 0);
+  }
+  function hide500(){
+    $("e500").classList.remove("show");
+    if (e500Prev) document.title = e500Prev;
+    if (game) game.stop();
+  }
+  $("e500retry").onclick = function(){
+    var b = this; b.disabled = true; b.textContent = "Retrying…";
+    setTimeout(function(){ b.disabled = false; b.textContent = "Try again"; show500(); }, 900 + Math.random() * 900);
+  };
+  $("e500back").onclick = hide500;
+
+  function planetCracker(cv){
+    var ctx = cv.getContext("2d"), still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var W = 0, H = 0, D = 1, raf = 0, last = 0;
+    var st = { mode: "idle", score: 0, best: 0, lives: 3, wave: 1, kills: 0 };
+    var aim = { x: 0, y: 0 }, charging = false, charge = 0, keyAim = 0;
+    var planets = [], parts = [], beams = [], stars = [], spawnT = 0, shake = 0, flash = 0;
+    var COLS = [["#c9d6ff","#5a6bbd"],["#ffcf9e","#b45a2c"],["#a8f0d0","#2d8a6a"],["#ffb3c7","#a3365a"],["#e6d2ff","#6a45b8"]];
+    function sync(){ cv.dataset.state = st.mode; cv.dataset.score = st.score; cv.dataset.lives = st.lives; }
+    function resize(){
+      D = Math.min(window.devicePixelRatio || 1, 2);
+      var r = cv.getBoundingClientRect(); W = Math.max(200, r.width) * D; H = Math.max(160, r.height) * D;
+      cv.width = W; cv.height = H;
+      stars = []; for (var i = 0; i < 90; i++) stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.2 + .3, s: Math.random() * .03 + .01 });
+      if (!aim.x){ aim.x = W * .7; aim.y = H * .5; }
+      if (st.mode !== "play") draw(0);
+    }
+    function station(){ return { x: 34 * D, y: H / 2 }; }
+    function reset(){ st.score = 0; st.lives = 3; st.wave = 1; st.kills = 0; planets = []; parts = []; beams = []; spawnT = 0; charge = 0; charging = false; }
+    function start(){ reset(); st.mode = "play"; $("pchint").textContent = "Hold to charge, release to fire. Bigger planets need more charge. Don't hit the green beacons."; sync(); loop(); }
+    function spawn(){
+      var beacon = Math.random() < .12, tier = beacon ? 1 : (Math.random() < .5 ? 1 : Math.random() < .7 ? 2 : 3);
+      var r = (beacon ? 9 : tier === 1 ? 12 : tier === 2 ? 19 : 27) * D;
+      planets.push({ x: W + r, y: r + Math.random() * (H - r * 2), r: r, tier: tier, beacon: beacon,
+        v: (40 + Math.random() * 30 + st.wave * 9) * D / (tier * .35 + .8), col: beacon ? ["#b6ffcf","#1e9e5a"] : COLS[(Math.random() * COLS.length) | 0],
+        ring: !beacon && tier === 3 && Math.random() < .6, rot: Math.random() * 6 });
+    }
+    function boom(x, y, col, n){
+      n = still ? Math.min(n, 10) : n;
+      for (var i = 0; i < n; i++){ var a = Math.random() * 6.3, sp = (40 + Math.random() * 160) * D;
+        parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: .5 + Math.random() * .6, t: 0, c: col }); }
+    }
+    function fire(){
+      var s = station(), dx = aim.x - s.x, dy = aim.y - s.y, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+      var power = charge < .34 ? 1 : charge < .75 ? 2 : 3, combo = 0;
+      beams.push({ x1: s.x, y1: s.y, x2: s.x + ux * W * 2, y2: s.y + uy * W * 2, t: 0, w: (2 + power * 2) * D });
+      for (var i = planets.length - 1; i >= 0; i--){
+        var p = planets[i], px = p.x - s.x, py = p.y - s.y, along = px * ux + py * uy;
+        if (along < 0) continue;
+        var dist = Math.abs(px * uy - py * ux);
+        if (dist > p.r + 3 * D) continue;
+        if (p.beacon){ planets.splice(i, 1); boom(p.x, p.y, "#7dffb0", 18); loseLife(); continue; }
+        if (power >= p.tier){ combo++; st.kills++; st.score += p.tier * 100 * combo; boom(p.x, p.y, p.col[0], 14 + p.tier * 10); planets.splice(i, 1); if (!still) shake = 6 * D; }
+        else { boom(p.x, p.y, "#ffffff", 4); }
+      }
+      if (st.kills >= st.wave * 8){ st.wave++; flash = .6; }
+      charge = 0; sync();
+    }
+    function loseLife(){ st.lives--; if (!still) shake = 10 * D; flash = .4; if (st.lives <= 0){ st.mode = "over"; st.best = Math.max(st.best, st.score); $("pchint").textContent = "Signal lost. Press Space or tap to try again."; } sync(); }
+    function update(dt){
+      spawnT -= dt; if (spawnT <= 0){ spawn(); spawnT = Math.max(.45, 1.6 - st.wave * .12) * (.7 + Math.random() * .6); }
+      if (charging) charge = Math.min(1, charge + dt / 1.3);
+      if (keyAim) aim.y = Math.max(0, Math.min(H, aim.y + keyAim * 260 * D * dt));
+      for (var i = planets.length - 1; i >= 0; i--){
+        var p = planets[i]; p.x -= p.v * dt; p.rot += dt * .4;
+        if (p.x < 52 * D){ planets.splice(i, 1); if (p.beacon){ st.score += 50; sync(); } else { boom(p.x, p.y, "#ff8a8a", 10); loseLife(); } }
+      }
+      for (var j = parts.length - 1; j >= 0; j--){ var q = parts[j]; q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .97; q.vy *= .97; if (q.t > q.life) parts.splice(j, 1); }
+      for (var k = beams.length - 1; k >= 0; k--){ beams[k].t += dt; if (beams[k].t > .22) beams.splice(k, 1); }
+      for (var m = 0; m < stars.length; m++){ var sr = stars[m]; sr.x -= sr.s * 60 * D * dt * (still ? 0 : 1); if (sr.x < 0) sr.x = W; }
+      shake *= .85; flash = Math.max(0, flash - dt);
+    }
+    function planet(p){
+      var g = ctx.createRadialGradient(p.x - p.r * .4, p.y - p.r * .4, p.r * .1, p.x, p.y, p.r);
+      g.addColorStop(0, p.col[0]); g.addColorStop(1, p.col[1]);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3); ctx.fill();
+      if (p.ring){ ctx.strokeStyle = "rgba(255,230,200,.55)"; ctx.lineWidth = 2 * D; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * 1.7, p.r * .45, -.35, 0, 6.3); ctx.stroke(); }
+      if (p.beacon){ ctx.strokeStyle = "rgba(125,255,176," + (.4 + .4 * Math.sin(p.rot * 6)) + ")"; ctx.lineWidth = 1.5 * D; ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 5 * D, 0, 6.3); ctx.stroke(); }
+    }
+    function draw(dt){
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = "#04050c"; ctx.fillRect(0, 0, W, H);
+      if (shake > .3) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+      ctx.fillStyle = "#fff";
+      for (var i = 0; i < stars.length; i++){ var sr = stars[i]; ctx.globalAlpha = .3 + sr.r * .4; ctx.fillRect(sr.x, sr.y, sr.r * D, sr.r * D); }
+      ctx.globalAlpha = 1;
+      ctx.setLineDash([4 * D, 6 * D]); ctx.strokeStyle = "rgba(255,120,120,.25)"; ctx.lineWidth = 1 * D;
+      ctx.beginPath(); ctx.moveTo(52 * D, 0); ctx.lineTo(52 * D, H); ctx.stroke(); ctx.setLineDash([]);
+      planets.forEach(planet);
+      beams.forEach(function(b){ var a = 1 - b.t / .22; ctx.strokeStyle = "rgba(140,220,255," + a + ")"; ctx.lineWidth = b.w * a + D; ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke(); });
+      parts.forEach(function(q){ ctx.globalAlpha = Math.max(0, 1 - q.t / q.life); ctx.fillStyle = q.c; ctx.fillRect(q.x, q.y, 2.4 * D, 2.4 * D); });
+      ctx.globalAlpha = 1;
+      var s = station(), ang = Math.atan2(aim.y - s.y, aim.x - s.x);
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(ang);
+      ctx.fillStyle = "#2a2f52"; ctx.fillRect(0, -4 * D, 26 * D, 8 * D);
+      ctx.fillStyle = "#8b7cf6"; ctx.fillRect(22 * D, -3 * D, 6 * D, 6 * D);
+      ctx.restore();
+      ctx.strokeStyle = "#6c7cff"; ctx.lineWidth = 3 * D; ctx.beginPath(); ctx.arc(s.x, s.y, 14 * D, 0, 6.3); ctx.stroke();
+      ctx.fillStyle = "#c9d2ff"; ctx.beginPath(); ctx.arc(s.x, s.y, 6 * D, 0, 6.3); ctx.fill();
+      if (charge > 0){ ctx.strokeStyle = charge >= .75 ? "#ff8ad8" : charge >= .34 ? "#5ee6ff" : "#c9d2ff"; ctx.lineWidth = 3 * D;
+        ctx.beginPath(); ctx.arc(s.x, s.y, 20 * D, -Math.PI / 2, -Math.PI / 2 + charge * 6.283); ctx.stroke(); }
+      if (st.mode === "play"){ ctx.strokeStyle = "rgba(140,220,255,.18)"; ctx.setLineDash([3 * D, 7 * D]); ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(aim.x, aim.y); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      if (flash > 0){ ctx.fillStyle = "rgba(255,255,255," + (still ? 0 : flash * .15) + ")"; ctx.fillRect(0, 0, W, H); }
+      ctx.fillStyle = "#cfd3ea"; ctx.font = (12 * D) + "px ui-monospace,Menlo,monospace"; ctx.textAlign = "right";
+      ctx.fillText("SCORE " + st.score + "   BEST " + st.best + "   WAVE " + st.wave + "   LIVES " + Math.max(0, st.lives), W - 12 * D, 20 * D);
+      if (st.mode !== "play"){
+        ctx.fillStyle = "rgba(4,5,12,.6)"; ctx.fillRect(0, 0, W, H);
+        ctx.textAlign = "center"; ctx.fillStyle = "#eef0ff"; ctx.font = "bold " + (20 * D) + "px system-ui,sans-serif";
+        ctx.fillText(st.mode === "over" ? "SIGNAL LOST" : "PLANET CRACKER", W / 2, H / 2 - 8 * D);
+        ctx.font = (13 * D) + "px system-ui,sans-serif"; ctx.fillStyle = "#a9adc8";
+        ctx.fillText(st.mode === "over" ? "Score " + st.score + "  ·  Press Space or tap to retry" : "Press Space or tap to start", W / 2, H / 2 + 18 * D);
+      }
+    }
+    function loop(){
+      cancelAnimationFrame(raf); last = performance.now();
+      function f(now){ var dt = Math.min(.05, (now - last) / 1000); last = now;
+        if (st.mode === "play") update(dt); else { update(0); }
+        draw(dt);
+        if (st.mode === "play" || parts.length || beams.length) raf = requestAnimationFrame(f); }
+      raf = requestAnimationFrame(f);
+    }
+    function pos(e){ var r = cv.getBoundingClientRect(); aim.x = (e.clientX - r.left) * D; aim.y = (e.clientY - r.top) * D; }
+    cv.addEventListener("pointermove", function(e){ pos(e); if (st.mode !== "play") draw(0); });
+    cv.addEventListener("pointerdown", function(e){ e.preventDefault(); cv.focus({ preventScroll: true }); pos(e); if (st.mode !== "play"){ start(); return; } charging = true; try { cv.setPointerCapture(e.pointerId); } catch(x){} });
+    cv.addEventListener("pointerup", function(e){ if (charging){ charging = false; pos(e); fire(); } });
+    cv.addEventListener("pointercancel", function(){ charging = false; charge = 0; });
+    cv.addEventListener("keydown", function(e){
+      if (e.key === " " || e.key === "Enter"){ e.preventDefault(); if (st.mode !== "play"){ if (!e.repeat) start(); } else charging = true; }
+      else if (e.key === "ArrowUp"){ e.preventDefault(); keyAim = -1; if (aim.x < W * .3) aim.x = W * .7; }
+      else if (e.key === "ArrowDown"){ e.preventDefault(); keyAim = 1; if (aim.x < W * .3) aim.x = W * .7; }
+    });
+    cv.addEventListener("keyup", function(e){
+      if ((e.key === " " || e.key === "Enter") && charging){ charging = false; fire(); }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") keyAim = 0;
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key !== " " || !$("e500").classList.contains("show") || e.target === cv || /^(BUTTON|INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      e.preventDefault(); cv.focus({ preventScroll: true }); cv.scrollIntoView({ block: "nearest" }); if (st.mode !== "play" && !e.repeat) start();
+    });
+    addEventListener("resize", function(){ if ($("e500").classList.contains("show")) resize(); });
+    document.addEventListener("visibilitychange", function(){ if (document.hidden && st.mode === "play"){ charging = false; } });
+    return {
+      resize: resize,
+      idle: function(){ if (st.mode === "play") return; st.mode = st.mode === "over" ? "over" : "idle"; sync(); draw(0); },
+      stop: function(){ cancelAnimationFrame(raf); charging = false; if (st.mode === "play"){ st.mode = "idle"; st.best = Math.max(st.best, st.score); } sync(); }
+    };
+  }
 
   var dbP = null;
   function db(){
@@ -322,7 +537,7 @@
   var defaultId = null, storageOk = true;
 
   function runChecked(buf){
-    return verify(buf).then(function(ok){ if (!ok){ msg(NOT_SPACEPAD, false); cancelAutoSafe(); return false; } run(buf); return true; });
+    return verify(buf).then(function(ok){ if (!ok){ cancelAutoSafe(); show500(); return false; } run(buf); return true; });
   }
   function cancelAutoSafe(){ try { var a = document.getElementById("auto"); a.classList.remove("show"); } catch(e){} }
   function run(buf){
@@ -371,7 +586,7 @@
     if (!/\.html?$/i.test(file.name) && file.type !== "text/html") return msg("That isn't an HTML file. Drop your SpacePad .html file.", false);
     file.arrayBuffer().then(function(buf){
       return verify(buf).then(function(ok){
-      if (!ok) return msg(NOT_SPACEPAD, false);
+      if (!ok){ msg("", true); return show500(); }
       if (!storageOk || !$("saveOpt").checked){ msg("Running " + file.name + "…", true); return run(buf); }
       var rec = {id: file.name.toLowerCase(), name: file.name, size: file.size, saved: Date.now(), data: buf};
       putFile(rec).then(function(){ defaultId = rec.id; return setPref("default", rec.id); })
