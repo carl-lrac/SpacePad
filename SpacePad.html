@@ -86,7 +86,6 @@
 <script>
 (function(){
   var $ = function(id){ return document.getElementById(id); };
-  var MAX = 50 * 1024 * 1024;
 
   (function(){
     var cv = $("stars"), ctx = cv.getContext("2d");
@@ -370,7 +369,6 @@
   function handle(file){
     if (!file) return;
     if (!/\.html?$/i.test(file.name) && file.type !== "text/html") return msg("That isn't an HTML file. Drop your SpacePad .html file.", false);
-    if (file.size > MAX) return msg("That file is too big (" + fmt(file.size) + ", limit 50 MB).", false);
     file.arrayBuffer().then(function(buf){
       return verify(buf).then(function(ok){
       if (!ok) return msg(NOT_SPACEPAD, false);
